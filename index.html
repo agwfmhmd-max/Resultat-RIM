@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resultat Rim | النتائج الوطنية</title>
+    
+    <!-- المكتبات الخارجية -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #00695c;
+            --secondary: #004d40;
+            --gold: #ffc107;
+            --whatsapp: #25D366;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --radius: 16px;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); padding-bottom: 50px; overflow-x: hidden; }
+        
+        .navbar { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); color: white; }
+        .container-app { max-width: 600px; margin: auto; padding: 15px; }
+        .search-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .section-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: 8px; margin-top: 15px; }
+        .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid #ddd; background: #f8f9fa; }
+        .form-control:focus { box-shadow: none; border-color: var(--primary); }
+        
+        .btn-main { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+        .btn-main:hover { background: var(--secondary); color: white; }
+        .btn-gold { background: var(--gold); color: #000; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: white; border-radius: 12px; padding: 10px; font-weight: bold; width: 100%; }
+        
+        .whatsapp-card {
+            background: #e7fceb;
+            border: 1px solid #25D366;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            animation: fadeIn 0.5s;
+            text-decoration: none;
+            display: block;
+        }
+        .whatsapp-card:active { transform: scale(0.98); }
+        .whatsapp-icon {
+            background: #25D366;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .result-card-wrapper { margin-bottom: 20px; }
+        .result-card { background: white; padding: 15px; border-radius: 12px; border-right: 5px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; animation: fadeIn 0.3s; }
+        .rank-badge { position: absolute; top: 10px; left: 10px; background: var(--gold); color: #000; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .bg-admis { background-color: #d1e7dd; color: #0f5132; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .bg-recale { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .bg-warning { background-color: #fff3cd; color: #664d03; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
+
+        #topPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; overflow-y: auto; padding-bottom: 50px; display: none; }
+        .top-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+
+        .selection-btn { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: space-between; }
+        .selection-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .selection-icon { color: var(--primary); font-size: 1.2rem; }
+        .selection-btn:hover .selection-icon { color: white; }
+
+        /* ========================
+           أنماط الاحتفال (الجديدة)
+           ======================== */
+        #celebrationOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .congrats-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 10000;
+            animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .congrats-title { font-size: 2rem; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
+        .congrats-text { font-size: 1.1rem; color: #555; margin-bottom: 20px; }
+        
+        .confetti-piece {
+            position: absolute;
+            font-size: 20px;
+            top: -20px;
+            animation: fall linear forwards;
+            z-index: 9998;
+        }
+
+        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
+
+        footer { background: #fff; padding: 20px 0; margin-top: 40px; border-top: 1px solid #eaeaea; }
+        .dev-credit { font-size: 0.9rem; color: #6c757d; }
+        .dev-name { color: var(--primary); font-weight: 700; text-decoration: none; transition: color 0.2s; }
+        .dev-name:hover { color: var(--secondary); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container-app w-100 d-flex align-items-center justify-content-center">
+            <span class="navbar-brand m-0 fw-bold fs-4"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
+        </div>
+    </nav>
+
+    <!-- شاشة الاحتفال -->
+    <div id="celebrationOverlay">
+        <div class="congrats-box">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🎉🌺🥰</div>
+            <div class="congrats-title">ألف ألف مبروك!</div>
+            <div class="congrats-text">
+                تهانينا الحارة بمناسبة النجاح وتجاوز الامتحان بجدارة.<br>
+                نتمنى لك مسيرة دراسية مليئة بالتفوق.
+            </div>
+            <button class="btn btn-main" onclick="closeCelebration()">شكراً ❤️</button>
+        </div>
+    </div>
+
+    <div class="container-app">
+        <div class="search-card mt-3">
+            <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
+            
+            <label class="section-title">المسابقة:</label>
+            <select id="examType" class="form-select">
+                <option value="bac_n" selected>باكالوريا - الدورة العادية</option>
+                <option value="bac_c">باكالوريا - الدورة التكميلية</option>
+                <option value="brevet">ختم الدروس الإعدادية (بريفة)</option>
+                <option value="concours">دخول السنة الأولى (كونكور)</option>
+            </select>
+
+            <label class="section-title">البحث بواسطة:</label>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <select id="searchCategory" class="form-select">
+                        <option value="number">رقم المترشح</option>
+                        <option value="school">اسم المدرسة</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <input id="searchInput" type="text" class="form-control" placeholder="اكتب هنا...">
+                </div>
+            </div>
+
+            <button id="searchBtn" class="btn-main"><i class="fas fa-search me-2"></i>بحث</button>
+            <button onclick="openTopPage()" class="btn-gold"><i class="fas fa-chart-bar me-2"></i>الإحصائيات والأوائل</button>
+        </div>
+
+        <div id="loading" class="text-center d-none mt-4">
+            <div class="spinner-border text-success"></div>
+            <p class="mt-2 text-muted">جاري تحميل البيانات...</p>
+        </div>
+
+        <div id="resultsContainer" class="mt-4"></div>
+    </div>
+
+    <!-- صفحة الأوائل -->
+    <div id="topPageOverlay">
+        <div class="top-header">
+            <div class="d-flex align-items-center">
+                <button id="backBtn" onclick="resetTopView()" class="btn btn-sm btn-outline-secondary me-2 d-none"><i class="fas fa-arrow-right"></i></button>
+                <h5 class="m-0 fw-bold text-success"><i class="fas fa-crown me-2"></i>لوحة الأوائل</h5>
+            </div>
+            <button onclick="closeTopPage()" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i> إغلاق</button>
+        </div>
+        
+        <div class="container-app">
+            <div id="topMenu">
+                <div class="alert alert-info small mb-3">
+                    <i class="fas fa-info-circle me-1"></i> اختر نوع العرض لرؤية المتفوقين.
+                </div>
+
+                <button class="btn-main" onclick="loadNationalTop()">
+                    <i class="fas fa-globe-africa me-2"></i>الـ 20 الأوائل وطنياً
+                </button>
+
+                <div class="row g-2 mt-2">
+                    <div class="col-6" id="stateBtnCol">
+                        <button class="btn-outline" onclick="renderGroupList('wilaya')">
+                            <i class="fas fa-map-marker-alt me-1"></i> حسب الولاية
+                        </button>
+                    </div>
+                    <div class="col-6" id="majorBtnCol">
+                        <button class="btn-outline" onclick="renderGroupList('major')">
+                            <i class="fas fa-book me-1"></i> حسب الشعبة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="selectionListContainer" class="mt-4 d-none">
+                <h6 id="selectionTitle" class="fw-bold text-secondary mb-3"></h6>
+                <div id="selectionItems" class="row g-2"></div>
+            </div>
+
+            <div id="topPageResults" class="mt-4"></div>
+        </div>
+    </div>
+
+    <footer class="text-center">
+        <div class="container">
+            <p class="dev-credit mb-1">Designed & Developed by</p>
+            <a href="#" class="dev-name mb-2 d-block">Mohamed Dah Agove</a>
+            <div style="font-size: 0.75rem; color: #999;">&copy; 2026 Resultat RIM. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        // ==============================================
+        // إعدادات الملفات
+        // ==============================================
+        const examConfig = {
+            "bac_n": {
+                file: "bac_n.csv", 
+                searchKeys: ["NODOSS", "Num", "N°"], 
+                nameKeys: ["NOM_AR", "Nom", "Nom complet"], 
+                scoreKeys: ["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], 
+                placeKeys: ["Etablissement_AR", "Etablissement", "Centre", "Lieu"], 
+                decisionKeys: ["Decision", "Resultat"],
+                stateKeys: ["Wilaya_AR", "Wilaya"], majorKeys: ["SERIE", "Serie", "Option"]
+            },
+            "bac_c": {
+                file: "bac_c.csv",
+                searchKeys: ["NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac", "Moyenne"],
+                placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"],
+                stateKeys: ["Wilaya_AR", "Wilaya"], majorKeys: ["SERIE", "Serie"]
+            },
+            "brevet": {
+                file: "brevet.csv",
+                searchKeys: ["Num_Bepc", "Num"], nameKeys: ["NOM", "Nom"], scoreKeys: ["Moyenne_Bepc", "Moyenne"],
+                placeKeys: ["Ecole", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision"], 
+                stateKeys: ["WILAYA", "Wilaya", "Wilaya_AR"], majorKeys: []
+            },
+            "concours": {
+                file: "concours.csv",
+                searchKeys: ["Noreg", "Numéro_C1AS", "NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], 
+                scoreKeys: ["TOTAL", "Totale", "Score"],
+                placeKeys: ["Ecole_AR", "Ecole", "Centre Examen_AR"], decisionKeys: [], 
+                stateKeys: ["WILAYA_AR", "Wilaya_AR", "WILAYA"], majorKeys: []
+            }
+        };
+
+        const staticMajors = [
+            { label: "العلوم الطبيعية (SN)", searchVal: ["SN"] },
+            { label: "الآداب الأصلية (LO)", searchVal: ["LO"] },
+            { label: "الآداب العصرية (LM)", searchVal: ["LM"] },
+            { label: "الرياضيات (M)", searchVal: ["M", "C"] },
+            { label: "التقنية (TM)", searchVal: ["TM", "T"] },
+            { label: "الهندسة الكهربائية (TS)", searchVal: ["TS"] },
+            { label: "اللغات (LA)", searchVal: ["LA"] }
+        ];
+
+        const staticWilayas = [
+            { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
+            { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
+            { label: "لعصابه", searchVal: ["لعصابه", "لعصابة", "ASSABA"] },
+            { label: "كوركل", searchVal: ["كوركل", "GORGOL"] },
+            { label: "لبراكنه", searchVal: ["لبراكنه", "BRAKNA"] },
+            { label: "اترارزه", searchVal: ["اترارزه", "TRARZA"] },
+            { label: "آدرار", searchVal: ["آدرار", "ADRAR"] },
+            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU"] },
+            { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
+            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA"] },
+            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR"] },
+            { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
+            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD"] },
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST"] },
+            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD"] }
+        ];
+
+        let cache = {}; 
+
+        function getVal(item, keysArray) {
+            if (!item || !keysArray) return "";
+            for (let key of keysArray) {
+                if (item[key] !== undefined && item[key] !== null) return item[key];
+            }
+            return ""; 
+        }
+
+        function parseScore(val) {
+            if (!val) return 0;
+            let clean = String(val).trim().replace(/[^0-9.,]/g, '').replace(',', '.');
+            let num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // ==============================================
+        // دوال الاحتفال (Animation Logic)
+        // ==============================================
+        const emojis = ['🌸', '🌹', '💐', '❤️', '🎉', '🎊', '🌷', '✨', '💕', '🥰'];
+        let celebrationInterval;
+
+        function createConfetti() {
+            const overlay = document.getElementById('celebrationOverlay');
+            if(overlay.style.display === 'none') return;
+
+            const el = document.createElement('div');
+            el.classList.add('confetti-piece');
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            // Random positioning
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5s
+            el.style.fontSize = (Math.random() * 20 + 20) + 'px'; // 20-40px
+            
+            overlay.appendChild(el);
+
+            // Clean up
+            setTimeout(() => { el.remove(); }, 5000);
+        }
+
+        function triggerCelebration() {
+            const overlay = document.getElementById('celebrationOverlay');
+            overlay.style.display = 'flex';
+            
+            // Start creating confetti
+            if(celebrationInterval) clearInterval(celebrationInterval);
+            celebrationInterval = setInterval(createConfetti, 100);
+        }
+
+        function closeCelebration() {
+            document.getElementById('celebrationOverlay').style.display = 'none';
+            if(celebrationInterval) clearInterval(celebrationInterval);
+            // Clean up existing elements
+            document.querySelectorAll('.confetti-piece').forEach(e => e.remove());
+        }
+
+        function isResultSuccessful(student, config) {
+            const decisionRaw = getVal(student, config.decisionKeys);
+            if (!decisionRaw) return false;
+            let d = String(decisionRaw).toLowerCase();
+            return d.includes('admis') || d.includes('ناجح');
+        }
+
+        // ==============================================
+        // البيانات والبحث
+        // ==============================================
+        async function fetchData(examType) {
+            if (cache[examType]) return cache[examType];
+            const config = examConfig[examType];
+            try {
+                const response = await fetch(config.file);
+                if (!response.ok) throw new Error(`الملف غير موجود`);
+                const csvText = await response.text();
+                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
+                if(parsed.data.length === 0) throw new Error("الملف فارغ");
+                cache[examType] = parsed.data;
+                return parsed.data;
+            } catch (error) { throw error; }
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const examType = document.getElementById('examType').value;
+            const searchCat = document.getElementById('searchCategory').value;
+            const inputVal = document.getElementById('searchInput').value.trim().toLowerCase();
+            const config = examConfig[examType];
+            
+            if (!inputVal) return alert("الرجاء إدخال قيمة للبحث");
+
+            const container = document.getElementById('resultsContainer');
+            const loading = document.getElementById('loading');
+            
+            container.innerHTML = '';
+            loading.classList.remove('d-none');
+
+            try {
+                const data = await fetchData(examType);
+                let results = [];
+
+                if (searchCat === 'number') {
+                    results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
+                } else {
+                    results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
+                }
+
+                results.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+
+                loading.classList.add('d-none');
+                
+                if (results.length === 0) {
+                    container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج.</div>';
+                    return;
+                }
+
+                container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
+                results.forEach(student => renderCard(student, config, container, null));
+
+                // TRIGGER CELEBRATION IF SEARCH IS BY NUMBER AND STUDENT PASSED
+                // نتحقق إذا كان البحث برقم الجلوس (شخصي) وكانت النتيجة ناجح
+                if (searchCat === 'number' && results.length > 0) {
+                    // إذا وجدنا نتيجة واحدة على الأقل ناجحة
+                    const winner = results.find(s => isResultSuccessful(s, config));
+                    if (winner) {
+                        triggerCelebration();
+                    }
+                }
+
+            } catch (error) {
+                loading.classList.add('d-none');
+                alert("حدث خطأ: " + error.message);
+            }
+        });
+
+        // ==============================================
+        // إدارة الواجهات
+        // ==============================================
+        function openTopPage() { 
+            resetTopView(); 
+            const examType = document.getElementById('examType').value;
+            const majorBtnCol = document.getElementById('majorBtnCol');
+            const stateBtnCol = document.getElementById('stateBtnCol');
+
+            majorBtnCol.style.display = 'none';
+            stateBtnCol.style.display = 'none';
+
+            if (examType.includes('bac')) {
+                majorBtnCol.style.display = 'block';
+                stateBtnCol.style.display = 'block';
+                stateBtnCol.className = 'col-6';
+            } else if (examType === 'brevet') {
+                stateBtnCol.style.display = 'block';
+                stateBtnCol.className = 'col-12';
+            }
+            // Concours: All hidden
+
+            document.getElementById('topPageOverlay').style.display = 'block'; 
+        }
+
+        function closeTopPage() { document.getElementById('topPageOverlay').style.display = 'none'; }
+
+        function resetTopView() {
+            document.getElementById('topMenu').classList.remove('d-none');
+            document.getElementById('selectionListContainer').classList.add('d-none');
+            document.getElementById('topPageResults').innerHTML = '';
+            document.getElementById('backBtn').classList.add('d-none');
+        }
+
+        async function loadNationalTop() {
+            document.getElementById('topMenu').classList.add('d-none');
+            document.getElementById('backBtn').classList.remove('d-none');
+            const examType = document.getElementById('examType').value;
+            const config = examConfig[examType];
+            const container = document.getElementById('topPageResults');
+            container.innerHTML = '<div class="text-center"><div class="spinner-border text-success"></div></div>';
+            try {
+                const data = await fetchData(examType);
+                let sorted = [...data].sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+                container.innerHTML = '<h6 class="text-center fw-bold text-success mb-3">أعلى 20 معدل على المستوى الوطني</h6>';
+                sorted.slice(0, 20).forEach((student, index) => renderCard(student, config, container, index + 1));
+            } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
+        }
+
+        function renderGroupList(groupBy) {
+            document.getElementById('topMenu').classList.add('d-none');
+            document.getElementById('backBtn').classList.remove('d-none');
+            const listContainer = document.getElementById('selectionListContainer');
+            const itemsDiv = document.getElementById('selectionItems');
+            document.getElementById('selectionTitle').innerText = groupBy === 'wilaya' ? 'اختر الولاية:' : 'اختر الشعبة:';
+            
+            listContainer.classList.remove('d-none');
+            itemsDiv.innerHTML = '';
+            
+            let items = groupBy === 'wilaya' ? staticWilayas : staticMajors;
+            items.forEach(item => {
+                let col = document.createElement('div');
+                col.className = 'col-12'; 
+                col.innerHTML = `<div class="selection-btn"><span>${item.label}</span><i class="fas fa-chevron-left selection-icon"></i></div>`;
+                col.onclick = () => loadTopTenForGroup(groupBy, item.searchVal, item.label);
+                itemsDiv.appendChild(col);
+            });
+        }
+
+        async function loadTopTenForGroup(groupBy, searchTerms, label) {
+            document.getElementById('selectionListContainer').classList.add('d-none');
+            const container = document.getElementById('topPageResults');
+            container.innerHTML = '<div class="text-center"><div class="spinner-border text-success"></div></div>';
+            const examType = document.getElementById('examType').value;
+            const config = examConfig[examType];
+            let targetKeys = groupBy === 'wilaya' ? config.stateKeys : config.majorKeys;
+
+            try {
+                const data = await fetchData(examType);
+                let filtered = data.filter(item => {
+                    let val = String(getVal(item, targetKeys)).trim();
+                    return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
+                });
+                filtered.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+                container.innerHTML = `<h6 class="text-center fw-bold text-primary mb-3">العشرة الأوائل: ${label}</h6>`;
+                if(filtered.length === 0) container.innerHTML += '<div class="alert alert-warning text-center">لا توجد نتائج.</div>';
+                else filtered.slice(0, 10).forEach((student, index) => renderCard(student, config, container, index + 1));
+            } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
+        }
+
+        function renderCard(student, config, targetElement, rank = null) {
+            const name = getVal(student, config.nameKeys) || 'اسم غير متوفر';
+            const number = getVal(student, config.searchKeys);
+            const score = parseScore(getVal(student, config.scoreKeys));
+            const place = getVal(student, config.placeKeys);
+            const decisionRaw = getVal(student, config.decisionKeys);
+            const state = getVal(student, config.stateKeys);
+            
+            let isAdmis = false;
+            let decisionHtml = '';
+            
+            if (decisionRaw) {
+                let d = String(decisionRaw).toLowerCase();
+                if (d.includes('admis') || d.includes('ناجح')) {
+                    decisionHtml = `<span class="bg-admis">${decisionRaw}</span>`;
+                    isAdmis = true;
+                } else if (d.includes('ajourn') || d.includes('مؤجل')) {
+                    decisionHtml = `<span class="bg-warning">${decisionRaw}</span>`;
+                } else {
+                    decisionHtml = `<span class="bg-recale">${decisionRaw}</span>`;
+                }
+            }
+
+            let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
+            let extraStyle = rank ? 'padding-left: 50px;' : '';
+            
+            let adHtml = '';
+            const currentExam = document.getElementById('examType').value;
+            if ((currentExam === 'bac_n' || currentExam === 'bac_c') && isAdmis && rank === null) {
+                adHtml = `
+                <a href="https://www.unem2000.com/whatsapp" target="_blank" class="whatsapp-card">
+                    <div class="d-flex align-items-center">
+                        <div class="whatsapp-icon"><i class="fab fa-whatsapp"></i></div>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-success">ألف مبروك النجاح! 🎉</h6>
+                            <p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات التوجيه.</p>
+                        </div>
+                    </div>
+                </a>`;
+            }
+
+            targetElement.innerHTML += `
+                <div class="result-card-wrapper">
+                    <div class="result-card">
+                        ${rankBadge}
+                        <div style="${extraStyle}">
+                            <h6 class="fw-bold mb-1">${name}</h6>
+                            <div class="small text-muted row">
+                                <div class="col-6">رقم: <b>${number}</b></div>
+                                <div class="col-6 text-end">المعدل: <b class="text-success">${score % 1 !== 0 ? score.toFixed(2) : score}</b></div>
+                            </div>
+                            <div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> ${place}</div>
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                ${decisionHtml}
+                                ${state ? `<span class="badge bg-light text-dark border">${state}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    ${adHtml}
+                </div>`;
+        }
+    </script>
+</body>
+</html>
