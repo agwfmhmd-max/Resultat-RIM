@@ -164,7 +164,6 @@
             <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
             
             <label class="section-title">المسابقة:</label>
-            <!-- تم تعديل الترتيب حسب طلبك -->
             <select id="examType" class="form-select">
                 <option value="concours" selected>دخول السنة الأولى (كونكور)</option>
                 <option value="brevet">ختم الدروس الإعدادية (بريفة)</option>
@@ -252,6 +251,7 @@
         // ==============================================
         // إعدادات الملفات
         // ==============================================
+        // تمت إضافة DREN إلى مفاتيح البحث لضمان العثور على الولاية في ملفات الباكالوريا
         const examConfig = {
             "bac_n": {
                 file: "bac_n.csv", 
@@ -260,13 +260,13 @@
                 scoreKeys: ["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], 
                 placeKeys: ["Etablissement_AR", "Etablissement", "Centre", "Lieu"], 
                 decisionKeys: ["Decision", "Resultat"],
-                stateKeys: ["Wilaya_AR", "Wilaya"], majorKeys: ["SERIE", "Serie", "Option"]
+                stateKeys: ["Wilaya_AR", "Wilaya", "DREN", "Wilaya_FR"], majorKeys: ["SERIE", "Serie", "Option"]
             },
             "bac_c": {
                 file: "bac_c.csv",
                 searchKeys: ["NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac", "Moyenne"],
                 placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"],
-                stateKeys: ["Wilaya_AR", "Wilaya"], majorKeys: ["SERIE", "Serie"]
+                stateKeys: ["Wilaya_AR", "Wilaya", "DREN"], majorKeys: ["SERIE", "Serie"]
             },
             "brevet": {
                 file: "brevet.csv",
@@ -293,7 +293,7 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
-        // تم إضافة جميع الصيغ المحتملة لنواكشوط الغربية لضمان ظهور الترتيب
+        // تم تعزيز البحث عن انواكشوط الغربية بكل الصيغ الممكنة
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -308,7 +308,8 @@
             { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
             { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord", "Nouakchott  Nord"] },
-            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST", "Nouakchott Ouest", "Nouakchott-Ouest", "NKTT-OUEST"] },
+            // إضافة صيغ قوية لنواكشوط الغربية
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST", "NKTT-OUEST", "Nouakchott-Ouest", "NOUAKCHOTT  OUEST"] },
             { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud", "Nouakchott-Sud"] }
         ];
 
@@ -329,17 +330,19 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // دالة جديدة لتوحيد اسم الولاية من البيانات الخام لضمان صحة المقارنة
+        // دالة محسنة لتوحيد الأسماء مع إزالة المسافات الزائدة (Double Spaces)
         function getNormalizedState(rawState) {
             if (!rawState) return "unknown";
-            rawState = String(rawState).trim();
+            // تنظيف النص: إزالة المسافات الزائدة وتحويله لأحرف صغيرة
+            let cleanedState = String(rawState).trim().replace(/\s+/g, ' ').toLowerCase();
+            
             for (let group of staticWilayas) {
-                // نتحقق إذا كان الاسم الخام يحتوي على أي من كلمات البحث الخاصة بالولاية
-                if (group.searchVal.some(term => rawState.toLowerCase().includes(term.toLowerCase()))) {
-                    return group.label; // نرجع الاسم الموحد (مثل: انواكشوط 2 (الغربية))
+                // البحث في القيم المعرفة مسبقاً
+                if (group.searchVal.some(term => cleanedState.includes(term.toLowerCase()))) {
+                    return group.label;
                 }
             }
-            return rawState; // إذا لم نجد تطابق، نرجع الاسم كما هو
+            return rawState; // العودة للنص الأصلي في حال عدم التطابق
         }
 
         // ==============================================
@@ -440,17 +443,19 @@
                     
                     const studentSchool = getVal(student, config.placeKeys);
                     const studentStateRaw = getVal(student, config.stateKeys);
-                    const studentStateNormalized = getNormalizedState(studentStateRaw); // نستخدم الاسم الموحد
+                    const studentStateNormalized = getNormalizedState(studentStateRaw);
                     
                     // حساب الترتيب في الولاية (باستخدام الاسم الموحد)
                     if (studentStateRaw) {
                         let rankInState = 1;
                         for (let i = 0; i < data.length; i++) {
-                            // نوحد اسم الولاية للطالب الآخر أيضاً قبل المقارنة
                             const otherStateNormalized = getNormalizedState(getVal(data[i], config.stateKeys));
                             if (otherStateNormalized === studentStateNormalized) {
-                                if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
-                                    rankInState++;
+                                // في حال لم يتم التعرف على الولاية (unknown) لا نقوم بالحساب لتجنب الأخطاء
+                                if (otherStateNormalized !== "unknown" || (getVal(data[i], config.stateKeys) === studentStateRaw)) {
+                                    if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
+                                        rankInState++;
+                                    }
                                 }
                             }
                         }
