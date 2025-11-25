@@ -251,7 +251,6 @@
         // ==============================================
         // إعدادات الملفات
         // ==============================================
-        // تمت إضافة DREN إلى مفاتيح البحث لضمان العثور على الولاية في ملفات الباكالوريا
         const examConfig = {
             "bac_n": {
                 file: "bac_n.csv", 
@@ -293,7 +292,7 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
-        // تم تعزيز البحث عن انواكشوط الغربية بكل الصيغ الممكنة
+        // القائمة الآن تستخدم للبحث العام، أما التطابق فيتم عبر الدالة getNormalizedState
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -307,10 +306,9 @@
             { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه"] },
             { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
-            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord", "Nouakchott  Nord"] },
-            // إضافة صيغ قوية لنواكشوط الغربية
-            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST", "NKTT-OUEST", "Nouakchott-Ouest", "NOUAKCHOTT  OUEST"] },
-            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud", "Nouakchott-Sud"] }
+            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord"] },
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST"] },
+            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
         ];
 
         let cache = {}; 
@@ -330,19 +328,53 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // دالة محسنة لتوحيد الأسماء مع إزالة المسافات الزائدة (Double Spaces)
+        // =========================================================
+        // الدالة المحسنة جداً للتعرف على الولايات (Fuzzy Matching)
+        // =========================================================
         function getNormalizedState(rawState) {
             if (!rawState) return "unknown";
-            // تنظيف النص: إزالة المسافات الزائدة وتحويله لأحرف صغيرة
-            let cleanedState = String(rawState).trim().replace(/\s+/g, ' ').toLowerCase();
             
+            // تنظيف النص بالكامل: أحرف صغيرة، ومسافات موحدة
+            let text = String(rawState).trim().toLowerCase().replace(/\s+/g, ' ');
+
+            // التحقق من نواكشوط الغربية بكل الطرق الممكنة (تجاهل المسافات بين الكلمات)
+            // إذا وجدنا كلمة (nouakchott أو nktt) ومعها كلمة (ouest)
+            if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('ouest')) {
+                return "انواكشوط 2 (الغربية)";
+            }
+            // التحقق بالعربية
+            if (text.includes('انواكشوط') && text.includes('الغربية')) {
+                return "انواكشوط 2 (الغربية)";
+            }
+
+            // التحقق من الشمالية
+            if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('nord')) {
+                return "انواكشوط 1 (الشمالية)";
+            }
+            if (text.includes('انواكشوط') && text.includes('الشمالية')) {
+                return "انواكشوط 1 (الشمالية)";
+            }
+
+            // التحقق من الجنوبية
+            if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('sud')) {
+                return "انواكشوط 3 (الجنوبية)";
+            }
+            if (text.includes('انواكشوط') && text.includes('الجنوبية')) {
+                return "انواكشوط 3 (الجنوبية)";
+            }
+
+            // بقية الولايات (مقارنة عادية بالقائمة)
             for (let group of staticWilayas) {
-                // البحث في القيم المعرفة مسبقاً
-                if (group.searchVal.some(term => cleanedState.includes(term.toLowerCase()))) {
+                // تجاوزنا نواكشوط لأننا عالجناها في الأعلى بدقة أكبر
+                if(group.label.includes("انواكشوط")) continue; 
+
+                if (group.searchVal.some(term => text.includes(term.toLowerCase()))) {
                     return group.label;
                 }
             }
-            return rawState; // العودة للنص الأصلي في حال عدم التطابق
+
+            // إذا لم نجد تطابق، نرجع النص "النظيف" ليتم تجميعه مع أمثاله
+            return text; 
         }
 
         // ==============================================
@@ -443,23 +475,29 @@
                     
                     const studentSchool = getVal(student, config.placeKeys);
                     const studentStateRaw = getVal(student, config.stateKeys);
+                    // هنا نستخدم الدالة المحسنة لتوحيد اسم الولاية
                     const studentStateNormalized = getNormalizedState(studentStateRaw);
                     
-                    // حساب الترتيب في الولاية (باستخدام الاسم الموحد)
+                    // حساب الترتيب في الولاية
                     if (studentStateRaw) {
                         let rankInState = 1;
                         for (let i = 0; i < data.length; i++) {
                             const otherStateNormalized = getNormalizedState(getVal(data[i], config.stateKeys));
+                            
+                            // المقارنة الآن تتم بين الأسماء الموحدة (التي تتجاهل المسافات والرموز)
                             if (otherStateNormalized === studentStateNormalized) {
-                                // في حال لم يتم التعرف على الولاية (unknown) لا نقوم بالحساب لتجنب الأخطاء
-                                if (otherStateNormalized !== "unknown" || (getVal(data[i], config.stateKeys) === studentStateRaw)) {
+                                // شرط إضافي: لا نقارن "المجهول" مع "المجهول"
+                                if (studentStateNormalized !== "unknown") {
                                     if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
                                         rankInState++;
                                     }
                                 }
                             }
                         }
-                        extraInfo.stateRank = rankInState;
+                        // نعرض الترتيب فقط إذا لم تكن الولاية مجهولة
+                        if (studentStateNormalized !== "unknown") {
+                            extraInfo.stateRank = rankInState;
+                        }
                     }
 
                     // حساب الترتيب في المدرسة
@@ -598,7 +636,17 @@
                 const data = await fetchData(examType);
                 let filtered = data.filter(item => {
                     let val = String(getVal(item, targetKeys)).trim();
-                    return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
+                    
+                    // استخدام دالة التوحيد للتحقق من الولاية إذا كنا نبحث بالولاية
+                    if (groupBy === 'wilaya') {
+                         // هنا searchTerms تحتوي على قيم مثل "Nouakchott Ouest"
+                         // نحتاج التحقق إذا كان الاسم الموحد للطالب يطابق الاسم الموحد للمجموعة
+                         const studentNormalized = getNormalizedState(val);
+                         // بما أننا ضغطنا على زر "انواكشوط 2 (الغربية)"، الـ label هو الاسم الموحد
+                         return studentNormalized === label; 
+                    } else {
+                        return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
+                    }
                 });
                 
                 filtered.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
@@ -621,8 +669,12 @@
             const score = parseScore(getVal(student, config.scoreKeys));
             const place = getVal(student, config.placeKeys);
             const decisionRaw = getVal(student, config.decisionKeys);
-            const state = getVal(student, config.stateKeys);
             
+            // هنا نستخدم الاسم الموحد لعرضه بشكل جميل بدلاً من الاسم الخام
+            let stateRaw = getVal(student, config.stateKeys);
+            let state = getNormalizedState(stateRaw);
+            if(state === "unknown") state = stateRaw; // إذا لم يُعرف نعرض الأصلي
+
             let isAdmis = false;
             let decisionHtml = '';
             
