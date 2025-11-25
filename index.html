@@ -70,6 +70,9 @@
         .bg-recale { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
         .bg-warning { background-color: #fff3cd; color: #664d03; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
 
+        .info-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #eee; color: #555; }
+        .info-label { font-weight: 600; color: var(--primary); }
+
         #topPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; overflow-y: auto; padding-bottom: 50px; display: none; }
         .top-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
 
@@ -79,7 +82,7 @@
         .selection-btn:hover .selection-icon { color: white; }
 
         /* ========================
-           أنماط الاحتفال (الجديدة)
+           أنماط الاحتفال
            ======================== */
         #celebrationOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -280,6 +283,7 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
+        // تم تحديث قائمة الولايات بالأسماء التي زودتني بها لضمان دقة البحث
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -287,11 +291,11 @@
             { label: "كوركل", searchVal: ["كوركل", "GORGOL"] },
             { label: "لبراكنه", searchVal: ["لبراكنه", "BRAKNA"] },
             { label: "اترارزه", searchVal: ["اترارزه", "TRARZA"] },
-            { label: "آدرار", searchVal: ["آدرار", "ADRAR"] },
-            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU"] },
+            { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] }, // تمت الإضافة
+            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب"] }, // تمت الإضافة
             { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
-            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA"] },
-            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR"] },
+            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه"] }, // تمت الإضافة
+            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور"] }, // تمت الإضافة
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
             { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD"] },
             { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST"] },
@@ -324,27 +328,19 @@
         function createConfetti() {
             const overlay = document.getElementById('celebrationOverlay');
             if(overlay.style.display === 'none') return;
-
             const el = document.createElement('div');
             el.classList.add('confetti-piece');
             el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-            
-            // Random positioning
             el.style.left = Math.random() * 100 + 'vw';
-            el.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5s
-            el.style.fontSize = (Math.random() * 20 + 20) + 'px'; // 20-40px
-            
+            el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            el.style.fontSize = (Math.random() * 20 + 20) + 'px';
             overlay.appendChild(el);
-
-            // Clean up
             setTimeout(() => { el.remove(); }, 5000);
         }
 
         function triggerCelebration() {
             const overlay = document.getElementById('celebrationOverlay');
             overlay.style.display = 'flex';
-            
-            // Start creating confetti
             if(celebrationInterval) clearInterval(celebrationInterval);
             celebrationInterval = setInterval(createConfetti, 100);
         }
@@ -352,7 +348,6 @@
         function closeCelebration() {
             document.getElementById('celebrationOverlay').style.display = 'none';
             if(celebrationInterval) clearInterval(celebrationInterval);
-            // Clean up existing elements
             document.querySelectorAll('.confetti-piece').forEach(e => e.remove());
         }
 
@@ -375,6 +370,8 @@
                 const csvText = await response.text();
                 const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                 if(parsed.data.length === 0) throw new Error("الملف فارغ");
+                // Pre-sort by score descending just in case, helps in later calculations
+                parsed.data.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
                 cache[examType] = parsed.data;
                 return parsed.data;
             } catch (error) { throw error; }
@@ -404,6 +401,7 @@
                     results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
                 }
 
+                // Sort results by score
                 results.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
 
                 loading.classList.add('d-none');
@@ -414,12 +412,46 @@
                 }
 
                 container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
-                results.forEach(student => renderCard(student, config, container, null));
+                
+                // حساب الترتيب والشعبة
+                results.forEach(student => {
+                    let extraInfo = {};
+                    const studentScore = parseScore(getVal(student, config.scoreKeys));
 
-                // TRIGGER CELEBRATION IF SEARCH IS BY NUMBER AND STUDENT PASSED
-                // نتحقق إذا كان البحث برقم الجلوس (شخصي) وكانت النتيجة ناجح
+                    if (examType.includes('bac')) {
+                        // حساب الرتبة في الشعبة
+                        const serie = getVal(student, config.majorKeys);
+                        if (serie) {
+                            extraInfo.serie = serie;
+                            // نحسب كم شخص في نفس الشعبة لديه معدل أعلى
+                            // بما أننا قمنا بفرز 'data' تنازلياً عند التحميل، يمكننا الفلترة
+                            // لكن للأداء العالي:
+                            let rankInSerie = 1;
+                            for (let i = 0; i < data.length; i++) {
+                                if (getVal(data[i], config.majorKeys) === serie) {
+                                    if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
+                                        rankInSerie++;
+                                    }
+                                }
+                            }
+                            extraInfo.rankStr = `الرتبة في الشعبة: ${rankInSerie}`;
+                        }
+                    } else if (examType === 'brevet') {
+                        // حساب الرتبة الوطنية
+                        let nationalRank = 1;
+                        for (let i = 0; i < data.length; i++) {
+                            if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
+                                nationalRank++;
+                            }
+                        }
+                        extraInfo.rankStr = `الرتبة الوطنية: ${nationalRank}`;
+                    }
+
+                    renderCard(student, config, container, null, extraInfo);
+                });
+
+                // تشغيل الاحتفال إذا كان البحث برقم الجلوس وكان ناجحاً
                 if (searchCat === 'number' && results.length > 0) {
-                    // إذا وجدنا نتيجة واحدة على الأقل ناجحة
                     const winner = results.find(s => isResultSuccessful(s, config));
                     if (winner) {
                         triggerCelebration();
@@ -452,8 +484,8 @@
                 stateBtnCol.style.display = 'block';
                 stateBtnCol.className = 'col-12';
             }
-            // Concours: All hidden
-
+            // Concours: All hidden (يمكن تفعيلها إذا أردت)
+            
             document.getElementById('topPageOverlay').style.display = 'block'; 
         }
 
@@ -475,9 +507,13 @@
             container.innerHTML = '<div class="text-center"><div class="spinner-border text-success"></div></div>';
             try {
                 const data = await fetchData(examType);
-                let sorted = [...data].sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+                // data is already sorted in fetchData
                 container.innerHTML = '<h6 class="text-center fw-bold text-success mb-3">أعلى 20 معدل على المستوى الوطني</h6>';
-                sorted.slice(0, 20).forEach((student, index) => renderCard(student, config, container, index + 1));
+                data.slice(0, 20).forEach((student, index) => {
+                    let extra = {};
+                    if(examType.includes('bac')) extra.serie = getVal(student, config.majorKeys);
+                    renderCard(student, config, container, index + 1, extra);
+                });
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
@@ -515,14 +551,24 @@
                     let val = String(getVal(item, targetKeys)).trim();
                     return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
                 });
+                
+                // Sort filtered results
                 filtered.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+                
                 container.innerHTML = `<h6 class="text-center fw-bold text-primary mb-3">العشرة الأوائل: ${label}</h6>`;
                 if(filtered.length === 0) container.innerHTML += '<div class="alert alert-warning text-center">لا توجد نتائج.</div>';
-                else filtered.slice(0, 10).forEach((student, index) => renderCard(student, config, container, index + 1));
+                else {
+                    filtered.slice(0, 10).forEach((student, index) => {
+                        let extra = {};
+                        if(examType.includes('bac') && groupBy === 'wilaya') extra.serie = getVal(student, config.majorKeys);
+                        renderCard(student, config, container, index + 1, extra);
+                    });
+                }
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
-        function renderCard(student, config, targetElement, rank = null) {
+        // دالة العرض المعدلة لتشمل الشعبة والترتيب
+        function renderCard(student, config, targetElement, rank = null, extraInfo = {}) {
             const name = getVal(student, config.nameKeys) || 'اسم غير متوفر';
             const number = getVal(student, config.searchKeys);
             const score = parseScore(getVal(student, config.scoreKeys));
@@ -547,7 +593,16 @@
 
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
-            
+
+            // تحضير معلومات إضافية (شعبة وترتيب)
+            let detailsHtml = '';
+            if (extraInfo.serie || extraInfo.rankStr) {
+                detailsHtml += `<div class="info-row">`;
+                if (extraInfo.serie) detailsHtml += `<div><span class="info-label">الشعبة:</span> ${extraInfo.serie}</div>`;
+                if (extraInfo.rankStr) detailsHtml += `<div><span class="info-label">${extraInfo.rankStr}</span></div>`;
+                detailsHtml += `</div>`;
+            }
+
             let adHtml = '';
             const currentExam = document.getElementById('examType').value;
             if ((currentExam === 'bac_n' || currentExam === 'bac_c') && isAdmis && rank === null) {
@@ -574,6 +629,9 @@
                                 <div class="col-6 text-end">المعدل: <b class="text-success">${score % 1 !== 0 ? score.toFixed(2) : score}</b></div>
                             </div>
                             <div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> ${place}</div>
+                            
+                            ${detailsHtml}
+
                             <div class="mt-2 d-flex justify-content-between align-items-center">
                                 ${decisionHtml}
                                 ${state ? `<span class="badge bg-light text-dark border">${state}</span>` : ''}
