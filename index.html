@@ -70,8 +70,21 @@
         .bg-recale { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
         .bg-warning { background-color: #fff3cd; color: #664d03; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
 
-        .info-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #eee; color: #555; }
-        .info-label { font-weight: 600; color: var(--primary); }
+        /* تنسيق قسم المعلومات الإضافية (الترتيب) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* عمودين */
+            gap: 5px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            border: 1px solid #eee;
+        }
+        .info-item { display: flex; flex-direction: column; }
+        .info-label { font-weight: bold; color: var(--primary); font-size: 0.75rem; }
+        .info-value { color: #333; font-weight: 600; }
 
         #topPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; overflow-y: auto; padding-bottom: 50px; display: none; }
         .top-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
@@ -283,7 +296,6 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
-        // تم تحديث قائمة الولايات بأسماء الملف الأصلي (للبريفة والباكالوريا)
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -292,14 +304,14 @@
             { label: "لبراكنه", searchVal: ["لبراكنه", "BRAKNA"] },
             { label: "اترارزه", searchVal: ["اترارزه", "TRARZA"] },
             { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] },
-            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] }, // محدث
+            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] },
             { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
             { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه"] },
-            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] }, // محدث
+            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
-            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord", "Nouakchott  Nord"] }, // محدث (مع احتمال وجود مسافتين)
-            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST", "Nouakchott Ouest"] }, // محدث
-            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] } // محدث
+            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord", "Nouakchott  Nord"] },
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST", "Nouakchott Ouest"] },
+            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
         ];
 
         let cache = {}; 
@@ -370,7 +382,7 @@
                 const csvText = await response.text();
                 const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                 if(parsed.data.length === 0) throw new Error("الملف فارغ");
-                // Pre-sort by score descending just in case, helps in later calculations
+                // Pre-sort by score descending
                 parsed.data.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
                 cache[examType] = parsed.data;
                 return parsed.data;
@@ -413,13 +425,44 @@
 
                 container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
                 
-                // حساب الترتيب والشعبة
+                // === حساب الترتيب والشعبة (محدث ليشمل الولاية والمدرسة) ===
                 results.forEach(student => {
                     let extraInfo = {};
                     const studentScore = parseScore(getVal(student, config.scoreKeys));
+                    
+                    // 1. تحديد القيم الخاصة بالطالب (المدرسة، الولاية)
+                    const studentSchool = getVal(student, config.placeKeys);
+                    const studentState = getVal(student, config.stateKeys);
+                    
+                    // 2. حساب الترتيب في الولاية
+                    if (studentState) {
+                        let rankInState = 1;
+                        for (let i = 0; i < data.length; i++) {
+                            // مقارنة الاسم (مع حذف المسافات للتأكد)
+                            if (getVal(data[i], config.stateKeys).trim() === studentState.trim()) {
+                                if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
+                                    rankInState++;
+                                }
+                            }
+                        }
+                        extraInfo.stateRank = rankInState;
+                    }
 
+                    // 3. حساب الترتيب في المدرسة/المركز
+                    if (studentSchool) {
+                        let rankInSchool = 1;
+                        for (let i = 0; i < data.length; i++) {
+                            if (getVal(data[i], config.placeKeys).trim() === studentSchool.trim()) {
+                                if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
+                                    rankInSchool++;
+                                }
+                            }
+                        }
+                        extraInfo.schoolRank = rankInSchool;
+                    }
+
+                    // 4. منطق خاص بالباكالوريا (الشعبة) والبريفة (الوطني)
                     if (examType.includes('bac')) {
-                        // حساب الرتبة في الشعبة
                         const serie = getVal(student, config.majorKeys);
                         if (serie) {
                             extraInfo.serie = serie;
@@ -431,9 +474,9 @@
                                     }
                                 }
                             }
-                            extraInfo.rankStr = `الرتبة في الشعبة: ${rankInSerie}`;
+                            extraInfo.rankInSerie = rankInSerie;
                         }
-                    } else if (examType === 'brevet') {
+                    } else if (examType === 'brevet' || examType === 'concours') {
                         // حساب الرتبة الوطنية
                         let nationalRank = 1;
                         for (let i = 0; i < data.length; i++) {
@@ -441,7 +484,7 @@
                                 nationalRank++;
                             }
                         }
-                        extraInfo.rankStr = `الرتبة الوطنية: ${nationalRank}`;
+                        extraInfo.nationalRank = nationalRank;
                     }
 
                     renderCard(student, config, container, null, extraInfo);
@@ -544,7 +587,6 @@
                 const data = await fetchData(examType);
                 let filtered = data.filter(item => {
                     let val = String(getVal(item, targetKeys)).trim();
-                    // استخدام some للتحقق من أي تطابق (احتواء أو تطابق تام)
                     return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
                 });
                 
@@ -588,12 +630,24 @@
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
 
-            let detailsHtml = '';
-            if (extraInfo.serie || extraInfo.rankStr) {
-                detailsHtml += `<div class="info-row">`;
-                if (extraInfo.serie) detailsHtml += `<div><span class="info-label">الشعبة:</span> ${extraInfo.serie}</div>`;
-                if (extraInfo.rankStr) detailsHtml += `<div><span class="info-label">${extraInfo.rankStr}</span></div>`;
-                detailsHtml += `</div>`;
+            // بناء قسم التفاصيل (الترتيب والشعبة)
+            let gridHtml = '';
+            let hasDetails = false;
+
+            // تجميع عناصر الترتيب
+            let items = [];
+            if(extraInfo.serie) items.push({l: 'الشعبة', v: extraInfo.serie});
+            if(extraInfo.rankInSerie) items.push({l: 'الرتبة في الشعبة', v: extraInfo.rankInSerie});
+            if(extraInfo.nationalRank) items.push({l: 'الرتبة الوطنية', v: extraInfo.nationalRank});
+            if(extraInfo.stateRank) items.push({l: 'الرتبة في الولاية', v: extraInfo.stateRank});
+            if(extraInfo.schoolRank) items.push({l: 'الرتبة في المركز', v: extraInfo.schoolRank});
+
+            if (items.length > 0) {
+                gridHtml = `<div class="info-grid">`;
+                items.forEach(item => {
+                    gridHtml += `<div class="info-item"><span class="info-label">${item.l}</span><span class="info-value">${item.v}</span></div>`;
+                });
+                gridHtml += `</div>`;
             }
 
             let adHtml = '';
@@ -623,7 +677,7 @@
                             </div>
                             <div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> ${place}</div>
                             
-                            ${detailsHtml}
+                            ${gridHtml}
 
                             <div class="mt-2 d-flex justify-content-between align-items-center">
                                 ${decisionHtml}
