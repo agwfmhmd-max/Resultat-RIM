@@ -70,10 +70,9 @@
         .bg-recale { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
         .bg-warning { background-color: #fff3cd; color: #664d03; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
 
-        /* تنسيق قسم المعلومات الإضافية (الترتيب) */
         .info-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* عمودين */
+            grid-template-columns: 1fr 1fr;
             gap: 5px;
             background-color: #f8f9fa;
             padding: 10px;
@@ -94,9 +93,6 @@
         .selection-icon { color: var(--primary); font-size: 1.2rem; }
         .selection-btn:hover .selection-icon { color: white; }
 
-        /* ========================
-           أنماط الاحتفال
-           ======================== */
         #celebrationOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6);
@@ -168,11 +164,12 @@
             <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
             
             <label class="section-title">المسابقة:</label>
+            <!-- تم تعديل الترتيب حسب طلبك -->
             <select id="examType" class="form-select">
-                <option value="bac_n" selected>باكالوريا - الدورة العادية</option>
-                <option value="bac_c">باكالوريا - الدورة التكميلية</option>
+                <option value="concours" selected>دخول السنة الأولى (كونكور)</option>
                 <option value="brevet">ختم الدروس الإعدادية (بريفة)</option>
-                <option value="concours">دخول السنة الأولى (كونكور)</option>
+                <option value="bac_n">باكالوريا - الدورة العادية</option>
+                <option value="bac_c">باكالوريا - الدورة التكميلية</option>
             </select>
 
             <label class="section-title">البحث بواسطة:</label>
@@ -296,6 +293,7 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
+        // تم إضافة جميع الصيغ المحتملة لنواكشوط الغربية لضمان ظهور الترتيب
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -310,8 +308,8 @@
             { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
             { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord", "Nouakchott  Nord"] },
-            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST", "Nouakchott Ouest"] },
-            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST", "Nouakchott Ouest", "Nouakchott-Ouest", "NKTT-OUEST"] },
+            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud", "Nouakchott-Sud"] }
         ];
 
         let cache = {}; 
@@ -331,8 +329,21 @@
             return isNaN(num) ? 0 : num;
         }
 
+        // دالة جديدة لتوحيد اسم الولاية من البيانات الخام لضمان صحة المقارنة
+        function getNormalizedState(rawState) {
+            if (!rawState) return "unknown";
+            rawState = String(rawState).trim();
+            for (let group of staticWilayas) {
+                // نتحقق إذا كان الاسم الخام يحتوي على أي من كلمات البحث الخاصة بالولاية
+                if (group.searchVal.some(term => rawState.toLowerCase().includes(term.toLowerCase()))) {
+                    return group.label; // نرجع الاسم الموحد (مثل: انواكشوط 2 (الغربية))
+                }
+            }
+            return rawState; // إذا لم نجد تطابق، نرجع الاسم كما هو
+        }
+
         // ==============================================
-        // دوال الاحتفال (Animation Logic)
+        // دوال الاحتفال
         // ==============================================
         const emojis = ['🌸', '🌹', '💐', '❤️', '🎉', '🎊', '🌷', '✨', '💕', '🥰'];
         let celebrationInterval;
@@ -382,7 +393,6 @@
                 const csvText = await response.text();
                 const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                 if(parsed.data.length === 0) throw new Error("الملف فارغ");
-                // Pre-sort by score descending
                 parsed.data.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
                 cache[examType] = parsed.data;
                 return parsed.data;
@@ -413,7 +423,6 @@
                     results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
                 }
 
-                // Sort results by score
                 results.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
 
                 loading.classList.add('d-none');
@@ -425,21 +434,21 @@
 
                 container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
                 
-                // === حساب الترتيب والشعبة (محدث ليشمل الولاية والمدرسة) ===
                 results.forEach(student => {
                     let extraInfo = {};
                     const studentScore = parseScore(getVal(student, config.scoreKeys));
                     
-                    // 1. تحديد القيم الخاصة بالطالب (المدرسة، الولاية)
                     const studentSchool = getVal(student, config.placeKeys);
-                    const studentState = getVal(student, config.stateKeys);
+                    const studentStateRaw = getVal(student, config.stateKeys);
+                    const studentStateNormalized = getNormalizedState(studentStateRaw); // نستخدم الاسم الموحد
                     
-                    // 2. حساب الترتيب في الولاية
-                    if (studentState) {
+                    // حساب الترتيب في الولاية (باستخدام الاسم الموحد)
+                    if (studentStateRaw) {
                         let rankInState = 1;
                         for (let i = 0; i < data.length; i++) {
-                            // مقارنة الاسم (مع حذف المسافات للتأكد)
-                            if (getVal(data[i], config.stateKeys).trim() === studentState.trim()) {
+                            // نوحد اسم الولاية للطالب الآخر أيضاً قبل المقارنة
+                            const otherStateNormalized = getNormalizedState(getVal(data[i], config.stateKeys));
+                            if (otherStateNormalized === studentStateNormalized) {
                                 if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
                                     rankInState++;
                                 }
@@ -448,7 +457,7 @@
                         extraInfo.stateRank = rankInState;
                     }
 
-                    // 3. حساب الترتيب في المدرسة/المركز
+                    // حساب الترتيب في المدرسة
                     if (studentSchool) {
                         let rankInSchool = 1;
                         for (let i = 0; i < data.length; i++) {
@@ -461,7 +470,6 @@
                         extraInfo.schoolRank = rankInSchool;
                     }
 
-                    // 4. منطق خاص بالباكالوريا (الشعبة) والبريفة (الوطني)
                     if (examType.includes('bac')) {
                         const serie = getVal(student, config.majorKeys);
                         if (serie) {
@@ -477,7 +485,6 @@
                             extraInfo.rankInSerie = rankInSerie;
                         }
                     } else if (examType === 'brevet' || examType === 'concours') {
-                        // حساب الرتبة الوطنية
                         let nationalRank = 1;
                         for (let i = 0; i < data.length; i++) {
                             if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
@@ -490,7 +497,6 @@
                     renderCard(student, config, container, null, extraInfo);
                 });
 
-                // تشغيل الاحتفال إذا كان البحث برقم الجلوس وكان ناجحاً
                 if (searchCat === 'number' && results.length > 0) {
                     const winner = results.find(s => isResultSuccessful(s, config));
                     if (winner) {
@@ -630,11 +636,7 @@
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
 
-            // بناء قسم التفاصيل (الترتيب والشعبة)
             let gridHtml = '';
-            let hasDetails = false;
-
-            // تجميع عناصر الترتيب
             let items = [];
             if(extraInfo.serie) items.push({l: 'الشعبة', v: extraInfo.serie});
             if(extraInfo.rankInSerie) items.push({l: 'الرتبة في الشعبة', v: extraInfo.rankInSerie});
