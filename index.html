@@ -283,7 +283,7 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
-        // تم تحديث قائمة الولايات بالأسماء التي زودتني بها لضمان دقة البحث
+        // تم تحديث قائمة الولايات بأسماء الملف الأصلي (للبريفة والباكالوريا)
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -291,15 +291,15 @@
             { label: "كوركل", searchVal: ["كوركل", "GORGOL"] },
             { label: "لبراكنه", searchVal: ["لبراكنه", "BRAKNA"] },
             { label: "اترارزه", searchVal: ["اترارزه", "TRARZA"] },
-            { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] }, // تمت الإضافة
-            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب"] }, // تمت الإضافة
+            { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] },
+            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] }, // محدث
             { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
-            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه"] }, // تمت الإضافة
-            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور"] }, // تمت الإضافة
+            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه"] },
+            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] }, // محدث
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
-            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD"] },
-            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST"] },
-            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD"] }
+            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord", "Nouakchott  Nord"] }, // محدث (مع احتمال وجود مسافتين)
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "NKTT OUEST", "OUEST", "Nouakchott Ouest"] }, // محدث
+            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] } // محدث
         ];
 
         let cache = {}; 
@@ -423,9 +423,6 @@
                         const serie = getVal(student, config.majorKeys);
                         if (serie) {
                             extraInfo.serie = serie;
-                            // نحسب كم شخص في نفس الشعبة لديه معدل أعلى
-                            // بما أننا قمنا بفرز 'data' تنازلياً عند التحميل، يمكننا الفلترة
-                            // لكن للأداء العالي:
                             let rankInSerie = 1;
                             for (let i = 0; i < data.length; i++) {
                                 if (getVal(data[i], config.majorKeys) === serie) {
@@ -484,7 +481,6 @@
                 stateBtnCol.style.display = 'block';
                 stateBtnCol.className = 'col-12';
             }
-            // Concours: All hidden (يمكن تفعيلها إذا أردت)
             
             document.getElementById('topPageOverlay').style.display = 'block'; 
         }
@@ -507,7 +503,6 @@
             container.innerHTML = '<div class="text-center"><div class="spinner-border text-success"></div></div>';
             try {
                 const data = await fetchData(examType);
-                // data is already sorted in fetchData
                 container.innerHTML = '<h6 class="text-center fw-bold text-success mb-3">أعلى 20 معدل على المستوى الوطني</h6>';
                 data.slice(0, 20).forEach((student, index) => {
                     let extra = {};
@@ -549,10 +544,10 @@
                 const data = await fetchData(examType);
                 let filtered = data.filter(item => {
                     let val = String(getVal(item, targetKeys)).trim();
+                    // استخدام some للتحقق من أي تطابق (احتواء أو تطابق تام)
                     return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
                 });
                 
-                // Sort filtered results
                 filtered.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
                 
                 container.innerHTML = `<h6 class="text-center fw-bold text-primary mb-3">العشرة الأوائل: ${label}</h6>`;
@@ -567,7 +562,6 @@
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
-        // دالة العرض المعدلة لتشمل الشعبة والترتيب
         function renderCard(student, config, targetElement, rank = null, extraInfo = {}) {
             const name = getVal(student, config.nameKeys) || 'اسم غير متوفر';
             const number = getVal(student, config.searchKeys);
@@ -594,7 +588,6 @@
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
 
-            // تحضير معلومات إضافية (شعبة وترتيب)
             let detailsHtml = '';
             if (extraInfo.serie || extraInfo.rankStr) {
                 detailsHtml += `<div class="info-row">`;
