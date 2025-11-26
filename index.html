@@ -263,7 +263,10 @@
             },
             "bac_c": {
                 file: "bac_c.csv",
-                searchKeys: ["NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac", "Moyenne"],
+                searchKeys: ["NODOSS", "Num"], 
+                nameKeys: ["NOM_AR", "Nom"], 
+                // تمت إضافة Moy Bac_Session هنا
+                scoreKeys: ["Moy Bac_Session", "Moy Bac", "Moyenne"], 
                 placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"],
                 stateKeys: ["Wilaya_AR", "Wilaya", "DREN"], majorKeys: ["SERIE", "Serie"]
             },
@@ -292,7 +295,6 @@
             { label: "اللغات (LA)", searchVal: ["LA"] }
         ];
 
-        // القائمة الآن تستخدم للبحث العام، أما التطابق فيتم عبر الدالة getNormalizedState
         const staticWilayas = [
             { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
             { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
@@ -301,7 +303,7 @@
             { label: "لبراكنه", searchVal: ["لبراكنه", "BRAKNA"] },
             { label: "اترارزه", searchVal: ["اترارزه", "TRARZA"] },
             { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] },
-            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] },
+            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب"] },
             { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
             { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه"] },
             { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
@@ -329,7 +331,7 @@
         }
 
         // =========================================================
-        // الدالة المحسنة جداً للتعرف على الولايات (Fuzzy Matching)
+        // الدالة المحسنة جداً للتعرف على الولايات
         // =========================================================
         function getNormalizedState(rawState) {
             if (!rawState) return "unknown";
@@ -338,11 +340,9 @@
             let text = String(rawState).trim().toLowerCase().replace(/\s+/g, ' ');
 
             // التحقق من نواكشوط الغربية بكل الطرق الممكنة (تجاهل المسافات بين الكلمات)
-            // إذا وجدنا كلمة (nouakchott أو nktt) ومعها كلمة (ouest)
             if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('ouest')) {
                 return "انواكشوط 2 (الغربية)";
             }
-            // التحقق بالعربية
             if (text.includes('انواكشوط') && text.includes('الغربية')) {
                 return "انواكشوط 2 (الغربية)";
             }
@@ -363,9 +363,8 @@
                 return "انواكشوط 3 (الجنوبية)";
             }
 
-            // بقية الولايات (مقارنة عادية بالقائمة)
+            // بقية الولايات
             for (let group of staticWilayas) {
-                // تجاوزنا نواكشوط لأننا عالجناها في الأعلى بدقة أكبر
                 if(group.label.includes("انواكشوط")) continue; 
 
                 if (group.searchVal.some(term => text.includes(term.toLowerCase()))) {
@@ -373,7 +372,6 @@
                 }
             }
 
-            // إذا لم نجد تطابق، نرجع النص "النظيف" ليتم تجميعه مع أمثاله
             return text; 
         }
 
@@ -475,7 +473,6 @@
                     
                     const studentSchool = getVal(student, config.placeKeys);
                     const studentStateRaw = getVal(student, config.stateKeys);
-                    // هنا نستخدم الدالة المحسنة لتوحيد اسم الولاية
                     const studentStateNormalized = getNormalizedState(studentStateRaw);
                     
                     // حساب الترتيب في الولاية
@@ -483,10 +480,7 @@
                         let rankInState = 1;
                         for (let i = 0; i < data.length; i++) {
                             const otherStateNormalized = getNormalizedState(getVal(data[i], config.stateKeys));
-                            
-                            // المقارنة الآن تتم بين الأسماء الموحدة (التي تتجاهل المسافات والرموز)
                             if (otherStateNormalized === studentStateNormalized) {
-                                // شرط إضافي: لا نقارن "المجهول" مع "المجهول"
                                 if (studentStateNormalized !== "unknown") {
                                     if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
                                         rankInState++;
@@ -494,7 +488,6 @@
                                 }
                             }
                         }
-                        // نعرض الترتيب فقط إذا لم تكن الولاية مجهولة
                         if (studentStateNormalized !== "unknown") {
                             extraInfo.stateRank = rankInState;
                         }
@@ -636,13 +629,8 @@
                 const data = await fetchData(examType);
                 let filtered = data.filter(item => {
                     let val = String(getVal(item, targetKeys)).trim();
-                    
-                    // استخدام دالة التوحيد للتحقق من الولاية إذا كنا نبحث بالولاية
                     if (groupBy === 'wilaya') {
-                         // هنا searchTerms تحتوي على قيم مثل "Nouakchott Ouest"
-                         // نحتاج التحقق إذا كان الاسم الموحد للطالب يطابق الاسم الموحد للمجموعة
                          const studentNormalized = getNormalizedState(val);
-                         // بما أننا ضغطنا على زر "انواكشوط 2 (الغربية)"، الـ label هو الاسم الموحد
                          return studentNormalized === label; 
                     } else {
                         return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term));
@@ -670,10 +658,9 @@
             const place = getVal(student, config.placeKeys);
             const decisionRaw = getVal(student, config.decisionKeys);
             
-            // هنا نستخدم الاسم الموحد لعرضه بشكل جميل بدلاً من الاسم الخام
             let stateRaw = getVal(student, config.stateKeys);
             let state = getNormalizedState(stateRaw);
-            if(state === "unknown") state = stateRaw; // إذا لم يُعرف نعرض الأصلي
+            if(state === "unknown") state = stateRaw; 
 
             let isAdmis = false;
             let decisionHtml = '';
