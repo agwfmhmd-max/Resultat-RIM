@@ -35,6 +35,22 @@
         .btn-gold { background: var(--gold); color: #000; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; }
         .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: white; border-radius: 12px; padding: 10px; font-weight: bold; width: 100%; }
         
+        .btn-show-more {
+            background: white;
+            color: var(--primary);
+            border: 2px dashed var(--primary);
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        .btn-show-more:hover {
+            background: var(--primary);
+            color: white;
+        }
+
         .whatsapp-card {
             background: #e7fceb;
             border: 1px solid #25D366;
@@ -190,7 +206,7 @@
 
         <div id="loading" class="text-center d-none mt-4">
             <div class="spinner-border text-success"></div>
-            <p class="mt-2 text-muted">جاري تحميل البيانات...</p>
+            <p class="mt-2 text-muted">جاري تحميل ومعالجة البيانات...</p>
         </div>
 
         <div id="resultsContainer" class="mt-4"></div>
@@ -265,7 +281,6 @@
                 file: "bac_c.csv",
                 searchKeys: ["NODOSS", "Num"], 
                 nameKeys: ["NOM_AR", "Nom"], 
-                // تمت إضافة Moy Bac_Session هنا
                 scoreKeys: ["Moy Bac_Session", "Moy Bac", "Moyenne"], 
                 placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"],
                 stateKeys: ["Wilaya_AR", "Wilaya", "DREN"], majorKeys: ["SERIE", "Serie"]
@@ -315,6 +330,13 @@
 
         let cache = {}; 
 
+        // متغيرات لإدارة "عرض المزيد"
+        let currentFilteredResults = [];
+        let currentRenderCount = 0;
+        let currentBatchSize = 100;
+        let currentSearchConfig = null;
+        let currentSearchExamType = null;
+
         function getVal(item, keysArray) {
             if (!item || !keysArray) return "";
             for (let key of keysArray) {
@@ -331,31 +353,24 @@
         }
 
         // =========================================================
-        // الدالة المحسنة جداً للتعرف على الولايات
+        // الدالة المحسنة لتوحيد الولايات
         // =========================================================
         function getNormalizedState(rawState) {
             if (!rawState) return "unknown";
-            
-            // تنظيف النص بالكامل: أحرف صغيرة، ومسافات موحدة
             let text = String(rawState).trim().toLowerCase().replace(/\s+/g, ' ');
 
-            // التحقق من نواكشوط الغربية بكل الطرق الممكنة (تجاهل المسافات بين الكلمات)
             if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('ouest')) {
                 return "انواكشوط 2 (الغربية)";
             }
             if (text.includes('انواكشوط') && text.includes('الغربية')) {
                 return "انواكشوط 2 (الغربية)";
             }
-
-            // التحقق من الشمالية
             if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('nord')) {
                 return "انواكشوط 1 (الشمالية)";
             }
             if (text.includes('انواكشوط') && text.includes('الشمالية')) {
                 return "انواكشوط 1 (الشمالية)";
             }
-
-            // التحقق من الجنوبية
             if ((text.includes('nouakchott') || text.includes('nktt')) && text.includes('sud')) {
                 return "انواكشوط 3 (الجنوبية)";
             }
@@ -363,15 +378,12 @@
                 return "انواكشوط 3 (الجنوبية)";
             }
 
-            // بقية الولايات
             for (let group of staticWilayas) {
                 if(group.label.includes("انواكشوط")) continue; 
-
                 if (group.searchVal.some(term => text.includes(term.toLowerCase()))) {
                     return group.label;
                 }
             }
-
             return text; 
         }
 
@@ -415,8 +427,51 @@
         }
 
         // ==============================================
-        // البيانات والبحث
+        // منطق التحميل والمعالجة المسبقة
         // ==============================================
+        
+        function preprocessData(data, config, examType) {
+            data.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+
+            let stateCounters = {};
+            let schoolCounters = {};
+            let serieCounters = {};
+            
+            data.forEach((student, index) => {
+                student._score = parseScore(getVal(student, config.scoreKeys));
+                student._nationalRank = index + 1;
+
+                let stateRaw = getVal(student, config.stateKeys);
+                let stateNorm = getNormalizedState(stateRaw);
+                student._stateNorm = stateNorm; 
+                
+                if (stateNorm !== 'unknown') {
+                    if (!stateCounters[stateNorm]) stateCounters[stateNorm] = 0;
+                    stateCounters[stateNorm]++;
+                    student._stateRank = stateCounters[stateNorm];
+                }
+
+                let school = getVal(student, config.placeKeys).trim();
+                if (school) {
+                    if (!schoolCounters[school]) schoolCounters[school] = 0;
+                    schoolCounters[school]++;
+                    student._schoolRank = schoolCounters[school];
+                }
+
+                if (examType.includes('bac')) {
+                    let serie = getVal(student, config.majorKeys);
+                    if (serie) {
+                        if (!serieCounters[serie]) serieCounters[serie] = 0;
+                        serieCounters[serie]++;
+                        student._serieRank = serieCounters[serie];
+                        student._serie = serie;
+                    }
+                }
+            });
+
+            return data;
+        }
+
         async function fetchData(examType) {
             if (cache[examType]) return cache[examType];
             const config = examConfig[examType];
@@ -425,10 +480,13 @@
                 if (!response.ok) throw new Error(`الملف غير موجود`);
                 const csvText = await response.text();
                 const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
+                
                 if(parsed.data.length === 0) throw new Error("الملف فارغ");
-                parsed.data.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
-                cache[examType] = parsed.data;
-                return parsed.data;
+                
+                const processedData = preprocessData(parsed.data, config, examType);
+                
+                cache[examType] = processedData;
+                return processedData;
             } catch (error) { throw error; }
         }
 
@@ -446,105 +504,74 @@
             container.innerHTML = '';
             loading.classList.remove('d-none');
 
-            try {
-                const data = await fetchData(examType);
-                let results = [];
+            setTimeout(async () => {
+                try {
+                    const data = await fetchData(examType);
+                    let results = [];
 
-                if (searchCat === 'number') {
-                    results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
-                } else {
-                    results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
-                }
+                    if (searchCat === 'number') {
+                        results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
+                    } else {
+                        results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
+                    }
 
-                results.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
-
-                loading.classList.add('d-none');
-                
-                if (results.length === 0) {
-                    container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج.</div>';
-                    return;
-                }
-
-                container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
-                
-                results.forEach(student => {
-                    let extraInfo = {};
-                    const studentScore = parseScore(getVal(student, config.scoreKeys));
+                    loading.classList.add('d-none');
                     
-                    const studentSchool = getVal(student, config.placeKeys);
-                    const studentStateRaw = getVal(student, config.stateKeys);
-                    const studentStateNormalized = getNormalizedState(studentStateRaw);
+                    if (results.length === 0) {
+                        container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج.</div>';
+                        return;
+                    }
+
+                    // إعداد متغيرات العرض المتتابع
+                    currentFilteredResults = results;
+                    currentRenderCount = 0;
+                    currentSearchConfig = config;
+                    currentSearchExamType = examType;
                     
-                    // حساب الترتيب في الولاية
-                    if (studentStateRaw) {
-                        let rankInState = 1;
-                        for (let i = 0; i < data.length; i++) {
-                            const otherStateNormalized = getNormalizedState(getVal(data[i], config.stateKeys));
-                            if (otherStateNormalized === studentStateNormalized) {
-                                if (studentStateNormalized !== "unknown") {
-                                    if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
-                                        rankInState++;
-                                    }
-                                }
-                            }
-                        }
-                        if (studentStateNormalized !== "unknown") {
-                            extraInfo.stateRank = rankInState;
-                        }
+                    container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
+                    
+                    // استدعاء دالة عرض أول دفعة
+                    renderNextBatch();
+
+                    // الاحتفال (فقط عند البحث برقم الجلوس)
+                    if (searchCat === 'number' && results.length > 0) {
+                        const winner = results.find(s => isResultSuccessful(s, config));
+                        if (winner) triggerCelebration();
                     }
 
-                    // حساب الترتيب في المدرسة
-                    if (studentSchool) {
-                        let rankInSchool = 1;
-                        for (let i = 0; i < data.length; i++) {
-                            if (getVal(data[i], config.placeKeys).trim() === studentSchool.trim()) {
-                                if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
-                                    rankInSchool++;
-                                }
-                            }
-                        }
-                        extraInfo.schoolRank = rankInSchool;
-                    }
-
-                    if (examType.includes('bac')) {
-                        const serie = getVal(student, config.majorKeys);
-                        if (serie) {
-                            extraInfo.serie = serie;
-                            let rankInSerie = 1;
-                            for (let i = 0; i < data.length; i++) {
-                                if (getVal(data[i], config.majorKeys) === serie) {
-                                    if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
-                                        rankInSerie++;
-                                    }
-                                }
-                            }
-                            extraInfo.rankInSerie = rankInSerie;
-                        }
-                    } else if (examType === 'brevet' || examType === 'concours') {
-                        let nationalRank = 1;
-                        for (let i = 0; i < data.length; i++) {
-                            if (parseScore(getVal(data[i], config.scoreKeys)) > studentScore) {
-                                nationalRank++;
-                            }
-                        }
-                        extraInfo.nationalRank = nationalRank;
-                    }
-
-                    renderCard(student, config, container, null, extraInfo);
-                });
-
-                if (searchCat === 'number' && results.length > 0) {
-                    const winner = results.find(s => isResultSuccessful(s, config));
-                    if (winner) {
-                        triggerCelebration();
-                    }
+                } catch (error) {
+                    loading.classList.add('d-none');
+                    alert("حدث خطأ: " + error.message);
                 }
-
-            } catch (error) {
-                loading.classList.add('d-none');
-                alert("حدث خطأ: " + error.message);
-            }
+            }, 50);
         });
+
+        // ==============================================
+        // دالة عرض الدفعات (Infinite Scroll Logic)
+        // ==============================================
+        function renderNextBatch() {
+            const container = document.getElementById('resultsContainer');
+            
+            // حذف زر "عرض المزيد" القديم إذا وجد
+            const oldBtn = document.getElementById('showMoreBtn');
+            if(oldBtn) oldBtn.remove();
+
+            const nextLimit = Math.min(currentRenderCount + currentBatchSize, currentFilteredResults.length);
+
+            // عرض البطاقات الجديدة
+            for (let i = currentRenderCount; i < nextLimit; i++) {
+                renderCard(currentFilteredResults[i], currentSearchConfig, container, null, currentSearchExamType);
+            }
+
+            currentRenderCount = nextLimit;
+
+            // إضافة زر "عرض المزيد" إذا بقي نتائج
+            if (currentRenderCount < currentFilteredResults.length) {
+                const remaining = currentFilteredResults.length - currentRenderCount;
+                const nextCount = Math.min(currentBatchSize, remaining);
+                container.innerHTML += `<button id="showMoreBtn" class="btn-show-more" onclick="renderNextBatch()">عرض المزيد (${nextCount}) <i class="fas fa-chevron-down"></i></button>`;
+            }
+        }
 
         // ==============================================
         // إدارة الواجهات
@@ -590,9 +617,7 @@
                 const data = await fetchData(examType);
                 container.innerHTML = '<h6 class="text-center fw-bold text-success mb-3">أعلى 20 معدل على المستوى الوطني</h6>';
                 data.slice(0, 20).forEach((student, index) => {
-                    let extra = {};
-                    if(examType.includes('bac')) extra.serie = getVal(student, config.majorKeys);
-                    renderCard(student, config, container, index + 1, extra);
+                    renderCard(student, config, container, index + 1, examType);
                 });
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
@@ -643,24 +668,26 @@
                 if(filtered.length === 0) container.innerHTML += '<div class="alert alert-warning text-center">لا توجد نتائج.</div>';
                 else {
                     filtered.slice(0, 10).forEach((student, index) => {
-                        let extra = {};
-                        if(examType.includes('bac') && groupBy === 'wilaya') extra.serie = getVal(student, config.majorKeys);
-                        renderCard(student, config, container, index + 1, extra);
+                        renderCard(student, config, container, index + 1, examType);
                     });
                 }
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
-        function renderCard(student, config, targetElement, rank = null, extraInfo = {}) {
+        // ==============================================
+        // دالة العرض (تستخدم البيانات المحسوبة مسبقاً)
+        // ==============================================
+        function renderCard(student, config, targetElement, rank = null, examType = '') {
             const name = getVal(student, config.nameKeys) || 'اسم غير متوفر';
             const number = getVal(student, config.searchKeys);
-            const score = parseScore(getVal(student, config.scoreKeys));
+            // استخدام المعدل المحسوب مسبقاً
+            const score = student._score; 
             const place = getVal(student, config.placeKeys);
             const decisionRaw = getVal(student, config.decisionKeys);
             
-            let stateRaw = getVal(student, config.stateKeys);
-            let state = getNormalizedState(stateRaw);
-            if(state === "unknown") state = stateRaw; 
+            // استخدام الولاية الموحدة
+            let state = student._stateNorm;
+            if(state === "unknown") state = getVal(student, config.stateKeys);
 
             let isAdmis = false;
             let decisionHtml = '';
@@ -682,11 +709,13 @@
 
             let gridHtml = '';
             let items = [];
-            if(extraInfo.serie) items.push({l: 'الشعبة', v: extraInfo.serie});
-            if(extraInfo.rankInSerie) items.push({l: 'الرتبة في الشعبة', v: extraInfo.rankInSerie});
-            if(extraInfo.nationalRank) items.push({l: 'الرتبة الوطنية', v: extraInfo.nationalRank});
-            if(extraInfo.stateRank) items.push({l: 'الرتبة في الولاية', v: extraInfo.stateRank});
-            if(extraInfo.schoolRank) items.push({l: 'الرتبة في المركز', v: extraInfo.schoolRank});
+            
+            // استخدام القيم المحسوبة مسبقاً (Pre-calculated)
+            if(student._serie) items.push({l: 'الشعبة', v: student._serie});
+            if(student._serieRank) items.push({l: 'الرتبة في الشعبة', v: student._serieRank});
+            if(student._nationalRank) items.push({l: 'الرتبة الوطنية', v: student._nationalRank});
+            if(student._stateRank) items.push({l: 'الرتبة في الولاية', v: student._stateRank});
+            if(student._schoolRank) items.push({l: 'الرتبة في المركز', v: student._schoolRank});
 
             if (items.length > 0) {
                 gridHtml = `<div class="info-grid">`;
@@ -697,8 +726,7 @@
             }
 
             let adHtml = '';
-            const currentExam = document.getElementById('examType').value;
-            if ((currentExam === 'bac_n' || currentExam === 'bac_c') && isAdmis && rank === null) {
+            if ((examType === 'bac_n' || examType === 'bac_c') && isAdmis && rank === null) {
                 adHtml = `
                 <a href="https://www.unem2000.com/whatsapp" target="_blank" class="whatsapp-card">
                     <div class="d-flex align-items-center">
