@@ -52,12 +52,12 @@
             color: white;
         }
 
-        /* تنسيق رابط المدرسة (باللون الأخضر الأساسي) */
+        /* تنسيق رابط المدرسة */
         .school-link {
             color: var(--primary);
             text-decoration: underline;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             transition: color 0.2s;
         }
         .school-link:hover {
@@ -83,7 +83,7 @@
             border: 1px solid #e0e0e0;
         }
 
-        /* بطاقات الواتساب */
+        /* بطاقة الواتساب الخضراء */
         .whatsapp-card {
             background: #e7fceb;
             border: 1px solid #25D366;
@@ -98,21 +98,6 @@
         }
         .whatsapp-card:active { transform: scale(0.98); }
 
-        /* بطاقة التوجيه */
-        .orientation-card {
-            background: #e3f2fd;
-            border: 1px solid #2196f3;
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 10px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            animation: fadeIn 0.6s;
-            text-decoration: none;
-            display: block;
-        }
-        .orientation-card:active { transform: scale(0.98); }
-
         .icon-circle {
             width: 40px;
             height: 40px;
@@ -126,7 +111,6 @@
             color: white;
         }
         .icon-whatsapp { background: #25D366; }
-        .icon-orientation { background: #2196f3; }
 
         .result-card-wrapper { margin-bottom: 20px; }
         .result-card { background: white; padding: 15px; border-radius: 12px; border-right: 5px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; animation: fadeIn 0.3s; }
@@ -198,7 +182,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* === استعادة تنسيق التذييل الأصلي === */
         footer { background: #fff; padding: 20px 0; margin-top: 40px; border-top: 1px solid #eaeaea; }
         .dev-credit { font-size: 0.9rem; color: #6c757d; }
         .dev-name { color: var(--primary); font-weight: 700; text-decoration: none; transition: color 0.2s; }
@@ -313,7 +296,6 @@
         </div>
     </div>
 
-    <!-- التذييل الأصلي -->
     <footer class="text-center">
         <div class="container">
             <p class="dev-credit mb-1">Designed & Developed by</p>
@@ -328,8 +310,8 @@
         // اسم صورة الإعلان
         const adImageSrc = "moov_banner.jpg";
 
-        // *** هام: ضع هنا رابط مجموعة الواتساب الخاصة بشرح التخصصات ***
-        const orientationGroupLink = "https://chat.whatsapp.com/YOUR_GROUP_LINK_HERE"; 
+        // *** رابط مجموعة الواتساب "توجيه وتخصصات" ***
+        const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
 
         // HTML الخاص بالإعلان لاستخدامه في النتائج
         const adHtmlTemplate = `
@@ -819,24 +801,15 @@
             // شرط الظهور: ناجح + بحث برقم المترشح
             if (isAdmis && searchMode === 'number') {
                 
-                // 1. بطاقة شرح التخصصات (فقط للباكالوريا)
+                // زر "توجيه وتخصصات" الأخضر الوحيد
                 if (examType === 'bac_n' || examType === 'bac_c') {
-                    whatsappActions += `
-                    <a href="${orientationGroupLink}" target="_blank" class="orientation-card">
+                     whatsappActions += `
+                    <a href="${orientationGroupLink}" target="_blank" class="whatsapp-card">
                         <div class="d-flex align-items-center">
-                            <div class="icon-circle icon-orientation"><i class="fas fa-university"></i></div>
+                            <div class="icon-circle icon-whatsapp"><i class="fas fa-university"></i></div>
                             <div>
-                                <h6 class="fw-bold mb-1" style="color:#0d47a1">🎓 توجيه وتخصصات</h6>
+                                <h6 class="fw-bold mb-1" style="color:#0f5132">🎓 توجيه وتخصصات</h6>
                                 <p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات شرح التخصصات.</p>
-                            </div>
-                        </div>
-                    </a>
-                    <a href="https://www.unem2000.com/whatsapp" target="_blank" class="whatsapp-card">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-circle icon-whatsapp"><i class="fab fa-whatsapp"></i></div>
-                            <div>
-                                <h6 class="fw-bold mb-1 text-success">ألف مبروك النجاح! 🎉</h6>
-                                <p class="m-0 small text-secondary">انضم لمجتمع الطلاب الموريتانيين.</p>
                             </div>
                         </div>
                     </a>`;
