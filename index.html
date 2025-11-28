@@ -588,7 +588,7 @@
                     }
 
                     // ========================================================
-                    // المنطق لمنع تكرار الإعلان
+                    // المنطق لمنع تكرار الإعلان + تمرير تلقائي (Auto Scroll)
                     // ========================================================
                     if (searchCat === 'number') {
                         mainAdContainer.classList.add('hidden-ad');
@@ -608,6 +608,14 @@
                     currentSearchMode = searchCat; // حفظ نوع البحث
                     
                     renderNextBatch();
+
+                    // التمرير التلقائي للنتيجة الأولى (لضمان رؤية المستخدم للنتيجة)
+                    setTimeout(() => {
+                        const firstResult = document.querySelector('.result-card-wrapper');
+                        if (firstResult) {
+                            firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
 
                     // الاحتفال
                     if (searchCat === 'number' && results.length > 0) {
