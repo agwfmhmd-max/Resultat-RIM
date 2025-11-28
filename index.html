@@ -64,6 +64,23 @@
             color: #0a58ca;
         }
 
+        /* تنسيق الإعلان */
+        .ad-wrapper {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+            animation: fadeIn 0.8s;
+        }
+        .ad-wrapper:hover {
+            transform: scale(1.02);
+        }
+        .ad-image {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
         .whatsapp-card {
             background: #e7fceb;
             border: 1px solid #25D366;
@@ -217,6 +234,13 @@
             <button onclick="openTopPage()" class="btn-gold"><i class="fas fa-chart-bar me-2"></i>الإحصائيات والأوائل</button>
         </div>
 
+        <!-- إعلان ثابت في الصفحة الرئيسية -->
+        <div class="ad-wrapper">
+            <a href="https://moov-money.net:38443/customer/inviteNewUsers0926/#/download?invitationCode=390878&campaignId=G230153015420aVx4OQSV9M&inviterName=&inviterId=&prizeName=&language=ar" target="_blank">
+                <img src="moov_banner.jpg" alt="Moov Money" class="ad-image">
+            </a>
+        </div>
+
         <div id="loading" class="text-center d-none mt-4">
             <div class="spinner-border text-success"></div>
             <p class="mt-2 text-muted">جاري تحميل ومعالجة البيانات...</p>
@@ -277,6 +301,19 @@
     </footer>
 
     <script>
+        // رابط الإعلان
+        const adLink = "https://moov-money.net:38443/customer/inviteNewUsers0926/#/download?invitationCode=390878&campaignId=G230153015420aVx4OQSV9M&inviterName=&inviterId=&prizeName=&language=ar";
+        // اسم صورة الإعلان (يجب أن تكون موجودة بجانب ملف index.html)
+        const adImageSrc = "moov_banner.jpg";
+
+        // HTML الخاص بالإعلان لاستخدامه في النتائج
+        const adHtmlTemplate = `
+        <div class="ad-wrapper mb-3">
+            <a href="${adLink}" target="_blank">
+                <img src="${adImageSrc}" alt="Moov Money" class="ad-image">
+            </a>
+        </div>`;
+
         // ==============================================
         // إعدادات الملفات
         // ==============================================
@@ -555,6 +592,11 @@
                     
                     container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
                     
+                    // إذا كان البحث برقم المترشح، أظهر الإعلان في البداية
+                    if (searchCat === 'number') {
+                        container.innerHTML += adHtmlTemplate;
+                    }
+
                     // استدعاء دالة عرض أول دفعة
                     renderNextBatch();
 
