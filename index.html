@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- إعدادات PWA -->
+    <meta name="theme-color" content="#00695c">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Resultat Rim">
+
     <title>Resultat Rim | النتائج الوطنية</title>
     
     <!-- المكتبات الخارجية -->
@@ -33,104 +42,40 @@
         .btn-main { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; margin-bottom: 10px; }
         .btn-main:hover { background: var(--secondary); color: white; }
         .btn-gold { background: var(--gold); color: #000; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; }
-        .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: white; border-radius: 12px; padding: 10px; font-weight: bold; width: 100%; }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: white; border-radius: 12px; padding: 10px; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn-outline:hover { background: var(--primary); color: white; }
         
-        /* تنسيق زر عرض المزيد */
-        .btn-show-more {
-            background: white;
-            color: var(--primary);
-            border: 2px dashed var(--primary);
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: bold;
-            margin-top: 15px;
-            transition: 0.3s;
-        }
-        .btn-show-more:hover {
-            background: var(--primary);
-            color: white;
-        }
+        .btn-show-more { background: white; color: var(--primary); border: 2px dashed var(--primary); width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 15px; transition: 0.3s; }
+        .btn-show-more:hover { background: var(--primary); color: white; }
 
-        /* تنسيق رابط المدرسة */
-        .school-link {
-            color: var(--primary);
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: 700;
-            transition: color 0.2s;
-        }
-        .school-link:hover {
-            color: var(--secondary);
-        }
+        .school-link { text-decoration: underline; cursor: pointer; font-weight: 700; transition: opacity 0.2s; }
+        .school-link:hover { opacity: 0.8; }
 
-        /* تنسيق الإعلان */
-        .ad-wrapper {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            animation: fadeIn 0.8s;
-            display: block;
-        }
-        .ad-wrapper.hidden-ad {
-            display: none !important;
-        }
-        .ad-wrapper:hover { transform: scale(1.02); }
-        .ad-image {
-            width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border: 1px solid #e0e0e0;
-        }
-
-        /* بطاقة الواتساب الخضراء */
-        .whatsapp-card {
-            background: #e7fceb;
-            border: 1px solid #25D366;
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 10px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            animation: fadeIn 0.5s;
-            text-decoration: none;
-            display: block;
-        }
+        .whatsapp-card { background: #e7fceb; border: 1px solid #25D366; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; }
         .whatsapp-card:active { transform: scale(0.98); }
 
-        .icon-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-left: 12px;
-            flex-shrink: 0;
-            color: white;
-        }
+        .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 12px; flex-shrink: 0; color: white; }
         .icon-whatsapp { background: #25D366; }
 
         .result-card-wrapper { margin-bottom: 20px; }
-        .result-card { background: white; padding: 15px; border-radius: 12px; border-right: 5px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; animation: fadeIn 0.3s; }
-        .rank-badge { position: absolute; top: 10px; left: 10px; background: var(--gold); color: #000; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        .bg-admis { background-color: #d1e7dd; color: #0f5132; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
-        .bg-recale { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
-        .bg-warning { background-color: #fff3cd; color: #664d03; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .result-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; animation: fadeIn 0.3s; color: #333; }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            border: 1px solid #eee;
-        }
+        /* الألوان حسب النتيجة */
+        .card-admis { background: linear-gradient(135deg, #198754, #20c997); color: white !important; }
+        .card-session { background: linear-gradient(135deg, #ffc107, #fd7e14); color: white !important; }
+        .card-recale { background: linear-gradient(135deg, #dc3545, #b02a37); color: white !important; }
+
+        .card-admis .text-muted, .card-session .text-muted, .card-recale .text-muted { color: rgba(255, 255, 255, 0.85) !important; }
+        .card-admis .text-success, .card-session .text-success, .card-recale .text-success { color: #fff !important; }
+        .card-admis .school-link, .card-session .school-link, .card-recale .school-link { color: #fff !important; }
+        .card-admis .info-grid, .card-session .info-grid, .card-recale .info-grid { background-color: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.2); }
+        .card-admis .info-label, .card-session .info-label, .card-recale .info-label { color: rgba(255, 255, 255, 0.9); }
+        .card-admis .info-value, .card-session .info-value, .card-recale .info-value { color: #fff; }
+        .card-admis .badge, .card-session .badge, .card-recale .badge { background-color: rgba(255, 255, 255, 0.2) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; }
+
+        .rank-badge { position: absolute; top: 10px; left: 10px; background: var(--gold); color: #000; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background-color: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.85rem; border: 1px solid #eee; }
         .info-item { display: flex; flex-direction: column; }
         .info-label { font-weight: bold; color: var(--primary); font-size: 0.75rem; }
         .info-value { color: #333; font-weight: 600; }
@@ -143,56 +88,43 @@
         .selection-icon { color: var(--primary); font-size: 1.2rem; }
         .selection-btn:hover .selection-icon { color: white; }
 
-        #celebrationOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 9999;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .congrats-box {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            position: relative;
-            z-index: 10000;
-            animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
+        #celebrationOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
+        .congrats-box { background: white; padding: 30px; border-radius: 20px; text-align: center; position: relative; z-index: 10000; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .congrats-title { font-size: 2rem; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
         .congrats-text { font-size: 1.1rem; color: #555; margin-bottom: 20px; }
-        
-        .confetti-piece {
-            position: absolute;
-            font-size: 20px;
-            top: -20px;
-            animation: fall linear forwards;
-            z-index: 9998;
-        }
+        .confetti-piece { position: absolute; font-size: 20px; top: -20px; animation: fall linear forwards; z-index: 9998; }
 
         @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         footer { background: #fff; padding: 20px 0; margin-top: 40px; border-top: 1px solid #eaeaea; }
         .dev-credit { font-size: 0.9rem; color: #6c757d; }
         .dev-name { color: var(--primary); font-weight: 700; text-decoration: none; transition: color 0.2s; }
         .dev-name:hover { color: var(--secondary); }
+
+        /* --- تنسيقات حاسبة المعدل --- */
+        #simulatorOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; display: none; padding-bottom: 50px; }
+        .sim-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .subject-row { background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+        .coeff-badge { background: #e9ecef; color: #555; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; margin-right: 10px; }
+        .grade-input { width: 70px; text-align: center; font-weight: bold; border: 2px solid #ddd; border-radius: 8px; padding: 5px; color: var(--primary); }
+        .grade-input:focus { border-color: var(--primary); outline: none; }
+        .total-card { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; border-radius: 15px; padding: 20px; margin-top: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .final-score { font-size: 2.5rem; font-weight: 800; color: var(--gold); }
+
+        /* زر التثبيت */
+        #installBtn { display: none; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.3s; margin-right: auto; }
+        #installBtn:hover { background: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="container-app w-100 d-flex align-items-center justify-content-center">
+        <div class="container-app w-100 d-flex align-items-center justify-content-between">
             <span class="navbar-brand m-0 fw-bold fs-4"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
+            <!-- زر التثبيت -->
+            <button id="installBtn"><i class="fas fa-download me-1"></i> تثبيت التطبيق</button>
         </div>
     </nav>
 
@@ -236,13 +168,11 @@
 
             <button id="searchBtn" class="btn-main"><i class="fas fa-search me-2"></i>بحث</button>
             <button onclick="openTopPage()" class="btn-gold"><i class="fas fa-chart-bar me-2"></i>الإحصائيات والأوائل</button>
-        </div>
-
-        <!-- إعلان ثابت في الصفحة الرئيسية (يختفي عند البحث برقم المترشح) -->
-        <div id="mainAdContainer" class="ad-wrapper">
-            <a href="https://moov-money.net:38443/customer/inviteNewUsers0926/#/download?invitationCode=390878&campaignId=G230153015420aVx4OQSV9M&inviterName=&inviterId=&prizeName=&language=ar" target="_blank">
-                <img src="moov_banner.jpg" alt="Moov Money" class="ad-image">
-            </a>
+            
+            <!-- زر حاسبة المعدل -->
+            <button onclick="openSimulator()" class="btn-outline mt-2">
+                <i class="fas fa-calculator me-2"></i>حاسبة المعدل (Simulateur)
+            </button>
         </div>
 
         <div id="loading" class="text-center d-none mt-4">
@@ -251,6 +181,43 @@
         </div>
 
         <div id="resultsContainer" class="mt-4"></div>
+    </div>
+
+    <!-- شاشة حاسبة المعدل -->
+    <div id="simulatorOverlay">
+        <div class="sim-header">
+            <h5 class="m-0 fw-bold text-success"><i class="fas fa-calculator me-2"></i>حاسبة المعدل</h5>
+            <button onclick="closeSimulator()" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i> إغلاق</button>
+        </div>
+        
+        <div class="container-app pt-3">
+            <label class="section-title">اختر الشعبة:</label>
+            <select id="simType" class="form-select mb-3" onchange="renderSimulatorInputs()">
+                <option value="brevet">ختم الدروس الإعدادية (Brevet)</option>
+                <option value="bac_sn">باكالوريا - علوم طبيعية (SN)</option>
+                <option value="bac_m">باكالوريا - رياضيات (M)</option>
+                <option value="bac_lm">باكالوريا - آداب عصرية (LM)</option>
+                <option value="bac_lo">باكالوريا - آداب أصلية (LO)</option>
+                <option value="bac_tm">باكالوريا - تقنية (TM)</option>
+            </select>
+
+            <div id="simInputsContainer">
+                <!-- سيتم توليد المواد هنا تلقائياً -->
+            </div>
+
+            <div class="total-card">
+                <div class="small opacity-75">المعدل التقريبي</div>
+                <div id="simResult" class="final-score">00.00</div>
+                <div class="d-flex justify-content-center gap-3 mt-2 small">
+                    <span>المجموع: <b id="simTotalPoints">0</b></span>
+                    <span>مجموع الضوارب: <b id="simTotalCoef">0</b></span>
+                </div>
+            </div>
+            
+            <div class="alert alert-info small mt-3">
+                <i class="fas fa-info-circle me-1"></i> الحساب يعتمد على الضوارب الرسمية للامتحانات الوطنية.
+            </div>
+        </div>
     </div>
 
     <!-- صفحة الأوائل -->
@@ -305,21 +272,40 @@
     </footer>
 
     <script>
-        // رابط الإعلان
-        const adLink = "https://moov-money.net:38443/customer/inviteNewUsers0926/#/download?invitationCode=390878&campaignId=G230153015420aVx4OQSV9M&inviterName=&inviterId=&prizeName=&language=ar";
-        // اسم صورة الإعلان
-        const adImageSrc = "moov_banner.jpg";
+        // تسجيل Service Worker لجعله PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW Registered!', reg))
+                    .catch(err => console.log('SW Registration Failed!', err));
+            });
+        }
+
+        // منطق زر التثبيت
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', () => {
+            installBtn.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
 
         // *** رابط مجموعة الواتساب "توجيه وتخصصات" ***
         const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
-
-        // HTML الخاص بالإعلان لاستخدامه في النتائج
-        const adHtmlTemplate = `
-        <div class="ad-wrapper mb-3">
-            <a href="${adLink}" target="_blank">
-                <img src="${adImageSrc}" alt="Moov Money" class="ad-image">
-            </a>
-        </div>`;
 
         // ==============================================
         // إعدادات الملفات
@@ -384,6 +370,27 @@
             { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST"] },
             { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
         ];
+
+        // ==============================================
+        // التحكم في طريقة البحث الافتراضية
+        // ==============================================
+        const examSelect = document.getElementById('examType');
+        const categorySelect = document.getElementById('searchCategory');
+
+        function updateSearchCategory() {
+            if (examSelect.value === 'concours') {
+                categorySelect.value = 'school';
+            } else {
+                categorySelect.value = 'number';
+            }
+        }
+
+        examSelect.addEventListener('change', updateSearchCategory);
+        document.addEventListener('DOMContentLoaded', updateSearchCategory);
+
+        // ==============================================
+        // باقي المنطق البرمجي
+        // ==============================================
 
         let cache = {}; 
 
@@ -478,9 +485,6 @@
             return d.includes('admis') || d.includes('ناجح');
         }
 
-        // ==============================================
-        // دالة جديدة للبحث عن المدرسة عند الضغط عليها
-        // ==============================================
         function searchBySchoolName(schoolName) {
             document.getElementById('topPageOverlay').style.display = 'none';
             document.getElementById('searchCategory').value = 'school';
@@ -558,7 +562,6 @@
             const searchCat = document.getElementById('searchCategory').value;
             const inputVal = document.getElementById('searchInput').value.trim().toLowerCase();
             const config = examConfig[examType];
-            const mainAdContainer = document.getElementById('mainAdContainer');
             
             if (!inputVal) return alert("الرجاء إدخال قيمة للبحث");
 
@@ -583,33 +586,19 @@
                     
                     if (results.length === 0) {
                         container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج.</div>';
-                        mainAdContainer.classList.remove('hidden-ad');
                         return;
                     }
 
-                    // ========================================================
-                    // المنطق لمنع تكرار الإعلان + تمرير تلقائي (Auto Scroll)
-                    // ========================================================
-                    if (searchCat === 'number') {
-                        mainAdContainer.classList.add('hidden-ad');
-                        container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
-                        container.innerHTML += adHtmlTemplate;
-                    } else {
-                        mainAdContainer.classList.remove('hidden-ad');
-                        container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
-                    }
-                    // ========================================================
+                    container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
 
-                    // إعداد متغيرات العرض
                     currentFilteredResults = results;
                     currentRenderCount = 0;
                     currentSearchConfig = config;
                     currentSearchExamType = examType;
-                    currentSearchMode = searchCat; // حفظ نوع البحث
+                    currentSearchMode = searchCat; 
                     
                     renderNextBatch();
 
-                    // التمرير التلقائي للنتيجة الأولى (لضمان رؤية المستخدم للنتيجة)
                     setTimeout(() => {
                         const firstResult = document.querySelector('.result-card-wrapper');
                         if (firstResult) {
@@ -617,7 +606,6 @@
                         }
                     }, 100);
 
-                    // الاحتفال
                     if (searchCat === 'number' && results.length > 0) {
                         const winner = results.find(s => isResultSuccessful(s, config));
                         if (winner) triggerCelebration();
@@ -756,7 +744,7 @@
         }
 
         // ==============================================
-        // دالة العرض
+        // دالة العرض (محدثة بالألوان والرسائل)
         // ==============================================
         function renderCard(student, config, targetElement, rank = null, examType = '', searchMode = '') {
             const name = getVal(student, config.nameKeys) || 'اسم غير متوفر';
@@ -771,16 +759,33 @@
             let isAdmis = false;
             let decisionHtml = '';
             
+            // متغيرات لتحديد لون البطاقة والرسالة
+            let cardClass = '';
+            let encouragementMsg = '';
+
             if (decisionRaw) {
                 let d = String(decisionRaw).toLowerCase();
+                
                 if (d.includes('admis') || d.includes('ناجح')) {
-                    decisionHtml = `<span class="bg-admis">${decisionRaw}</span>`;
+                    decisionHtml = `<span class="badge bg-white text-success border border-white">${decisionRaw}</span>`;
                     isAdmis = true;
-                } else if (d.includes('ajourn') || d.includes('مؤجل')) {
-                    decisionHtml = `<span class="bg-warning">${decisionRaw}</span>`;
+                    cardClass = 'card-admis'; // لون أخضر
+                } else if (d.includes('session') || d.includes('مؤجل')) {
+                    decisionHtml = `<span class="badge bg-white text-warning border border-white">${decisionRaw}</span>`;
+                    cardClass = 'card-session'; // لون أصفر/برتقالي
                 } else {
-                    decisionHtml = `<span class="bg-recale">${decisionRaw}</span>`;
+                    decisionHtml = `<span class="badge bg-white text-danger border border-white">${decisionRaw}</span>`;
+                    cardClass = 'card-recale'; // لون أحمر
+                    // إضافة الرسالة التشجيعية
+                    encouragementMsg = `
+                        <div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border: 1px dashed rgba(255,255,255,0.5);">
+                            <span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span>
+                        </div>
+                    `;
                 }
+            } else {
+                // إذا لم يوجد قرار (مثل كونكور أحياناً)
+                cardClass = ''; 
             }
 
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
@@ -806,10 +811,7 @@
             // --- بطاقات الواتساب الإضافية ---
             let whatsappActions = '';
 
-            // شرط الظهور: ناجح + بحث برقم المترشح
             if (isAdmis && searchMode === 'number') {
-                
-                // زر "توجيه وتخصصات" الأخضر الوحيد
                 if (examType === 'bac_n' || examType === 'bac_c') {
                      whatsappActions += `
                     <a href="${orientationGroupLink}" target="_blank" class="whatsapp-card">
@@ -828,7 +830,7 @@
 
             targetElement.innerHTML += `
                 <div class="result-card-wrapper">
-                    <div class="result-card">
+                    <div class="result-card ${cardClass}">
                         ${rankBadge}
                         <div style="${extraStyle}">
                             <h6 class="fw-bold mb-1">${name}</h6>
@@ -847,10 +849,149 @@
                                 ${decisionHtml}
                                 ${state ? `<span class="badge bg-light text-dark border">${state}</span>` : ''}
                             </div>
+                            
+                            ${encouragementMsg}
                         </div>
                     </div>
                     ${whatsappActions}
                 </div>`;
+        }
+
+        // ==============================================
+        // منطق حاسبة المعدل (Simulateur)
+        // ==============================================
+
+        // بيانات الضوارب حسب النظام التعليمي الموريتاني
+        const simData = {
+            "brevet": [
+                { name: "الرياضيات", coef: 5 },
+                { name: "اللغة العربية", coef: 3 },
+                { name: "الفرنسية", coef: 2 },
+                { name: "العلوم الطبيعية", coef: 2 },
+                { name: "الفيزياء والكيمياء", coef: 2 },
+                { name: "التربية الإسلامية", coef: 2 },
+                { name: "الإنجليزية", coef: 1 },
+                { name: "التاريخ والجغرافيا", coef: 1 },
+                { name: "التربية المدنية", coef: 1 },
+                { name: "الرياضة البدنية", coef: 1 }
+            ],
+            "bac_sn": [ // علوم طبيعية D
+                { name: "العلوم الطبيعية", coef: 8 },
+                { name: "الفيزياء والكيمياء", coef: 7 },
+                { name: "الرياضيات", coef: 6 },
+                { name: "اللغة العربية", coef: 3 },
+                { name: "الفرنسية", coef: 3 },
+                { name: "الإنجليزية", coef: 2 },
+                { name: "التربية الإسلامية", coef: 2 },
+                { name: "الرياضة البدنية", coef: 1 }
+            ],
+            "bac_m": [ // رياضيات C
+                { name: "الرياضيات", coef: 9 },
+                { name: "الفيزياء والكيمياء", coef: 8 },
+                { name: "العلوم الطبيعية", coef: 4 },
+                { name: "اللغة العربية", coef: 3 },
+                { name: "الفرنسية", coef: 3 },
+                { name: "الإنجليزية", coef: 2 },
+                { name: "التربية الإسلامية", coef: 2 },
+                { name: "الرياضة البدنية", coef: 1 }
+            ],
+            "bac_lm": [ // آداب عصرية LM
+                { name: "اللغة العربية", coef: 6 },
+                { name: "الفلسفة", coef: 6 },
+                { name: "الفرنسية", coef: 6 },
+                { name: "التاريخ والجغرافيا", coef: 5 },
+                { name: "الإنجليزية", coef: 4 },
+                { name: "الرياضيات", coef: 2 },
+                { name: "التربية الإسلامية", coef: 2 },
+                { name: "الرياضة البدنية", coef: 1 }
+            ],
+            "bac_lo": [ // آداب أصلية LO
+                { name: "التشريع الإسلامي", coef: 7 },
+                { name: "اللغة العربية", coef: 7 },
+                { name: "الفكر الإسلامي", coef: 6 },
+                { name: "التاريخ والجغرافيا", coef: 4 },
+                { name: "القرآن والحديث", coef: 3 },
+                { name: "الفرنسية", coef: 2 },
+                { name: "الرياضيات", coef: 2 },
+                { name: "الرياضة البدنية", coef: 1 }
+            ],
+            "bac_tm": [ // تقنية TM
+                { name: "الهندسة/الرسم التقني", coef: 7 },
+                { name: "الإلكترونيات/التخصص", coef: 6 },
+                { name: "الرياضيات", coef: 4 },
+                { name: "الفيزياء والكيمياء", coef: 3 },
+                { name: "الورشة (Atelier)", coef: 3 },
+                { name: "اللغة العربية", coef: 2 },
+                { name: "الفرنسية", coef: 2 },
+                { name: "التربية الإسلامية", coef: 2 },
+                { name: "الإنجليزية", coef: 1 },
+                { name: "الرياضة البدنية", coef: 1 }
+            ]
+        };
+
+        function openSimulator() {
+            document.getElementById('simulatorOverlay').style.display = 'block';
+            renderSimulatorInputs();
+        }
+
+        function closeSimulator() {
+            document.getElementById('simulatorOverlay').style.display = 'none';
+        }
+
+        function renderSimulatorInputs() {
+            const type = document.getElementById('simType').value;
+            const container = document.getElementById('simInputsContainer');
+            const subjects = simData[type];
+            
+            container.innerHTML = '';
+            
+            subjects.forEach((sub, idx) => {
+                container.innerHTML += `
+                    <div class="subject-row">
+                        <div class="d-flex align-items-center">
+                            <span class="coeff-badge">ض: ${sub.coef}</span>
+                            <span class="fw-bold text-secondary" style="font-size: 0.9rem;">${sub.name}</span>
+                        </div>
+                        <input type="number" inputmode="decimal" class="grade-input" 
+                            placeholder="0" min="0" max="20" data-coef="${sub.coef}" 
+                            oninput="calculateSimScore()">
+                    </div>
+                `;
+            });
+            calculateSimScore();
+        }
+
+        function calculateSimScore() {
+            const inputs = document.querySelectorAll('.grade-input');
+            let totalPoints = 0;
+            let totalCoef = 0;
+
+            inputs.forEach(input => {
+                let val = parseFloat(input.value);
+                let coef = parseInt(input.getAttribute('data-coef'));
+                
+                if (!isNaN(val)) {
+                    if (val > 20) val = 20; 
+                    if (val < 0) val = 0;
+                    totalPoints += val * coef;
+                }
+                totalCoef += coef;
+            });
+
+            const average = totalCoef > 0 ? (totalPoints / totalCoef).toFixed(4) : "00.00";
+            
+            document.getElementById('simResult').innerText = parseFloat(average).toFixed(2);
+            document.getElementById('simTotalPoints').innerText = totalPoints.toFixed(2);
+            document.getElementById('simTotalCoef').innerText = totalCoef;
+            
+            const resultEl = document.getElementById('simResult');
+            if(parseFloat(average) >= 10) {
+                resultEl.style.color = '#fff';
+                resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--primary), #25D366)';
+            } else {
+                resultEl.style.color = '#ffeb3b';
+                resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))';
+            }
         }
     </script>
 </body>
