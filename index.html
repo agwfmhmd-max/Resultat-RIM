@@ -142,6 +142,27 @@
             transition: 0.3s;
         }
         .btn-share:hover { background: #2d4373; color: white; }
+
+        /* تنسيقات العد التنازلي */
+        .countdown-card {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af); /* لون داكن مميز */
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .timer-box {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            min-width: 65px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .timer-number { font-size: 1.5rem; font-weight: 800; display: block; line-height: 1.2; }
+        .timer-label { font-size: 0.75rem; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -168,7 +189,21 @@
     </div>
 
     <div class="container-app">
-        <div class="search-card mt-3">
+        
+        <!-- بطاقة العد التنازلي -->
+        <div class="countdown-card mb-3">
+            <h6 class="mb-3 fw-bold"><i class="fas fa-hourglass-half me-2"></i>الوقت المتبقي للامتحانات</h6>
+            <select id="examDateSelect" class="form-select form-select-sm mb-3 text-center" style="background: rgba(255,255,255,0.9); border:none; color:#333; font-weight:bold;">
+                <option value="2026-06-22T08:00:00">مسابقة دخول السنة الأولى (22 يونيو)</option>
+                <option value="2026-06-24T08:00:00">شهادة ختم الدروس الإعدادية (24 يونيو)</option>
+                <option value="2026-06-29T08:00:00" selected>الباكالوريا - الدورة العادية (29 يونيو)</option>
+            </select>
+            <div id="countdownDisplay" class="d-flex justify-content-center gap-2" dir="ltr">
+                <!-- سيتم ملء التوقيت هنا بواسطة JS -->
+            </div>
+        </div>
+
+        <div class="search-card">
             <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
             
             <label class="section-title">المسابقة:</label>
@@ -332,6 +367,44 @@
 
         // *** رابط مجموعة الواتساب "توجيه وتخصصات" ***
         const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
+
+        // ==============================================
+        // منطق العد التنازلي (Countdown)
+        // ==============================================
+        function startCountdown() {
+            const select = document.getElementById('examDateSelect');
+            const display = document.getElementById('countdownDisplay');
+
+            function update() {
+                const now = new Date().getTime();
+                const target = new Date(select.value).getTime();
+                const diff = target - now;
+
+                if (diff < 0) {
+                    display.innerHTML = '<div class="badge bg-danger fs-6 p-2">انتهى الموعد أو بدأ الامتحان</div>';
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                display.innerHTML = `
+                    <div class="timer-box"><span class="timer-number">${seconds}</span><span class="timer-label">ثانية</span></div>
+                    <div class="timer-box"><span class="timer-number">${minutes}</span><span class="timer-label">دقيقة</span></div>
+                    <div class="timer-box"><span class="timer-number">${hours}</span><span class="timer-label">ساعة</span></div>
+                    <div class="timer-box"><span class="timer-number">${days}</span><span class="timer-label">يوم</span></div>
+                `;
+            }
+
+            setInterval(update, 1000);
+            select.addEventListener('change', update);
+            update(); // تشغيل فوري
+        }
+
+        // تشغيل العداد عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', startCountdown);
 
         // ==============================================
         // إعدادات الملفات
