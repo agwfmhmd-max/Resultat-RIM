@@ -865,10 +865,12 @@
 
             // توليد معرف فريد لكل بطاقة ليتم تصويرها بدقة
             const cardId = 'card_' + Math.random().toString(36).substr(2, 9);
+            
+            // رابط الموقع الحالي
+            const currentUrl = window.location.href.split('?')[0];
 
             targetElement.innerHTML += `
                 <div class="result-card-wrapper">
-                    <!-- أضفنا id هنا لنتمكن من تصوير البطاقة -->
                     <div id="${cardId}" class="result-card ${cardClass}">
                         ${rankBadge}
                         <div style="${extraStyle}">
@@ -891,12 +893,17 @@
                             
                             ${encouragementMsg}
                             
-                            <!-- شعار الموقع يظهر فقط عند التصوير -->
-                            <div class="watermark d-none text-center mt-2 small text-muted opacity-50">Resultat RIM</div>
+                            <!-- هذا الجزء يظهر فقط عند التصوير -->
+                            <div class="watermark d-none mt-3 pt-2 border-top border-white border-opacity-25 text-center">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <div class="small text-white opacity-75 fw-bold">
+                                        <i class="fas fa-globe me-1"></i> ${currentUrl.replace('https://', '')}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- زر المشاركة (يوضع خارج البطاقة التي سيتم تصويرها حتى لا يظهر في الصورة) -->
                     <button class="btn-share" onclick="shareResult('${cardId}')">
                         <i class="fas fa-share-alt me-2"></i> مشاركة النتيجة كصورة
                     </button>
@@ -935,12 +942,16 @@
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "resultat-rim.png", { type: "image/png" });
 
+                    // رابط الموقع لإضافته في الرسالة
+                    const siteUrl = window.location.href;
+
                     // التحقق من دعم المتصفح للمشاركة (يعمل على الهواتف الحديثة)
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
                                 title: 'نتيجتي في Resultat RIM',
-                                text: 'طالع نتيجتي في الامتحانات الوطنية الموريتانية عبر Resultat RIM 🎉',
+                                text: `طالع نتيجتي في الامتحانات الوطنية الموريتانية 🇲🇷\nاضغط هنا للبحث عن نتيجتك: ${siteUrl}`,
+                                url: siteUrl, // بعض الهواتف تدعم حقل الرابط بشكل منفصل
                                 files: [file]
                             });
                         } catch (err) {
@@ -952,7 +963,7 @@
                         link.download = 'resultat-rim.png';
                         link.href = canvas.toDataURL();
                         link.click();
-                        alert("تم حفظ صورة النتيجة في جهازك بنجاح ✅");
+                        alert("تم حفظ صورة النتيجة في جهازك بنجاح ✅\nيمكنك الآن إرسالها مع رابط الموقع لأصدقائك.");
                     }
                     
                     // إعادة الزر لحالته الطبيعية
