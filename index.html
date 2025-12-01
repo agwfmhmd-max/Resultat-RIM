@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- مكتبة تحويل HTML إلى صورة للمشاركة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -50,6 +52,10 @@
 
         .school-link { text-decoration: underline; cursor: pointer; font-weight: 700; transition: opacity 0.2s; }
         .school-link:hover { opacity: 0.8; }
+        
+        /* تنسيق رابط الرقم */
+        .number-link { text-decoration: underline; cursor: pointer; transition: opacity 0.2s; color: inherit; }
+        .number-link:hover { opacity: 0.7; color: var(--primary); }
 
         .whatsapp-card { background: #e7fceb; border: 1px solid #25D366; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; }
         .whatsapp-card:active { transform: scale(0.98); }
@@ -68,6 +74,8 @@
         .card-admis .text-muted, .card-session .text-muted, .card-recale .text-muted { color: rgba(255, 255, 255, 0.85) !important; }
         .card-admis .text-success, .card-session .text-success, .card-recale .text-success { color: #fff !important; }
         .card-admis .school-link, .card-session .school-link, .card-recale .school-link { color: #fff !important; }
+        .card-admis .number-link, .card-session .number-link, .card-recale .number-link { color: #fff !important; }
+        
         .card-admis .info-grid, .card-session .info-grid, .card-recale .info-grid { background-color: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.2); }
         .card-admis .info-label, .card-session .info-label, .card-recale .info-label { color: rgba(255, 255, 255, 0.9); }
         .card-admis .info-value, .card-session .info-value, .card-recale .info-value { color: #fff; }
@@ -116,6 +124,24 @@
         /* زر التثبيت */
         #installBtn { display: none; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.3s; margin-right: auto; }
         #installBtn:hover { background: rgba(255,255,255,0.4); }
+
+        /* زر المشاركة */
+        .btn-share {
+            background: #3b5998; /* لون أزرق */
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .btn-share:hover { background: #2d4373; color: white; }
     </style>
 </head>
 <body>
@@ -493,6 +519,15 @@
             document.getElementById('searchBtn').click();
         }
 
+        // *** دالة البحث بالرقم عند الضغط عليه ***
+        function searchByNumber(num) {
+            document.getElementById('topPageOverlay').style.display = 'none';
+            document.getElementById('searchCategory').value = 'number';
+            document.getElementById('searchInput').value = num;
+            document.querySelector('.container-app').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('searchBtn').click();
+        }
+
         // ==============================================
         // منطق التحميل والمعالجة المسبقة
         // ==============================================
@@ -744,7 +779,7 @@
         }
 
         // ==============================================
-        // دالة العرض (محدثة بالألوان والرسائل)
+        // دالة العرض (محدثة بالألوان والرسائل والمشاركة)
         // ==============================================
         function renderCard(student, config, targetElement, rank = null, examType = '', searchMode = '') {
             const name = getVal(student, config.nameKeys) || 'اسم غير متوفر';
@@ -828,14 +863,18 @@
 
             const safePlace = place.replace(/'/g, "\\'");
 
+            // توليد معرف فريد لكل بطاقة ليتم تصويرها بدقة
+            const cardId = 'card_' + Math.random().toString(36).substr(2, 9);
+
             targetElement.innerHTML += `
                 <div class="result-card-wrapper">
-                    <div class="result-card ${cardClass}">
+                    <!-- أضفنا id هنا لنتمكن من تصوير البطاقة -->
+                    <div id="${cardId}" class="result-card ${cardClass}">
                         ${rankBadge}
                         <div style="${extraStyle}">
                             <h6 class="fw-bold mb-1">${name}</h6>
                             <div class="small text-muted row">
-                                <div class="col-6">رقم: <b>${number}</b></div>
+                                <div class="col-6">رقم: <b class="number-link" onclick="searchByNumber('${number}')">${number}</b></div>
                                 <div class="col-6 text-end">المعدل: <b class="text-success">${score % 1 !== 0 ? score.toFixed(2) : score}</b></div>
                             </div>
                             <div class="small text-muted mt-1">
@@ -851,10 +890,82 @@
                             </div>
                             
                             ${encouragementMsg}
+                            
+                            <!-- شعار الموقع يظهر فقط عند التصوير -->
+                            <div class="watermark d-none text-center mt-2 small text-muted opacity-50">Resultat RIM</div>
                         </div>
                     </div>
+                    
+                    <!-- زر المشاركة (يوضع خارج البطاقة التي سيتم تصويرها حتى لا يظهر في الصورة) -->
+                    <button class="btn-share" onclick="shareResult('${cardId}')">
+                        <i class="fas fa-share-alt me-2"></i> مشاركة النتيجة كصورة
+                    </button>
+
                     ${whatsappActions}
                 </div>`;
+        }
+
+        // ==============================================
+        // دالة مشاركة النتيجة كصورة
+        // ==============================================
+        async function shareResult(elementId) {
+            const element = document.getElementById(elementId);
+            const watermark = element.querySelector('.watermark');
+            
+            // إظهار الحقوق (اسم الموقع) قبل التصوير
+            if(watermark) watermark.classList.remove('d-none');
+
+            // إضافة تأثير تحميل بسيط للزر
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التجهيز...';
+            btn.disabled = true;
+
+            try {
+                // تحويل الـ DIV إلى صورة Canvas
+                const canvas = await html2canvas(element, {
+                    scale: 2, // جودة عالية
+                    backgroundColor: null, // الحفاظ على خلفية الـ CSS (الملونة)
+                    useCORS: true // للسماح بتحميل الخطوط والصور
+                });
+
+                // إخفاء الحقوق مرة أخرى
+                if(watermark) watermark.classList.add('d-none');
+
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "resultat-rim.png", { type: "image/png" });
+
+                    // التحقق من دعم المتصفح للمشاركة (يعمل على الهواتف الحديثة)
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: 'نتيجتي في Resultat RIM',
+                                text: 'طالع نتيجتي في الامتحانات الوطنية الموريتانية عبر Resultat RIM 🎉',
+                                files: [file]
+                            });
+                        } catch (err) {
+                            console.log('User cancelled share');
+                        }
+                    } else {
+                        // إذا كان المتصفح لا يدعم المشاركة (مثل الكمبيوتر)، نقوم بتحميل الصورة
+                        const link = document.createElement('a');
+                        link.download = 'resultat-rim.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                        alert("تم حفظ صورة النتيجة في جهازك بنجاح ✅");
+                    }
+                    
+                    // إعادة الزر لحالته الطبيعية
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            } catch (err) {
+                console.error(err);
+                alert("حدث خطأ أثناء إنشاء الصورة.");
+                if(watermark) watermark.classList.add('d-none');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
         // ==============================================
