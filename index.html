@@ -255,7 +255,21 @@
         <div class="container-app">
             <div id="topMenu">
                 <div class="alert alert-info small mb-3"><i class="fas fa-info-circle me-1"></i> اختر نوع العرض لرؤية المتفوقين.</div>
-                <button class="btn-main" onclick="loadNationalTop()"><i class="fas fa-globe-africa me-2"></i>الـ 20 الأوائل والتحليل العام</button>
+                
+                <!-- تم فصل الأزرار هنا كما طلبت -->
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <button class="btn-main" onclick="loadTop20Only()">
+                            <i class="fas fa-list-ol me-2"></i>الـ 20 الأوائل
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn-gold" onclick="loadGeneralStats()">
+                            <i class="fas fa-chart-pie me-2"></i>التحليل العام
+                        </button>
+                    </div>
+                </div>
+
                 <div class="row g-2 mt-2">
                     <div class="col-6" id="stateBtnCol">
                         <button class="btn-outline" onclick="renderGroupList('wilaya')"><i class="fas fa-map-marker-alt me-1"></i> حسب الولاية</button>
@@ -365,7 +379,7 @@
         function isResultSuccessful(student, config, examType) {
             if (examType === 'concours') {
                 const score = parseScore(getVal(student, config.scoreKeys));
-                return score >= 85; // تم تعديل المعدل إلى 85 للكونكور
+                return score >= 85; 
             }
             const decisionRaw = getVal(student, config.decisionKeys);
             if (!decisionRaw) return false;
@@ -374,7 +388,7 @@
         }
 
         // ==============================================
-        // دالة حساب وعرض الإحصائيات الشاملة
+        // دالة حساب وعرض الإحصائيات (التحليل العام)
         // ==============================================
         function calculateAndRenderStats(data, config, examType) {
             const container = document.getElementById('statsContainer');
@@ -413,24 +427,20 @@
                 }
             });
 
-            // تحضير مصفوفة الولايات مع الترتيب
             let sortedWilayas = Object.keys(wilayaStats).map(key => {
                 return { name: key, rate: (wilayaStats[key].pass / wilayaStats[key].total) * 100, count: wilayaStats[key].pass, total: wilayaStats[key].total };
             }).sort((a, b) => b.rate - a.rate);
 
-            // تحضير مصفوفة المدارس (شرط: أكثر من 20 طالب)
             let sortedSchools = Object.keys(schoolStats).map(key => {
                 return { name: key, rate: (schoolStats[key].pass / schoolStats[key].total) * 100, count: schoolStats[key].pass, total: schoolStats[key].total };
             }).filter(s => s.total >= 20).sort((a, b) => b.rate - a.rate);
 
-            // تحضير مصفوفة الشعب
             let sortedSeries = Object.keys(serieStats).map(key => {
                 return { name: key, rate: (serieStats[key].pass / serieStats[key].total) * 100 };
             }).sort((a, b) => b.rate - a.rate);
 
             let nationalRate = ((totalAdmis / totalStudents) * 100).toFixed(2);
 
-            // --- بناء HTML ---
             let html = `
                 <div class="stat-box" style="background: linear-gradient(135deg, #e0f2f1, #ffffff); border-right: 5px solid var(--primary);">
                     <div>
@@ -441,7 +451,6 @@
                 </div>
             `;
 
-            // أفضل 3 ولايات
             html += `<div class="stats-section-title"><i class="fas fa-trophy me-2"></i>أفضل 3 ولايات</div>`;
             sortedWilayas.slice(0, 3).forEach((w, index) => {
                 html += `
@@ -457,7 +466,6 @@
                 </div>`;
             });
 
-            // ترتيب جميع الولايات (جدول مضغوط)
             html += `<div class="stats-section-title"><i class="fas fa-map-marker-alt me-2"></i>ترتيب الولايات (نسبة النجاح)</div>`;
             html += `<div class="table-responsive bg-white rounded p-2 border"><table class="table table-sm table-striped mb-0 small">
                 <thead><tr><th>الولاية</th><th class="text-end">النسبة</th></tr></thead><tbody>`;
@@ -466,7 +474,6 @@
             });
             html += `</tbody></table></div>`;
 
-            // أفضل 10 مدارس (قابلة للضغط)
             if(sortedSchools.length > 0) {
                 html += `<div class="stats-section-title"><i class="fas fa-school me-2"></i>أفضل 10 مدارس (أكثر من 20 مترشح)</div>`;
                 sortedSchools.slice(0, 10).forEach((s, index) => {
@@ -485,7 +492,6 @@
                 });
             }
 
-            // أفضل 5 شعب (للبكالوريا)
             if(sortedSeries.length > 0) {
                 html += `<div class="stats-section-title"><i class="fas fa-book me-2"></i>أفضل 5 شعب</div>`;
                 html += `<div class="stat-grid-compact">`;
@@ -503,10 +509,12 @@
             container.innerHTML = html;
         }
 
-        async function loadNationalTop() {
+        // 1. عرض الـ 20 الأوائل فقط
+        async function loadTop20Only() {
             document.getElementById('topMenu').classList.add('d-none');
             document.getElementById('backBtn').classList.remove('d-none');
             document.getElementById('selectionListContainer').classList.add('d-none');
+            document.getElementById('statsContainer').classList.add('d-none'); // إخفاء الإحصائيات
             
             const examType = document.getElementById('examType').value;
             const config = examConfig[examType];
@@ -516,11 +524,30 @@
             
             try {
                 const data = await fetchData(examType);
-                calculateAndRenderStats(data, config, examType);
                 container.innerHTML = '<h6 class="text-center fw-bold text-success mb-3">أعلى 20 معدل على المستوى الوطني</h6>';
                 data.slice(0, 20).forEach((student, index) => {
                     renderCard(student, config, container, index + 1, examType, 'top');
                 });
+            } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
+        }
+
+        // 2. عرض التحليل العام فقط
+        async function loadGeneralStats() {
+            document.getElementById('topMenu').classList.add('d-none');
+            document.getElementById('backBtn').classList.remove('d-none');
+            document.getElementById('selectionListContainer').classList.add('d-none');
+            document.getElementById('topPageResults').innerHTML = ''; // إفراغ البطاقات
+            
+            const examType = document.getElementById('examType').value;
+            const config = examConfig[examType];
+            const container = document.getElementById('statsContainer');
+            
+            container.classList.remove('d-none');
+            container.innerHTML = '<div class="text-center"><div class="spinner-border text-success"></div></div>';
+            
+            try {
+                const data = await fetchData(examType);
+                calculateAndRenderStats(data, config, examType);
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
