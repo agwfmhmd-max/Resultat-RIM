@@ -14,6 +14,21 @@
 
     <title>Resultat Rim | النتائج الوطنية</title>
     
+    <!-- إعدادات OneSignal للإشعارات -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "85cf4569-d795-414e-8e52-ba47d9b48392",
+          // نلغي الزر العائم التلقائي لأننا صممنا زر جرس خاص بنا في القائمة
+          notifyButton: {
+              enable: false,
+          },
+        });
+      });
+    </script>
+
     <!-- المكتبات الخارجية -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -185,7 +200,7 @@
                 <button onclick="requestNotify()" class="btn btn-outline-primary py-3 fw-bold">
                     <i class="fas fa-globe me-2"></i> إشعارات المتصفح
                 </button>
-                <!-- رابط القناة المحدث -->
+                <!-- رابط قناة واتساب المحدث -->
                 <a href="https://whatsapp.com/channel/0029VbBjLRaBvvsicIv4LC3l" target="_blank" class="btn btn-success py-3 fw-bold">
                     <i class="fab fa-whatsapp me-2"></i> تنبيهات عبر واتساب
                 </a>
@@ -420,16 +435,12 @@
         function closeNotify() { document.getElementById('notifyOverlay').style.display = 'none'; }
         
         function requestNotify() {
-            if (!("Notification" in window)) {
-                alert("هذا المتصفح لا يدعم الإشعارات");
-            } else if (Notification.permission === "granted") {
-                new Notification("Resultat RIM", { body: "الإشعارات مفعلة بالفعل! سنخبرك عند صدور النتائج." });
-            } else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(function (permission) {
-                    if (permission === "granted") {
-                        new Notification("Resultat RIM", { body: "تم تفعيل التنبيهات بنجاح!" });
-                    }
+            if (window.OneSignalDeferred) {
+                window.OneSignalDeferred.push(async function(OneSignal) {
+                    await OneSignal.Slidedown.promptPush();
                 });
+            } else {
+                alert("يرجى الانتظار قليلاً حتى يتم تحميل خدمة الإشعارات");
             }
         }
 
