@@ -256,7 +256,6 @@
             <div id="topMenu">
                 <div class="alert alert-info small mb-3"><i class="fas fa-info-circle me-1"></i> اختر نوع العرض لرؤية المتفوقين.</div>
                 
-                <!-- تم فصل الأزرار هنا كما طلبت -->
                 <div class="row g-2 mb-2">
                     <div class="col-6">
                         <button class="btn-main" onclick="loadTop20Only()">
@@ -346,14 +345,32 @@
         document.addEventListener('DOMContentLoaded', startCountdown);
 
         const examConfig = {
-            "bac_n": { file: "bac_n.csv", searchKeys: ["NODOSS", "Num", "N°"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac", "Moyenne"], placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR", "Wilaya"], majorKeys: ["SERIE", "Serie"] },
-            "bac_c": { file: "bac_c.csv", searchKeys: ["NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac_Session", "Moy Bac"], placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR", "Wilaya"], majorKeys: ["SERIE", "Serie"] },
-            "brevet": { file: "brevet.csv", searchKeys: ["Num_Bepc", "Num"], nameKeys: ["NOM", "Nom"], scoreKeys: ["Moyenne_Bepc", "Moyenne"], placeKeys: ["Ecole", "Etablissement"], decisionKeys: ["Decision"], stateKeys: ["WILAYA", "Wilaya"], majorKeys: [] },
+            "bac_n": { file: "bac_n.csv", searchKeys: ["NODOSS", "Num", "N°"], nameKeys: ["NOM_AR", "Nom", "Nom complet"], scoreKeys: ["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], placeKeys: ["Etablissement_AR", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision", "Resultat"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN", "Wilaya_FR"], majorKeys: ["SERIE", "Serie", "Option"] },
+            "bac_c": { file: "bac_c.csv", searchKeys: ["NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac_Session", "Moy Bac", "Moyenne"], placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN"], majorKeys: ["SERIE", "Serie"] },
+            "brevet": { file: "brevet.csv", searchKeys: ["Num_Bepc", "Num"], nameKeys: ["NOM", "Nom"], scoreKeys: ["Moyenne_Bepc", "Moyenne"], placeKeys: ["Ecole", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision"], stateKeys: ["WILAYA", "Wilaya", "Wilaya_AR"], majorKeys: [] },
             "concours": { file: "concours.csv", searchKeys: ["Noreg", "NODOSS"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["TOTAL", "Score"], placeKeys: ["Ecole_AR", "Ecole"], decisionKeys: [], stateKeys: ["WILAYA_AR", "Wilaya"], majorKeys: [] }
         };
 
         const staticMajors = [ { label: "العلوم الطبيعية (SN)", searchVal: ["SN"] }, { label: "الآداب الأصلية (LO)", searchVal: ["LO"] }, { label: "الآداب العصرية (LM)", searchVal: ["LM"] }, { label: "الرياضيات (M)", searchVal: ["M", "C"] }, { label: "التقنية (TM)", searchVal: ["TM", "T"] }, { label: "الهندسة الكهربائية (TS)", searchVal: ["TS"] }, { label: "اللغات (LA)", searchVal: ["LA"] } ];
-        const staticWilayas = [ { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] }, { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] }, { label: "لعصابه", searchVal: ["لعصابه", "ASSABA"] }, { label: "كوركل", searchVal: ["كوركل", "GORGOL"] }, { label: "لبراكنه", searchVal: ["لبراكنه", "BRAKNA"] }, { label: "اترارزه", searchVal: ["اترارزه", "TRARZA"] }, { label: "آدرار", searchVal: ["آدرار", "ADRAR"] }, { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU"] }, { label: "تكانت", searchVal: ["تكانت", "TAGANT"] }, { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA"] }, { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR"] }, { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] }, { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD"] }, { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST"] }, { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD"] } ];
+        
+        // تحديث قائمة الولايات لتشمل جميع الاحتمالات والتهجئات المختلفة
+        const staticWilayas = [
+            { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
+            { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
+            { label: "لعصابه", searchVal: ["لعصابه", "لعصابة", "ASSABA"] },
+            { label: "كوركل", searchVal: ["كوركل", "GORGOL"] },
+            { label: "لبراكنه", searchVal: ["لبراكنه", "لبراكنة", "BRAKNA"] },
+            { label: "اترارزه", searchVal: ["اترارزه", "اترارزة", "TRARZA"] },
+            { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] },
+            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] },
+            { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
+            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه", "Guidimakha"] },
+            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
+            { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
+            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord"] },
+            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST"] },
+            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
+        ];
 
         const examSelect = document.getElementById('examType');
         const categorySelect = document.getElementById('searchCategory');
