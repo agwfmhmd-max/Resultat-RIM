@@ -135,7 +135,7 @@
         @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Footer Styles (الأصلي) --- */
+        /* --- Footer Styles --- */
         footer { background: #fff; padding: 20px 0; margin-top: 40px; border-top: 1px solid #eaeaea; }
         .dev-credit { font-size: 0.9rem; color: #6c757d; }
         .dev-name { color: var(--primary); font-weight: 700; text-decoration: none; transition: color 0.2s; }
@@ -362,7 +362,11 @@
             return text;
         }
 
-        function isResultSuccessful(student, config) {
+        function isResultSuccessful(student, config, examType) {
+            if (examType === 'concours') {
+                const score = parseScore(getVal(student, config.scoreKeys));
+                return score >= 85; // تم تعديل المعدل إلى 85 للكونكور
+            }
             const decisionRaw = getVal(student, config.decisionKeys);
             if (!decisionRaw) return false;
             let d = String(decisionRaw).toLowerCase();
@@ -382,7 +386,7 @@
             let wilayaStats = {}, schoolStats = {}, serieStats = {};
 
             data.forEach(student => {
-                let isPass = isResultSuccessful(student, config);
+                let isPass = isResultSuccessful(student, config, examType);
                 if (isPass) totalAdmis++;
 
                 let w = student._stateNorm;
@@ -609,7 +613,7 @@
                     currentFilteredResults = results; currentRenderCount = 0; currentSearchConfig = config; currentSearchExamType = examType; currentSearchMode = searchCat; 
                     renderNextBatch();
                     setTimeout(() => { const firstResult = document.querySelector('.result-card-wrapper'); if (firstResult) firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
-                    if (searchCat === 'number' && results.length > 0) { const winner = results.find(s => isResultSuccessful(s, config)); if (winner) triggerCelebration(); }
+                    if (searchCat === 'number' && results.length > 0) { const winner = results.find(s => isResultSuccessful(s, config, examType)); if (winner) triggerCelebration(); }
                 } catch (error) { loading.classList.add('d-none'); alert("حدث خطأ: " + error.message); }
             }, 50);
         });
@@ -664,12 +668,20 @@
             const decisionRaw = getVal(student, config.decisionKeys);
             let state = student._stateNorm; if(state === "unknown") state = getVal(student, config.stateKeys);
             let isAdmis = false, decisionHtml = '', cardClass = '', encouragementMsg = '';
-            if (decisionRaw) {
-                let d = String(decisionRaw).toLowerCase();
-                if (d.includes('admis') || d.includes('ناجح')) { decisionHtml = `<span class="badge bg-white text-success border border-white">${decisionRaw}</span>`; isAdmis = true; cardClass = 'card-admis'; } 
-                else if (d.includes('session') || d.includes('مؤجل')) { decisionHtml = `<span class="badge bg-white text-warning border border-white">${decisionRaw}</span>`; cardClass = 'card-session'; } 
-                else { decisionHtml = `<span class="badge bg-white text-danger border border-white">${decisionRaw}</span>`; cardClass = 'card-recale'; encouragementMsg = `<div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border: 1px dashed rgba(255,255,255,0.5);"><span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span></div>`; }
+            
+            // تحديد حالة النجاح وتعيين النصوص والألوان
+            if (examType === 'concours') {
+                if (score >= 85) { decisionHtml = `<span class="badge bg-white text-success border border-white">ناجح</span>`; isAdmis = true; cardClass = 'card-admis'; }
+                else { decisionHtml = `<span class="badge bg-white text-danger border border-white">راسب</span>`; cardClass = 'card-recale'; encouragementMsg = `<div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border: 1px dashed rgba(255,255,255,0.5);"><span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span></div>`; }
+            } else {
+                if (decisionRaw) {
+                    let d = String(decisionRaw).toLowerCase();
+                    if (d.includes('admis') || d.includes('ناجح')) { decisionHtml = `<span class="badge bg-white text-success border border-white">${decisionRaw}</span>`; isAdmis = true; cardClass = 'card-admis'; } 
+                    else if (d.includes('session') || d.includes('مؤجل')) { decisionHtml = `<span class="badge bg-white text-warning border border-white">${decisionRaw}</span>`; cardClass = 'card-session'; } 
+                    else { decisionHtml = `<span class="badge bg-white text-danger border border-white">${decisionRaw}</span>`; cardClass = 'card-recale'; encouragementMsg = `<div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border: 1px dashed rgba(255,255,255,0.5);"><span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span></div>`; }
+                }
             }
+
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
             let gridHtml = '', items = [];
