@@ -185,7 +185,7 @@
                 <button onclick="requestNotify()" class="btn btn-outline-primary py-3 fw-bold">
                     <i class="fas fa-globe me-2"></i> إشعارات المتصفح
                 </button>
-                <!-- رابط القناة الجديد -->
+                <!-- رابط القناة المحدث -->
                 <a href="https://whatsapp.com/channel/0029VbBjLRaBvvsicIv4LC3l" target="_blank" class="btn btn-success py-3 fw-bold">
                     <i class="fab fa-whatsapp me-2"></i> تنبيهات عبر واتساب
                 </a>
@@ -400,16 +400,17 @@
         // -----------------------------------------------------------
         // عداد الزيارات (يحسب كل زيارة)
         // -----------------------------------------------------------
-        const namespace = 'resultat-rim-official-counter';
-        const key = 'visits';
+        // استخدمت اسم مفتاح جديد لكي يبدأ من 0
+        const namespace = 'resultat-rim-project-2026-v2';
+        const key = 'hits';
 
-        // استخدام 'hit' دائماً لزيادة العدد مع كل تحديث للصفحة
+        // استخدام 'hit' لزيادة العدد مع كل تحميل للصفحة
         fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
             .then(res => res.json())
             .then(res => {
-                document.getElementById('visitCount').innerText = res.value || "12,543";
+                document.getElementById('visitCount').innerText = res.value;
             })
-            .catch(() => document.getElementById('visitCount').innerText = "12,543");
+            .catch(() => document.getElementById('visitCount').innerText = "...");
 
         // Notification Logic
         function openNotify() { document.getElementById('notifyOverlay').style.display = 'block'; }
@@ -568,6 +569,10 @@
             let nationalRate = ((totalAdmis / totalStudents) * 100).toFixed(2);
 
             let html = `
+                <div class="alert alert-warning small mb-3">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    تنبيه: هذه الإحصائيات تقريبية وتعتمد على البيانات الحالية. قد تتغير الأرقام بعد مرحلة إعادة التصحيح (Reclamation).
+                </div>
                 <div class="stat-box" style="background: linear-gradient(135deg, #e0f2f1, #ffffff); border-right: 5px solid var(--primary);">
                     <div>
                         <div class="small text-muted">نسبة النجاح الوطنية</div>
