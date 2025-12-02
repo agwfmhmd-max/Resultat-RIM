@@ -398,19 +398,22 @@
         const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
 
         // -----------------------------------------------------------
-        // عداد الزيارات (يحسب كل زيارة)
+        // عداد الزيارات (يحسب كل زيارة) - تم استخدام خدمة جديدة ومفتاح جديد ليبدأ من الصفر
         // -----------------------------------------------------------
-        // استخدمت اسم مفتاح جديد لكي يبدأ من 0
-        const namespace = 'resultat-rim-project-2026-v2';
-        const key = 'hits';
+        const counterUrl = 'https://api.counterapi.dev/v1/resultat-rim-start-fresh-v1/visits/up';
 
-        // استخدام 'hit' لزيادة العدد مع كل تحميل للصفحة
-        fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+        fetch(counterUrl)
             .then(res => res.json())
             .then(res => {
-                document.getElementById('visitCount').innerText = res.value;
+                // عرض العدد كما هو (سيبدأ من 1 لأول زائر)
+                if(res.count) {
+                    document.getElementById('visitCount').innerText = res.count;
+                }
             })
-            .catch(() => document.getElementById('visitCount').innerText = "...");
+            .catch(err => {
+                console.error(err);
+                document.getElementById('visitCount').innerText = "...";
+            });
 
         // Notification Logic
         function openNotify() { document.getElementById('notifyOverlay').style.display = 'block'; }
