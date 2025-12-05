@@ -136,6 +136,99 @@
             animation: fadeIn 0.5s;
         }
 
+        /* --- تنسيق بنر الملاحظات الاحترافي والمرح --- */
+        .feedback-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fbfd 100%);
+            color: #333;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* تأثير حدود ذهبي خفيف */
+        .feedback-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ffc107, #00695c, #ffc107);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .feedback-banner:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 8px 25px rgba(0, 105, 92, 0.15);
+        }
+        
+        .feedback-banner:hover::before {
+            opacity: 1;
+        }
+
+        .fb-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 193, 7, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #ffb300;
+            flex-shrink: 0;
+            animation: pulse-gold 2s infinite;
+        }
+
+        .fb-content {
+            flex-grow: 1;
+            padding: 0 15px;
+            text-align: right;
+        }
+
+        .fb-title {
+            display: block;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .fb-subtitle {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .fb-arrow {
+            color: #ddd;
+            transition: 0.3s;
+        }
+
+        .feedback-banner:hover .fb-arrow {
+            color: var(--primary);
+            transform: translateX(-5px);
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); transform: scale(1); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); transform: scale(1.05); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); transform: scale(1); }
+        }
+
         /* الاحتفال */
         #celebrationOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .congrats-box { background: white; padding: 30px; border-radius: 20px; text-align: center; position: relative; z-index: 10000; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -196,12 +289,12 @@
             margin-bottom: 8px;
         }
         
-        /* التنسيق الجديد لاسم المطور (احترافي، واضح، ليس كبيراً جداً) */
+        /* التنسيق الجديد لاسم المطور */
         .dev-name-pro { 
             color: var(--gold); 
             font-weight: 700; 
             text-decoration: none; 
-            font-size: 1.1rem; /* حجم متوسط وواضح */
+            font-size: 1.1rem; 
             display: inline-flex;
             align-items: center;
             padding: 10px 25px; 
@@ -312,6 +405,21 @@
     </div>
 
     <div class="container-app">
+        
+        <!-- رابط الاقتراحات الاحترافي الجديد -->
+        <a href="https://forms.gle/sKNwSNiFkDQod1BBA" target="_blank" class="feedback-banner">
+            <div class="fb-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="fb-content">
+                <span class="fb-title">💡 عندك فكرة رهيبة؟</span>
+                <span class="fb-subtitle">شاركنا رأيك وخلينا نطور الموقع معا 🚀</span>
+            </div>
+            <div class="fb-arrow">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+        </a>
+
         <!-- عداد تنازلي -->
         <div class="countdown-card mb-3">
             <h6 class="mb-3 fw-bold"><i class="fas fa-hourglass-half me-2"></i>الوقت المتبقي للامتحانات</h6>
