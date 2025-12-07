@@ -1042,9 +1042,8 @@
             const place = getVal(student, config.placeKeys);
             const decisionRaw = getVal(student, config.decisionKeys);
             let state = student._stateNorm; if(state === "unknown") state = getVal(student, config.stateKeys);
-            let isAdmis = false, decisionHtml = '', cardClass = '', encouragementMsg = '';
             
-            // استخدام دالة التنسيق الدقيق
+            let isAdmis = false, decisionHtml = '', cardClass = '', encouragementMsg = '';
             const displayedScore = formatScore(score);
 
             if (examType === 'concours') {
@@ -1061,20 +1060,63 @@
 
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
-            let gridHtml = '', items = [];
-            if(student._serie) items.push({l: 'الشعبة', v: student._serie});
-            if(student._serieRank) items.push({l: 'الرتبة في الشعبة', v: student._serieRank});
-            if(student._nationalRank) items.push({l: 'الرتبة الوطنية', v: student._nationalRank});
-            if(student._stateRank) items.push({l: 'الرتبة في الولاية', v: student._stateRank});
-            if(student._schoolRank) items.push({l: 'الرتبة في المركز', v: student._schoolRank});
-            if (items.length > 0) { gridHtml = `<div class="info-grid">`; items.forEach(item => { gridHtml += `<div class="info-item"><span class="info-label">${item.l}</span><span class="info-value">${item.v}</span></div>`; }); gridHtml += `</div>`; }
+            
+            let gridHtml = '';
+            let locationHtml = '';
+            const safePlace = place.replace(/'/g, "\\'");
+
+            // --- منطق العرض حسب نوع البحث ---
+            
+            // 1. البحث بالرقم أو قائمة الأوائل (عرض كامل مع تفاصيل)
+            if (searchMode === 'number' || searchMode === 'top') {
+                // الشبكة (Grid) تحتوي على الرتب
+                let items = [];
+                if(student._serie) items.push({l: 'الشعبة', v: student._serie});
+                if(student._serieRank) items.push({l: 'الرتبة في الشعبة', v: student._serieRank});
+                if(student._nationalRank) items.push({l: 'الرتبة الوطنية', v: student._nationalRank});
+                if(student._stateRank) items.push({l: 'الرتبة في الولاية', v: student._stateRank});
+                if(student._schoolRank) items.push({l: 'الرتبة في المركز', v: student._schoolRank});
+
+                if (items.length > 0) {
+                    gridHtml = `<div class="info-grid">`;
+                    items.forEach(item => { gridHtml += `<div class="info-item"><span class="info-label">${item.l}</span><span class="info-value">${item.v}</span></div>`; });
+                    gridHtml += `</div>`;
+                }
+
+                // محاولة التفريق بين المدرسة والمركز
+                let specificSchool = getVal(student, ["Etablissement_AR", "Etablissement", "Ecole_AR", "Ecole"]);
+                let specificCenter = getVal(student, ["Centre", "Lieu", "Center"]);
+
+                if (specificSchool && specificCenter && specificSchool !== specificCenter) {
+                     locationHtml = `
+                     <div class="mt-2 small text-white border-top border-white border-opacity-25 pt-2">
+                        <div class="d-flex align-items-center mb-1"><i class="fas fa-school me-2 opacity-75"></i> <span>المدرسة: <b>${specificSchool}</b></span></div>
+                        <div class="d-flex align-items-center"><i class="fas fa-map-marker-alt me-2 opacity-75"></i> <span>المركز: <span class="school-link" onclick="searchBySchoolName('${specificCenter.replace(/'/g, "\\'")}')">${specificCenter}</span></span></div>
+                     </div>`;
+                } else {
+                     locationHtml = `<div class="small text-muted mt-1"><i class="fas fa-map-marker-alt me-1"></i> المركز: <span class="school-link" onclick="searchBySchoolName('${safePlace}')">${place}</span></div>`;
+                }
+
+            } 
+            // 2. البحث بالمدرسة (عرض مبسط)
+            else {
+                // لا يوجد Grid (إخفاء الرتب)
+                // عرض الشعبة فقط إذا كانت باكالوريا
+                if(student._serie) {
+                     gridHtml = `<div class="mt-2"><span class="badge bg-white text-dark border border-white bg-opacity-75">الشعبة: ${student._serie}</span></div>`;
+                }
+                // عرض الموقع ببساطة
+                locationHtml = `<div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> ${place}</div>`;
+            }
+
             let whatsappActions = '';
             if (isAdmis && searchMode === 'number' && (examType === 'bac_n' || examType === 'bac_c')) {
                  whatsappActions += `<a href="${orientationGroupLink}" target="_blank" class="whatsapp-card"><div class="d-flex align-items-center"><div class="icon-circle icon-whatsapp"><i class="fas fa-university"></i></div><div><h6 class="fw-bold mb-1" style="color:#0f5132">🎓 توجيه وتخصصات</h6><p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات شرح التخصصات.</p></div></div></a>`;
             }
-            const safePlace = place.replace(/'/g, "\\'");
+            
             const cardId = 'card_' + Math.random().toString(36).substr(2, 9);
             const currentUrl = window.location.href.split('?')[0];
+            
             targetElement.innerHTML += `
                 <div class="result-card-wrapper">
                     <div id="${cardId}" class="result-card ${cardClass}">
@@ -1085,7 +1127,7 @@
                                 <div class="col-6">رقم: <b class="number-link" onclick="searchByNumber('${number}')">${number}</b></div>
                                 <div class="col-6 text-end">المعدل: <b class="text-success">${displayedScore}</b></div>
                             </div>
-                            <div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> <span class="school-link" onclick="searchBySchoolName('${safePlace}')">${place}</span></div>
+                            ${locationHtml}
                             ${gridHtml}
                             <div class="mt-2 d-flex justify-content-between align-items-center">${decisionHtml}${state ? `<span class="badge bg-light text-dark border">${state}</span>` : ''}</div>
                             ${encouragementMsg}
