@@ -1065,11 +1065,8 @@
             let locationHtml = '';
             const safePlace = place.replace(/'/g, "\\'");
 
-            // --- منطق العرض حسب نوع البحث ---
-            
-            // 1. البحث بالرقم أو قائمة الأوائل (عرض كامل مع تفاصيل)
-            if (searchMode === 'number' || searchMode === 'top') {
-                // الشبكة (Grid) تحتوي على الرتب
+            // 1. البحث بالرقم أو قائمة الأوائل أو إذا كانت المسابقة كونكور (عرض كامل)
+            if (searchMode === 'number' || searchMode === 'top' || examType === 'concours') {
                 let items = [];
                 if(student._serie) items.push({l: 'الشعبة', v: student._serie});
                 if(student._serieRank) items.push({l: 'الرتبة في الشعبة', v: student._serieRank});
@@ -1098,14 +1095,11 @@
                 }
 
             } 
-            // 2. البحث بالمدرسة (عرض مبسط)
+            // 2. البحث بالمدرسة (عرض مبسط للباكالوريا والبريفة)
             else {
-                // لا يوجد Grid (إخفاء الرتب)
-                // عرض الشعبة فقط إذا كانت باكالوريا
                 if(student._serie) {
                      gridHtml = `<div class="mt-2"><span class="badge bg-white text-dark border border-white bg-opacity-75">الشعبة: ${student._serie}</span></div>`;
                 }
-                // عرض الموقع ببساطة
                 locationHtml = `<div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> ${place}</div>`;
             }
 
