@@ -31,10 +31,53 @@
             --card: #ffffff;
             --radius: 16px;
         }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); padding-bottom: 0; overflow-x: hidden; }
+
+        /* --- تعديلات التخطيط لصفحة واحدة ثابتة --- */
+        html, body {
+            height: 100%; /* ملء الشاشة */
+            margin: 0;
+            overflow: hidden; /* منع تمرير الصفحة بالكامل */
+        }
+
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg); 
+            display: flex; /* استخدام الفلكس */
+            flex-direction: column; /* ترتيب العناصر عمودياً */
+        }
         
-        .navbar { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); color: white; }
-        .container-app { max-width: 600px; margin: auto; padding: 15px; }
+        /* الشريط العلوي ثابت الحجم */
+        .navbar { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+            padding: 1rem; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            color: white; 
+            flex: 0 0 auto; /* لا يتمدد ولا ينكمش */
+            z-index: 100;
+        }
+
+        /* منطقة المحتوى القابلة للتمرير */
+        .scrollable-content {
+            flex: 1 1 auto; /* تتمدد لتملأ الفراغ المتبقي */
+            overflow-y: auto; /* السماح بالتمرير الداخلي */
+            padding: 15px;
+            width: 100%;
+        }
+
+        .container-app { max-width: 600px; margin: auto; }
+        
+        /* التذييل ثابت الحجم */
+        .footer-pro { 
+            background: linear-gradient(to bottom, var(--secondary), #00251a);
+            padding: 15px 0 10px; /* تقليل الحشو ليكون مضغوطاً */
+            color: white; 
+            border-radius: 20px 20px 0 0; 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            flex: 0 0 auto; /* لا يتمدد ولا ينكمش */
+            z-index: 100;
+        }
+
+        /* --- باقي التنسيقات --- */
         .search-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .section-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: 8px; margin-top: 15px; }
         .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid #ddd; background: #f8f9fa; }
@@ -76,13 +119,12 @@
         .info-label { font-weight: bold; color: var(--primary); font-size: 0.75rem; }
         .info-value { color: #333; font-weight: 600; }
 
-        #topPageOverlay, #aboutPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; overflow-y: auto; padding-bottom: 50px; display: none; }
+        #topPageOverlay, #aboutPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; padding-bottom: 50px; display: none; }
         .top-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
 
         .selection-btn { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: space-between; }
         .selection-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         
-        /* أزرار الشريط العلوي */
         .nav-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; }
         .nav-btn:hover { background: rgba(255,255,255,0.4); }
         #installBtn { display: none; margin-left: 5px; }
@@ -94,7 +136,6 @@
         .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 12px; flex-shrink: 0; color: white; }
         .icon-whatsapp { background: #25D366; }
 
-        /* تنسيقات الإحصائيات الجديدة */
         .stats-section-title { font-weight: 800; color: var(--secondary); margin: 25px 0 10px 0; border-right: 4px solid var(--gold); padding-right: 10px; font-size: 1.1rem; background: #f8f9fa; padding: 8px 10px 8px 0; border-radius: 8px; }
         .stat-box { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         .stat-rank { width: 30px; height: 30px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; flex-shrink: 0; margin-left: 10px; }
@@ -107,8 +148,7 @@
         .stat-grid-compact { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-mini-card { background: white; padding: 10px; border-radius: 8px; border: 1px solid #eee; text-align: center; }
         
-        /* تنسيقات حاسبة المعدل */
-        #simulatorOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; display: none; padding-bottom: 50px; }
+        #simulatorOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; overflow-y: auto; display: none; padding-bottom: 50px; }
         .sim-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         .subject-row { background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
         .coeff-badge { background: #e9ecef; color: #555; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; margin-right: 10px; }
@@ -130,7 +170,6 @@
             animation: fadeIn 0.5s;
         }
 
-        /* الاحتفال */
         #celebrationOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .congrats-box { background: white; padding: 30px; border-radius: 20px; text-align: center; position: relative; z-index: 10000; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .congrats-title { font-size: 2rem; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
@@ -141,63 +180,35 @@
         @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- New Professional Footer Styles --- */
-        .footer-pro { 
-            background: linear-gradient(to bottom, var(--secondary), #00251a);
-            padding: 40px 0 20px; 
-            margin-top: 50px; 
-            color: white; 
-            border-radius: 20px 20px 0 0; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-        }
-        .footer-logo-title {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: #fff;
-            margin-bottom: 10px;
-            display: inline-block;
-        }
-        .footer-desc {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.9rem;
-            max-width: 300px;
-            margin: 0 auto 20px auto;
-        }
+        /* تنسيقات الفوتر المضغوط */
         .footer-menu { 
             display: flex; 
             justify-content: center; 
-            gap: 20px; 
-            margin-bottom: 25px; 
+            gap: 15px; 
+            margin-bottom: 5px; 
             flex-wrap: wrap;
         }
         .footer-menu span { 
             cursor: pointer; 
             color: rgba(255,255,255,0.9); 
-            font-size: 0.95rem; 
+            font-size: 0.85rem; 
             transition: 0.3s; 
             font-weight: 600;
         }
         .footer-menu span:hover { 
             color: var(--gold); 
-            transform: translateY(-2px);
         }
         .dev-container {
-            margin-top: 15px;
+            margin-top: 5px;
         }
-        .dev-label {
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 8px;
-        }
-        
         .dev-name-pro { 
             color: var(--gold); 
             font-weight: 700; 
             text-decoration: none; 
-            font-size: 1.1rem; 
+            font-size: 0.9rem; 
             display: inline-flex;
             align-items: center;
-            padding: 10px 25px; 
+            padding: 5px 15px; 
             border: 1px solid rgba(255, 193, 7, 0.5); 
             border-radius: 50px; 
             background: rgba(255, 193, 7, 0.1); 
@@ -206,33 +217,91 @@
         .dev-name-pro:hover { 
             background: var(--gold); 
             color: #000; 
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
         }
-        
         .footer-copyright { 
-            border-top: 1px solid rgba(255,255,255,0.1); 
-            margin-top: 30px; 
-            padding-top: 20px; 
-            text-align: center; 
-            font-size: 0.8rem; 
-            color: rgba(255,255,255,0.5); 
+            font-size: 0.7rem; 
+            color: rgba(255,255,255,0.4); 
+            margin-top: 5px;
         }
     </style>
 </head>
-<body>
+<!-- منع النسخ والزر الأيمن من داخل تاج البودي -->
+<body oncontextmenu="return false;">
 
+    <!-- الشريط العلوي (ثابت) -->
     <nav class="navbar">
         <div class="container-app w-100 d-flex align-items-center justify-content-between">
             <span class="navbar-brand m-0 fw-bold fs-4"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
             <div>
-                <!-- تم إزالة زر التنبيهات من هنا -->
                 <button id="installBtn" class="nav-btn"><i class="fas fa-download me-1"></i> تثبيت</button>
             </div>
         </div>
     </nav>
 
-    <!-- شاشة الاحتفال -->
+    <!-- منطقة المحتوى القابلة للتمرير (الوسط) -->
+    <div class="scrollable-content">
+        <div class="container-app">
+            
+            <div class="search-card">
+                <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
+                
+                <label class="section-title">المسابقة:</label>
+                <select id="examType" class="form-select">
+                    <option value="concours" selected>دخول السنة الأولى (كونكور)</option>
+                    <option value="brevet">ختم الدروس الإعدادية (بريفة)</option>
+                    <option value="bac_n">باكالوريا - الدورة العادية</option>
+                    <option value="bac_c">باكالوريا - الدورة التكميلية</option>
+                </select>
+
+                <label class="section-title">البحث بواسطة:</label>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <select id="searchCategory" class="form-select">
+                            <option value="number">رقم المترشح</option>
+                            <option value="school">اسم المدرسة</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <input id="searchInput" type="text" class="form-control" placeholder="اكتب هنا...">
+                    </div>
+                </div>
+
+                <button id="searchBtn" class="btn-main"><i class="fas fa-search me-2"></i>بحث</button>
+                <button onclick="openTopPage()" class="btn-gold"><i class="fas fa-chart-bar me-2"></i>الإحصائيات والأوائل</button>
+                <button onclick="openSimulator()" class="btn-outline mt-2"><i class="fas fa-calculator me-2"></i>حاسبة المعدل (Simulateur)</button>
+            </div>
+
+            <div id="loading" class="text-center d-none mt-4">
+                <div class="spinner-border text-success"></div>
+                <p class="mt-2 text-muted">جاري تحميل ومعالجة البيانات...</p>
+            </div>
+
+            <div id="resultsContainer" class="mt-4"></div>
+        </div>
+    </div>
+
+    <!-- التذييل (ثابت في الأسفل) -->
+    <footer class="footer-pro">
+        <div class="container-app text-center">
+            <div class="footer-menu">
+                <span onclick="openAbout()">من نحن</span>
+                <span onclick="openSimulator()">حاسبة المعدل</span>
+            </div>
+
+            <div class="dev-container">
+                <div style="font-size:0.75rem; color:rgba(255,255,255,0.6); margin-bottom:3px;">Developed by</div>
+                <a href="https://wa.me/22220479962" target="_blank" class="dev-name-pro">
+                    Mohamed Dah Agove <i class="fab fa-whatsapp ms-2"></i>
+                </a>
+            </div>
+            
+            <div class="footer-copyright">
+                &copy; 2026 Resultat RIM.
+            </div>
+        </div>
+    </footer>
+
+    <!-- بقية العناصر (الاحتفال، النوافذ المنبثقة) -->
     <div id="celebrationOverlay">
         <div class="congrats-box">
             <div style="font-size: 3rem; margin-bottom: 10px;">🎉🌺🥰</div>
@@ -245,9 +314,6 @@
         </div>
     </div>
 
-    <!-- تم إزالة نافذة التنبيهات notifyOverlay من هنا -->
-
-    <!-- نافذة من نحن -->
     <div id="aboutPageOverlay">
         <div class="top-header">
             <h5 class="m-0 fw-bold text-primary"><i class="fas fa-info-circle me-2"></i>من نحن</h5>
@@ -268,16 +334,6 @@
                 <h6 class="fw-bold text-secondary">👨‍💻 المطور</h6>
                 <p class="mb-1">تم تطوير هذا الموقع بواسطة:</p>
                 <a href="https://wa.me/22220479962" target="_blank" class="fw-bold text-primary text-decoration-none">Mohamed Dah Agove <i class="fab fa-whatsapp"></i></a>
-                
-                <a href="https://wa.me/22220479962" target="_blank" class="whatsapp-card mt-2 text-decoration-none">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle icon-whatsapp"><i class="fab fa-whatsapp"></i></div>
-                        <div class="ms-2">
-                            <span class="fw-bold d-block text-dark">تواصل معنا</span>
-                            <span class="small text-muted">22220479962+</span>
-                        </div>
-                    </div>
-                </a>
             </div>
 
             <div class="alert alert-warning small">
@@ -285,48 +341,6 @@
                 <strong>تنويه:</strong> هذا ليس موقعاً حكومياً رسمياً. البيانات يتم جلبها من اللوائح الرسمية لوزارة التهذيب الوطني لتسهيل البحث.
             </div>
         </div>
-    </div>
-
-    <div class="container-app">
-        
-        <!-- تم إزالة رابط الاقتراحات (هل لديك فكرة) من هنا -->
-        <!-- تم إزالة العداد التنازلي من هنا -->
-
-        <div class="search-card">
-            <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
-            
-            <label class="section-title">المسابقة:</label>
-            <select id="examType" class="form-select">
-                <option value="concours" selected>دخول السنة الأولى (كونكور)</option>
-                <option value="brevet">ختم الدروس الإعدادية (بريفة)</option>
-                <option value="bac_n">باكالوريا - الدورة العادية</option>
-                <option value="bac_c">باكالوريا - الدورة التكميلية</option>
-            </select>
-
-            <label class="section-title">البحث بواسطة:</label>
-            <div class="row g-2 mb-3">
-                <div class="col-6">
-                    <select id="searchCategory" class="form-select">
-                        <option value="number">رقم المترشح</option>
-                        <option value="school">اسم المدرسة</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <input id="searchInput" type="text" class="form-control" placeholder="اكتب هنا...">
-                </div>
-            </div>
-
-            <button id="searchBtn" class="btn-main"><i class="fas fa-search me-2"></i>بحث</button>
-            <button onclick="openTopPage()" class="btn-gold"><i class="fas fa-chart-bar me-2"></i>الإحصائيات والأوائل</button>
-            <button onclick="openSimulator()" class="btn-outline mt-2"><i class="fas fa-calculator me-2"></i>حاسبة المعدل (Simulateur)</button>
-        </div>
-
-        <div id="loading" class="text-center d-none mt-4">
-            <div class="spinner-border text-success"></div>
-            <p class="mt-2 text-muted">جاري تحميل ومعالجة البيانات...</p>
-        </div>
-
-        <div id="resultsContainer" class="mt-4"></div>
     </div>
 
     <!-- شاشة حاسبة المعدل -->
@@ -355,9 +369,7 @@
                 </div>
             </div>
             
-            <!-- رسالة التوقع -->
             <div id="simFeedback" class="sim-feedback-box"></div>
-
             <div class="alert alert-info small mt-3"><i class="fas fa-info-circle me-1"></i> الحساب يعتمد على الضوارب الرسمية للامتحانات الوطنية.</div>
         </div>
     </div>
@@ -409,40 +421,25 @@
         </div>
     </div>
 
-    <!-- تذييل احترافي جديد -->
-    <footer class="footer-pro">
-        <div class="container-app">
-            <div class="row">
-                <div class="col-12 text-center mb-4">
-                    <div class="footer-logo-title"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</div>
-                    <p class="footer-desc">منصتك الأولى للوصول إلى نتائج المسابقات الوطنية في موريتانيا بسرعة وسهولة.</p>
-                </div>
-                
-                <div class="col-12 text-center">
-                    <div class="footer-menu">
-                        <span onclick="window.scrollTo({top:0, behavior:'smooth'})">الرئيسية</span>
-                        <span onclick="openAbout()">من نحن</span>
-                        <span onclick="openSimulator()">حاسبة المعدل</span>
-                        <!-- تم إزالة رابط التنبيهات من الفوتر -->
-                    </div>
-                </div>
-
-                <div class="col-12 text-center dev-container">
-                    <div class="dev-label">Designed & Developed by</div>
-                    <!-- الرابط المحدث ليوجه للواتساب بتصميم احترافي واضح -->
-                    <a href="https://wa.me/22220479962" target="_blank" class="dev-name-pro">
-                        Mohamed Dah Agove <i class="fab fa-whatsapp ms-2"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="footer-copyright">
-                &copy; 2026 Resultat RIM. All rights reserved.
-            </div>
-        </div>
-    </footer>
-
     <script>
+        // --- حماية الموقع (منع الاختصارات والزر الأيمن) ---
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            // F12
+            if(e.keyCode == 123) return false;
+            // Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            // Ctrl+Shift+J
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+            // Ctrl+Shift+C
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+            // Ctrl+U
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+            // Ctrl+S
+            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false;
+        }
+        // ----------------------------------------------------
+
         // PWA Setup
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -467,13 +464,9 @@
 
         const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
 
-        // تم إزالة دوال التنبيهات (openNotify, closeNotify)
-        
         // About Page Logic
         function openAbout() { document.getElementById('aboutPageOverlay').style.display = 'block'; }
         function closeAbout() { document.getElementById('aboutPageOverlay').style.display = 'none'; }
-
-        // تم إزالة دوال العداد التنازلي (startCountdown)
 
         const examConfig = {
             "bac_n": { file: "bac_n.csv", searchKeys: ["NODOSS", "Num", "N°"], nameKeys: ["NOM_AR", "Nom", "Nom complet"], scoreKeys: ["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], placeKeys: ["Etablissement_AR", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision", "Resultat"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN", "Wilaya_FR"], majorKeys: ["SERIE", "Serie", "Option"] },
@@ -714,7 +707,6 @@
             document.getElementById('topPageOverlay').style.display = 'none';
             document.getElementById('searchCategory').value = 'school';
             document.getElementById('searchInput').value = schoolName;
-            document.querySelector('.container-app').scrollIntoView({ behavior: 'smooth' });
             document.getElementById('searchBtn').click();
         }
 
@@ -722,7 +714,6 @@
             document.getElementById('topPageOverlay').style.display = 'none';
             document.getElementById('searchCategory').value = 'number';
             document.getElementById('searchInput').value = num;
-            document.querySelector('.container-app').scrollIntoView({ behavior: 'smooth' });
             document.getElementById('searchBtn').click();
         }
 
@@ -981,7 +972,6 @@
             }
         }
 
-        // Functions for celebration confetti
         const emojis = ['🌸', '🌹', '💐', '❤️', '🎉', '🎊', '🌷', '✨', '💕', '🥰'];
         let celebrationInterval;
         function createConfetti() { const overlay = document.getElementById('celebrationOverlay'); if(overlay.style.display === 'none') return; const el = document.createElement('div'); el.classList.add('confetti-piece'); el.innerText = emojis[Math.floor(Math.random() * emojis.length)]; el.style.left = Math.random() * 100 + 'vw'; el.style.animationDuration = (Math.random() * 3 + 2) + 's'; el.style.fontSize = (Math.random() * 20 + 20) + 'px'; overlay.appendChild(el); setTimeout(() => { el.remove(); }, 5000); }
