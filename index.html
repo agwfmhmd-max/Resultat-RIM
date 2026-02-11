@@ -76,7 +76,7 @@
         .info-label { font-weight: bold; color: var(--primary); font-size: 0.75rem; }
         .info-value { color: #333; font-weight: 600; }
 
-        #topPageOverlay, #aboutPageOverlay, #notifyOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; overflow-y: auto; padding-bottom: 50px; display: none; }
+        #topPageOverlay, #aboutPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; overflow-y: auto; padding-bottom: 50px; display: none; }
         .top-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
 
         .selection-btn { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: space-between; }
@@ -93,12 +93,6 @@
         .whatsapp-card { background: #e7fceb; border: 1px solid #25D366; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; color: inherit; }
         .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 12px; flex-shrink: 0; color: white; }
         .icon-whatsapp { background: #25D366; }
-
-        /* تنسيقات العد التنازلي */
-        .countdown-card { background: linear-gradient(135deg, #2c3e50, #4ca1af); color: white; border-radius: var(--radius); padding: 20px; margin-top: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .timer-box { background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; min-width: 65px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
-        .timer-number { font-size: 1.5rem; font-weight: 800; display: block; line-height: 1.2; }
-        .timer-label { font-size: 0.75rem; opacity: 0.9; }
 
         /* تنسيقات الإحصائيات الجديدة */
         .stats-section-title { font-weight: 800; color: var(--secondary); margin: 25px 0 10px 0; border-right: 4px solid var(--gold); padding-right: 10px; font-size: 1.1rem; background: #f8f9fa; padding: 8px 10px 8px 0; border-radius: 8px; }
@@ -134,99 +128,6 @@
             font-weight: bold;
             display: none;
             animation: fadeIn 0.5s;
-        }
-
-        /* --- تنسيق بنر الملاحظات الاحترافي والمرح --- */
-        .feedback-banner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: linear-gradient(135deg, #ffffff 0%, #f9fbfd 100%);
-            color: #333;
-            text-decoration: none;
-            padding: 12px 15px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            border: 2px solid transparent;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        /* تأثير حدود ذهبي خفيف */
-        .feedback-banner::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 16px;
-            padding: 2px;
-            background: linear-gradient(45deg, #ffc107, #00695c, #ffc107);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0.5;
-            transition: opacity 0.3s;
-        }
-
-        .feedback-banner:hover {
-            transform: translateY(-3px) scale(1.01);
-            box-shadow: 0 8px 25px rgba(0, 105, 92, 0.15);
-        }
-        
-        .feedback-banner:hover::before {
-            opacity: 1;
-        }
-
-        .fb-icon {
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 193, 7, 0.15);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #ffb300;
-            flex-shrink: 0;
-            animation: pulse-gold 2s infinite;
-        }
-
-        .fb-content {
-            flex-grow: 1;
-            padding: 0 15px;
-            text-align: right;
-        }
-
-        .fb-title {
-            display: block;
-            font-weight: 800;
-            font-size: 0.95rem;
-            color: var(--primary);
-            margin-bottom: 2px;
-        }
-
-        .fb-subtitle {
-            display: block;
-            font-size: 0.8rem;
-            color: #666;
-            font-weight: 600;
-        }
-
-        .fb-arrow {
-            color: #ddd;
-            transition: 0.3s;
-        }
-
-        .feedback-banner:hover .fb-arrow {
-            color: var(--primary);
-            transform: translateX(-5px);
-        }
-
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); transform: scale(1); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); transform: scale(1.05); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); transform: scale(1); }
         }
 
         /* الاحتفال */
@@ -289,7 +190,6 @@
             margin-bottom: 8px;
         }
         
-        /* التنسيق الجديد لاسم المطور */
         .dev-name-pro { 
             color: var(--gold); 
             font-weight: 700; 
@@ -326,7 +226,7 @@
         <div class="container-app w-100 d-flex align-items-center justify-content-between">
             <span class="navbar-brand m-0 fw-bold fs-4"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
             <div>
-                <button class="nav-btn" onclick="openNotify()"><i class="fas fa-bell"></i></button>
+                <!-- تم إزالة زر التنبيهات من هنا -->
                 <button id="installBtn" class="nav-btn"><i class="fas fa-download me-1"></i> تثبيت</button>
             </div>
         </div>
@@ -345,24 +245,7 @@
         </div>
     </div>
 
-    <!-- نافذة التنبيهات -->
-    <div id="notifyOverlay">
-        <div class="top-header">
-            <h5 class="m-0 fw-bold text-primary"><i class="fas fa-bell me-2"></i>نظام التنبيهات</h5>
-            <button onclick="closeNotify()" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="container-app text-center pt-5">
-            <i class="fab fa-whatsapp fa-4x text-success mb-3"></i>
-            <h4>كن أول من يعلم!</h4>
-            <p class="text-muted">انضم لقناتنا على الواتساب لتصلك إشعارات فورية عند صدور النتائج.</p>
-            
-            <div class="d-grid gap-3 mt-4">
-                <a href="https://whatsapp.com/channel/0029VbBjLRaBvvsicIv4LC3l" target="_blank" class="btn btn-success py-3 fw-bold">
-                    <i class="fab fa-whatsapp me-2"></i> انضم للقناة الآن
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- تم إزالة نافذة التنبيهات notifyOverlay من هنا -->
 
     <!-- نافذة من نحن -->
     <div id="aboutPageOverlay">
@@ -406,32 +289,8 @@
 
     <div class="container-app">
         
-        <!-- رابط الاقتراحات الاحترافي الجديد -->
-        <a href="https://forms.gle/sKNwSNiFkDQod1BBA" target="_blank" class="feedback-banner">
-            <div class="fb-icon">
-                <i class="fas fa-lightbulb"></i>
-            </div>
-            <div class="fb-content">
-                <span class="fb-title">💡 عندك فكرة رهيبة؟</span>
-                <span class="fb-subtitle">شاركنا رأيك وخلينا نطور الموقع معا 🚀</span>
-            </div>
-            <div class="fb-arrow">
-                <i class="fas fa-chevron-left"></i>
-            </div>
-        </a>
-
-        <!-- عداد تنازلي -->
-        <div class="countdown-card mb-3">
-            <h6 class="mb-3 fw-bold"><i class="fas fa-hourglass-half me-2"></i>الوقت المتبقي للامتحانات</h6>
-            <select id="examDateSelect" class="form-select form-select-sm mb-3 text-center" style="background: rgba(255,255,255,0.9); border:none; color:#333; font-weight:bold;">
-                <option value="2026-06-22T08:00:00">مسابقة دخول السنة الأولى (22 يونيو)</option>
-                <option value="2026-06-24T08:00:00">شهادة ختم الدروس الإعدادية (24 يونيو)</option>
-                <option value="2026-06-29T08:00:00" selected>الباكالوريا - الدورة العادية (29 يونيو)</option>
-            </select>
-            <div id="countdownDisplay" class="d-flex justify-content-center gap-2" dir="ltr"></div>
-            <!-- مكان رسالة الوقت المرنة -->
-            <div id="countdownMsg" class="mt-3 text-white fw-bold small text-center"></div>
-        </div>
+        <!-- تم إزالة رابط الاقتراحات (هل لديك فكرة) من هنا -->
+        <!-- تم إزالة العداد التنازلي من هنا -->
 
         <div class="search-card">
             <h5 class="text-center fw-bold text-secondary mb-3">البحث في النتائج</h5>
@@ -564,7 +423,7 @@
                         <span onclick="window.scrollTo({top:0, behavior:'smooth'})">الرئيسية</span>
                         <span onclick="openAbout()">من نحن</span>
                         <span onclick="openSimulator()">حاسبة المعدل</span>
-                        <span onclick="openNotify()">تنبيهات</span>
+                        <!-- تم إزالة رابط التنبيهات من الفوتر -->
                     </div>
                 </div>
 
@@ -608,54 +467,13 @@
 
         const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
 
-        // Notification Logic
-        function openNotify() { document.getElementById('notifyOverlay').style.display = 'block'; }
-        function closeNotify() { document.getElementById('notifyOverlay').style.display = 'none'; }
+        // تم إزالة دوال التنبيهات (openNotify, closeNotify)
         
         // About Page Logic
         function openAbout() { document.getElementById('aboutPageOverlay').style.display = 'block'; }
         function closeAbout() { document.getElementById('aboutPageOverlay').style.display = 'none'; }
 
-        // Countdown Logic
-        function startCountdown() {
-            const select = document.getElementById('examDateSelect');
-            const display = document.getElementById('countdownDisplay');
-            const msgEl = document.getElementById('countdownMsg'); // عنصر الرسالة الجديد
-
-            function update() {
-                const now = new Date().getTime();
-                const target = new Date(select.value).getTime();
-                const diff = target - now;
-
-                if (diff < 0) { 
-                    display.innerHTML = '<div class="badge bg-danger fs-6 p-2">انتهى الموعد أو بدأ الامتحان</div>'; 
-                    msgEl.innerHTML = '';
-                    return; 
-                }
-
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                display.innerHTML = `<div class="timer-box"><span class="timer-number">${seconds}</span><span class="timer-label">ثانية</span></div><div class="timer-box"><span class="timer-number">${minutes}</span><span class="timer-label">دقيقة</span></div><div class="timer-box"><span class="timer-number">${hours}</span><span class="timer-label">ساعة</span></div><div class="timer-box"><span class="timer-number">${days}</span><span class="timer-label">يوم</span></div>`;
-            
-                // المنطق الجديد لرسائل الوقت المتبقي
-                if (days > 100) {
-                    msgEl.innerHTML = "⏳✨ ما زال لديك الوقت لتكون من الأوائل.. استغل الفرصة!";
-                    msgEl.style.color = "#b2dfdb"; // لون فاتح
-                } else if (days > 0) {
-                    msgEl.innerHTML = "🚀🔥 ثابر واجتهد.. لم يبق الكثير من الوقت!";
-                    msgEl.style.color = "#ffe082"; // لون برتقالي فاتح
-                } else {
-                    msgEl.innerHTML = "";
-                }
-            }
-            setInterval(update, 1000);
-            select.addEventListener('change', update);
-            update();
-        }
-        document.addEventListener('DOMContentLoaded', startCountdown);
+        // تم إزالة دوال العداد التنازلي (startCountdown)
 
         const examConfig = {
             "bac_n": { file: "bac_n.csv", searchKeys: ["NODOSS", "Num", "N°"], nameKeys: ["NOM_AR", "Nom", "Nom complet"], scoreKeys: ["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], placeKeys: ["Etablissement_AR", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision", "Resultat"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN", "Wilaya_FR"], majorKeys: ["SERIE", "Serie", "Option"] },
@@ -696,8 +514,6 @@
         function getVal(item, keysArray) { if (!item || !keysArray) return ""; for (let key of keysArray) { if (item[key] !== undefined && item[key] !== null) return item[key]; } return ""; }
         function parseScore(val) { if (!val) return 0; let clean = String(val).trim().replace(/[^0-9.,]/g, '').replace(',', '.'); let num = parseFloat(clean); return isNaN(num) ? 0 : num; }
         
-        // دالة لعرض المعدل بدقة (دون جبر الكسور)
-        // مثال: 17.946 => 17.94
         function formatScore(val) {
             let num = parseFloat(val);
             if (isNaN(num)) return "0.00";
@@ -725,9 +541,6 @@
             return d.includes('admis') || d.includes('ناجح');
         }
 
-        // ==============================================
-        // دالة حساب وعرض الإحصائيات (التحليل العام)
-        // ==============================================
         function calculateAndRenderStats(data, config, examType) {
             const container = document.getElementById('statsContainer');
             container.innerHTML = '';
@@ -765,18 +578,16 @@
                 }
             });
 
-            // فلترة الولايات (أكثر من 30 مترشح)
             let sortedWilayas = Object.keys(wilayaStats).map(key => {
                 return { name: key, rate: (wilayaStats[key].pass / wilayaStats[key].total) * 100, count: wilayaStats[key].pass, total: wilayaStats[key].total };
             })
-            .filter(w => w.total > 30) // شرط التصفية للولايات
+            .filter(w => w.total > 30) 
             .sort((a, b) => b.rate - a.rate);
 
-            // فلترة المدارس (أكثر من 30 مترشح)
             let sortedSchools = Object.keys(schoolStats).map(key => {
                 return { name: key, rate: (schoolStats[key].pass / schoolStats[key].total) * 100, count: schoolStats[key].pass, total: schoolStats[key].total };
             })
-            .filter(s => s.total > 30) // شرط التصفية للمدارس
+            .filter(s => s.total > 30) 
             .sort((a, b) => b.rate - a.rate);
 
             let sortedSeries = Object.keys(serieStats).map(key => {
@@ -1044,7 +855,6 @@
             let state = student._stateNorm; if(state === "unknown") state = getVal(student, config.stateKeys);
             let isAdmis = false, decisionHtml = '', cardClass = '', encouragementMsg = '';
             
-            // استخدام دالة التنسيق الدقيق
             const displayedScore = formatScore(score);
 
             if (examType === 'concours') {
@@ -1163,7 +973,6 @@
                 resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))'; 
             }
 
-            // المنطق الجديد لرسالة التوقع (معدل 16 فما فوق)
             if (parseFloat(average) >= 16) {
                 feedbackEl.style.display = 'block';
                 feedbackEl.innerHTML = '🥇👑 بهذه النتائج نتوقع أن تكون من الأوائل بإذن الله تعالى';
