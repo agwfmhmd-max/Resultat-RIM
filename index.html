@@ -20,6 +20,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- إضافة مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -27,6 +30,7 @@
             --secondary: #004d40;
             --gold: #ffc107;
             --whatsapp: #25D366;
+            --tawjih: #2196f3; /* لون منصة التوجيه */
             --bg: #f0f2f5;
             --card: #ffffff;
             --radius: 16px;
@@ -119,7 +123,7 @@
         .info-label { font-weight: bold; color: var(--primary); font-size: 0.75rem; }
         .info-value { color: #333; font-weight: 600; }
 
-        #topPageOverlay, #aboutPageOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; padding-bottom: 50px; display: none; }
+        #topPageOverlay, #aboutPageOverlay, #adminOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; padding-bottom: 50px; display: none; }
         .top-header { background: white; padding: 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
 
         .selection-btn { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: space-between; }
@@ -132,9 +136,15 @@
         .btn-share { background: #3b5998; color: white; border: none; border-radius: 20px; padding: 8px 15px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 10px; transition: 0.3s; }
         .btn-share:hover { background: #2d4373; color: white; }
 
+        /* واتساب كارد */
         .whatsapp-card { background: #e7fceb; border: 1px solid #25D366; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; color: inherit; }
-        .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 12px; flex-shrink: 0; color: white; }
         .icon-whatsapp { background: #25D366; }
+        
+        /* توجيه كارد (الجديد) */
+        .tawjih-card { background: #e3f2fd; border: 1px solid var(--tawjih); border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; color: inherit; }
+        .icon-tawjih { background: var(--tawjih); }
+
+        .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-left: 12px; flex-shrink: 0; color: white; }
 
         .stats-section-title { font-weight: 800; color: var(--secondary); margin: 25px 0 10px 0; border-right: 4px solid var(--gold); padding-right: 10px; font-size: 1.1rem; background: #f8f9fa; padding: 8px 10px 8px 0; border-radius: 8px; }
         .stat-box { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
@@ -231,7 +241,8 @@
     <!-- الشريط العلوي (ثابت) -->
     <nav class="navbar">
         <div class="container-app w-100 d-flex align-items-center justify-content-between">
-            <span class="navbar-brand m-0 fw-bold fs-4"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
+            <!-- تمت إضافة معرف brandLogo وزيادة cursor pointer للتفاعل -->
+            <span id="brandLogo" class="navbar-brand m-0 fw-bold fs-4" style="cursor: pointer; user-select: none;"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
             <div>
                 <button id="installBtn" class="nav-btn"><i class="fas fa-download me-1"></i> تثبيت</button>
             </div>
@@ -273,7 +284,7 @@
 
             <div id="loading" class="text-center d-none mt-4">
                 <div class="spinner-border text-success"></div>
-                <p class="mt-2 text-muted">جاري تحميل ومعالجة البيانات...</p>
+                <p id="loadingText" class="mt-2 text-muted">جاري تحميل البيانات...</p>
             </div>
 
             <div id="resultsContainer" class="mt-4"></div>
@@ -374,6 +385,56 @@
         </div>
     </div>
 
+    <!-- شاشة الإدارة (Admin Upload Overlay) -->
+    <div id="adminOverlay">
+        <div class="top-header">
+            <h5 class="m-0 fw-bold text-danger"><i class="fas fa-lock me-2"></i>إدارة البيانات</h5>
+            <button onclick="closeAdminPanel()" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="container-app pt-4">
+            <!-- قسم تسجيل الدخول -->
+            <div id="adminLoginSection">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-shield fa-3x text-secondary"></i>
+                    <h5 class="mt-3">منطقة محظورة</h5>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">رمز الدخول:</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="أدخل الرمز السري">
+                </div>
+                <button onclick="checkAdminPassword()" class="btn btn-main">دخول</button>
+            </div>
+
+            <!-- قسم الرفع (يظهر بعد الرمز الصحيح) -->
+            <div id="adminUploadSection" class="d-none">
+                <div class="alert alert-success small"><i class="fas fa-check-circle me-1"></i> تم تسجيل الدخول بنجاح.</div>
+                
+                <h6 class="fw-bold mt-4 mb-3 border-bottom pb-2">رفع ملف النتائج (CSV)</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label">نوع المسابقة:</label>
+                    <select id="uploadExamType" class="form-select">
+                        <option value="concours">دخول السنة الأولى (كونكور)</option>
+                        <option value="brevet">ختم الدروس الإعدادية (بريفة)</option>
+                        <option value="bac_n">باكالوريا - الدورة العادية</option>
+                        <option value="bac_c">باكالوريا - الدورة التكميلية</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">اختر الملف:</label>
+                    <input type="file" id="csvFileInput" class="form-control" accept=".csv">
+                </div>
+
+                <div id="uploadStatus" class="alert alert-info d-none small"></div>
+
+                <button onclick="uploadToSupabase()" class="btn btn-primary w-100 fw-bold py-2">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> رفع الملف إلى السيرفر
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- صفحة الأوائل والإحصائيات -->
     <div id="topPageOverlay">
         <div class="top-header">
@@ -422,49 +483,110 @@
     </div>
 
     <script>
+        // --- إعدادات SUPABASE ---
+        const SUPABASE_URL = 'https://chjxwcliodlevzorjush.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoanh3Y2xpb2RsZXZ6b3JqdXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MjUzNDIsImV4cCI6MjA3OTMwMTM0Mn0.PVvBRAMsscwbnDQt5Qg6Ni9z39WeI981aBCkMnZOnJQ'; 
+        
+        // إنشاء عميل Supabase
+        let supabaseClient = null;
+        try {
+            if (typeof supabase !== 'undefined') {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch (e) {
+            console.error('Supabase Setup Error:', e);
+        }
+
+        // رابط التخزين العام لـ bucket: rim_files
+        const STORAGE_BASE_URL = `${SUPABASE_URL}/storage/v1/object/public/rim_files/`;
+
+        // ----------------------------------------------------
+
         // --- حماية الموقع (منع الاختصارات والزر الأيمن) ---
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
-            // F12
             if(e.keyCode == 123) return false;
-            // Ctrl+Shift+I
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
-            // Ctrl+Shift+J
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
-            // Ctrl+Shift+C
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
-            // Ctrl+U
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
-            // Ctrl+S
             if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false;
         }
-        // ----------------------------------------------------
-
-        // PWA Setup
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
-            });
-        }
-
-        let deferredPrompt;
-        const installBtn = document.getElementById('installBtn');
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.style.display = 'inline-flex';
-        });
-        installBtn.addEventListener('click', () => {
-            installBtn.style.display = 'none';
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => { deferredPrompt = null; });
+        
+        // --- منطق الزر السري للوحة الإدارة ---
+        let logoTapCount = 0;
+        let logoTapTimer = null;
+        const brandLogo = document.getElementById('brandLogo');
+        
+        brandLogo.addEventListener('click', () => {
+            logoTapCount++;
+            if (logoTapTimer) clearTimeout(logoTapTimer);
+            logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 1000);
+            if (logoTapCount === 5) {
+                logoTapCount = 0;
+                document.getElementById('adminOverlay').style.display = 'block';
             }
         });
 
-        const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
+        function closeAdminPanel() {
+            document.getElementById('adminOverlay').style.display = 'none';
+            document.getElementById('adminLoginSection').classList.remove('d-none');
+            document.getElementById('adminUploadSection').classList.add('d-none');
+            document.getElementById('adminPassword').value = '';
+        }
 
-        // About Page Logic
+        function checkAdminPassword() {
+            const pass = document.getElementById('adminPassword').value;
+            if (pass === 'I21567@RIM@MDA') {
+                document.getElementById('adminLoginSection').classList.add('d-none');
+                document.getElementById('adminUploadSection').classList.remove('d-none');
+            } else {
+                alert('الرمز خاطئ 🚫');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        async function uploadToSupabase() {
+            if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
+            const examType = document.getElementById('uploadExamType').value;
+            const fileInput = document.getElementById('csvFileInput');
+            const statusDiv = document.getElementById('uploadStatus');
+
+            if (fileInput.files.length === 0) { alert("الرجاء اختيار ملف CSV أولاً."); return; }
+
+            const file = fileInput.files[0];
+            const fileName = examType + '.csv'; 
+
+            statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
+            statusDiv.classList.add('alert-info');
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الرفع...';
+
+            try {
+                const { data, error } = await supabaseClient.storage.from('rim_files').upload(fileName, file, { cacheControl: '3600', upsert: true });
+                if (error) throw error;
+                statusDiv.classList.remove('alert-info');
+                statusDiv.classList.add('alert-success');
+                statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> تم رفع ملف ${fileName} بنجاح!`;
+                cache[examType] = null;
+            } catch (err) {
+                console.error(err);
+                statusDiv.classList.remove('alert-info');
+                statusDiv.classList.add('alert-danger');
+                statusDiv.innerHTML = `خطأ في الرفع: ${err.message}`;
+            }
+        }
+        
+        // PWA Setup
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log(err)); }); }
+
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'inline-flex'; });
+        installBtn.addEventListener('click', () => { installBtn.style.display = 'none'; if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choiceResult) => { deferredPrompt = null; }); } });
+
+        const orientationGroupLink = "https://www.unem2000.com/whatsapp"; 
+        const tawjihOfficialLink = "https://etudiants-mesrs.app/";
+
         function openAbout() { document.getElementById('aboutPageOverlay').style.display = 'block'; }
         function closeAbout() { document.getElementById('aboutPageOverlay').style.display = 'none'; }
 
@@ -717,19 +839,63 @@
             document.getElementById('searchBtn').click();
         }
 
+        // --- دالة الجلب الذكية السريعة (بدون منع الكاش) ---
         async function fetchData(examType) {
             if (cache[examType]) return cache[examType];
+            
             const config = examConfig[examType];
+            const fileName = config.file; 
+            let csvText = null;
+
+            // تحديث واجهة المستخدم
+            document.getElementById('loadingText').innerText = "جاري تحميل الملف (قد يستغرق بضع ثوانٍ لأول مرة)...";
+
             try {
-                const response = await fetch(config.file);
-                if (!response.ok) throw new Error(`الملف غير موجود`);
-                const csvText = await response.text();
-                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
-                if(parsed.data.length === 0) throw new Error("الملف فارغ");
-                const processedData = preprocessData(parsed.data, config, examType);
-                cache[examType] = processedData;
-                return processedData;
-            } catch (error) { throw error; }
+                // 1. Supabase (بدون timestamp للسماح بالكاش)
+                const supabaseUrl = `${STORAGE_BASE_URL}${fileName}`;
+                const responseSupabase = await fetch(supabaseUrl);
+                
+                if (responseSupabase.ok) {
+                    csvText = await responseSupabase.text();
+                    console.log("تم جلب النتائج من السيرفر (Supabase).");
+                } else {
+                    throw new Error("Not found in Supabase");
+                }
+            } catch (errSupabase) {
+                // 2. GitHub / محلي
+                try {
+                    const localUrl = `./${fileName}`; 
+                    const responseLocal = await fetch(localUrl);
+                    
+                    if (responseLocal.ok) {
+                        csvText = await responseLocal.text();
+                        console.log("تم جلب النتائج من الملفات المحلية.");
+                    } else {
+                        throw new Error("Not found anywhere");
+                    }
+                } catch (errLocal) {
+                    throw new Error("FILE_NOT_FOUND");
+                }
+            }
+
+            // معالجة البيانات
+            document.getElementById('loadingText').innerText = "جاري معالجة البيانات...";
+            
+            // استخدام Promise للسماح للمتصفح بتحديث الواجهة قبل التجميد للمعالجة
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
+                        if(parsed.data.length === 0) throw new Error("EMPTY_FILE");
+                        
+                        const processedData = preprocessData(parsed.data, config, examType);
+                        cache[examType] = processedData;
+                        resolve(processedData);
+                    } catch (parseError) {
+                        reject(parseError);
+                    }
+                }, 50);
+            });
         }
 
         function preprocessData(data, config, examType) {
@@ -765,16 +931,21 @@
             return data;
         }
 
+        // --- تعديل زر البحث ---
         document.getElementById('searchBtn').addEventListener('click', async () => {
             const examType = document.getElementById('examType').value;
             const searchCat = document.getElementById('searchCategory').value;
             const inputVal = document.getElementById('searchInput').value.trim().toLowerCase();
             const config = examConfig[examType];
+            
             if (!inputVal) return alert("الرجاء إدخال قيمة للبحث");
+            
             const container = document.getElementById('resultsContainer');
             const loading = document.getElementById('loading');
+            
             container.innerHTML = '';
-            loading.classList.remove('d-none');
+            loading.classList.remove('d-none'); 
+
             setTimeout(async () => {
                 try {
                     const data = await fetchData(examType);
@@ -784,14 +955,35 @@
                     } else {
                         results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
                     }
+                    
                     loading.classList.add('d-none');
-                    if (results.length === 0) { container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج.</div>'; return; }
+                    
+                    if (results.length === 0) { 
+                        container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج مطابقة.</div>'; 
+                        return; 
+                    }
+                    
                     container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
                     currentFilteredResults = results; currentRenderCount = 0; currentSearchConfig = config; currentSearchExamType = examType; currentSearchMode = searchCat; 
                     renderNextBatch();
                     setTimeout(() => { const firstResult = document.querySelector('.result-card-wrapper'); if (firstResult) firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
                     if (searchCat === 'number' && results.length > 0) { const winner = results.find(s => isResultSuccessful(s, config, examType)); if (winner) triggerCelebration(); }
-                } catch (error) { loading.classList.add('d-none'); alert("حدث خطأ: " + error.message); }
+                    
+                } catch (error) { 
+                    loading.classList.add('d-none');
+                    if (error.message === "FILE_NOT_FOUND" || error.message.includes("404")) {
+                        container.innerHTML = `
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-clock fa-2x mb-2"></i><br>
+                                <strong>لم يتم رفع نتائج هذه المسابقة بعد.</strong><br>
+                                يرجى المحاولة لاحقاً.
+                            </div>`;
+                    } else if (error.message === "EMPTY_FILE") {
+                        container.innerHTML = '<div class="alert alert-warning text-center">ملف النتائج فارغ أو تالف.</div>';
+                    } else {
+                        alert("حدث خطأ غير متوقع: " + error.message); 
+                    }
+                }
             }, 50);
         });
 
@@ -869,10 +1061,35 @@
             if(student._stateRank) items.push({l: 'الرتبة في الولاية', v: student._stateRank});
             if(student._schoolRank) items.push({l: 'الرتبة في المركز', v: student._schoolRank});
             if (items.length > 0) { gridHtml = `<div class="info-grid">`; items.forEach(item => { gridHtml += `<div class="info-item"><span class="info-label">${item.l}</span><span class="info-value">${item.v}</span></div>`; }); gridHtml += `</div>`; }
-            let whatsappActions = '';
+            
+            // --- إضافة الأزرار (واتساب + التوجيه الجديد) ---
+            let buttonsHtml = '';
+            
+            // شرط الواتساب والتوجيه: (ناجح + بحث برقم الجلوس + باكلوريا)
             if (isAdmis && searchMode === 'number' && (examType === 'bac_n' || examType === 'bac_c')) {
-                 whatsappActions += `<a href="${orientationGroupLink}" target="_blank" class="whatsapp-card"><div class="d-flex align-items-center"><div class="icon-circle icon-whatsapp"><i class="fas fa-university"></i></div><div><h6 class="fw-bold mb-1" style="color:#0f5132">🎓 توجيه وتخصصات</h6><p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات شرح التخصصات.</p></div></div></a>`;
+                 buttonsHtml += `
+                 <a href="${orientationGroupLink}" target="_blank" class="whatsapp-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle icon-whatsapp"><i class="fas fa-university"></i></div>
+                        <div class="ms-2">
+                            <h6 class="fw-bold mb-1" style="color:#0f5132">🎓 توجيه وتخصصات</h6>
+                            <p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات شرح التخصصات.</p>
+                        </div>
+                    </div>
+                 </a>`;
+
+                 buttonsHtml += `
+                 <a href="${tawjihOfficialLink}" target="_blank" class="tawjih-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle icon-tawjih"><i class="fas fa-laptop"></i></div>
+                        <div class="ms-2">
+                            <h6 class="fw-bold mb-1" style="color:#0d47a1">التسجيل في التوجيه</h6>
+                            <p class="m-0 small text-secondary">اضغط هنا للدخول لمنصة التوجيه الرسمية.</p>
+                        </div>
+                    </div>
+                 </a>`;
             }
+
             const safePlace = place.replace(/'/g, "\\'");
             const cardId = 'card_' + Math.random().toString(36).substr(2, 9);
             const currentUrl = window.location.href.split('?')[0];
@@ -894,7 +1111,7 @@
                         </div>
                     </div>
                     <button class="btn-share" onclick="shareResult('${cardId}')"><i class="fas fa-share-alt me-2"></i> مشاركة النتيجة كصورة</button>
-                    ${whatsappActions}
+                    ${buttonsHtml}
                 </div>`;
         }
 
@@ -978,5 +1195,41 @@
         function triggerCelebration() { const overlay = document.getElementById('celebrationOverlay'); overlay.style.display = 'flex'; if(celebrationInterval) clearInterval(celebrationInterval); celebrationInterval = setInterval(createConfetti, 100); }
         function closeCelebration() { document.getElementById('celebrationOverlay').style.display = 'none'; if(celebrationInterval) clearInterval(celebrationInterval); document.querySelectorAll('.confetti-piece').forEach(e => e.remove()); }
     </script>
+
+    <!-- START PROTECTION CODE -->
+    <script>
+    (function() {
+        // منع الزر الأيمن
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // منع اختصارات لوحة المفاتيح
+        document.onkeydown = function(e) {
+            // F12
+            if(e.keyCode == 123) {
+                return false;
+            }
+            // Ctrl+I (DevTools)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+J (Console)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+C (Inspect)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+U (View Source)
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+        }
+    })();
+    </script>
+    <!-- END PROTECTION CODE -->
+    
 </body>
 </html>
