@@ -547,7 +547,14 @@
         }
 
         async function uploadToSupabase() {
-            if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
+    // التأكد من أن المستخدم مسجل الدخول قبل المحاولة
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        alert("غير مصرح لك بالرفع! يجب تسجيل الدخول.");
+        return;
+    }
+
+    // ... باقي كود الرفع الخاص بك كما هو ...
             const examType = document.getElementById('uploadExamType').value;
             const fileInput = document.getElementById('csvFileInput');
             const statusDiv = document.getElementById('uploadStatus');
