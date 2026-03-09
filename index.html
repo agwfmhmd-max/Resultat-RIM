@@ -30,58 +30,53 @@
             --secondary: #004d40;
             --gold: #ffc107;
             --whatsapp: #25D366;
-            --tawjih: #2196f3; /* لون منصة التوجيه */
+            --tawjih: #2196f3;
             --bg: #f0f2f5;
             --card: #ffffff;
             --radius: 16px;
         }
 
-        /* --- تعديلات التخطيط لصفحة واحدة ثابتة --- */
         html, body {
-            height: 100%; /* ملء الشاشة */
+            height: 100%;
             margin: 0;
-            overflow: hidden; /* منع تمرير الصفحة بالكامل */
+            overflow: hidden;
         }
 
         body { 
             font-family: 'Cairo', sans-serif; 
             background: var(--bg); 
-            display: flex; /* استخدام الفلكس */
-            flex-direction: column; /* ترتيب العناصر عمودياً */
+            display: flex;
+            flex-direction: column;
         }
         
-        /* الشريط العلوي ثابت الحجم */
         .navbar { 
             background: linear-gradient(135deg, var(--primary), var(--secondary)); 
             padding: 1rem; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
             color: white; 
-            flex: 0 0 auto; /* لا يتمدد ولا ينكمش */
+            flex: 0 0 auto;
             z-index: 100;
         }
 
-        /* منطقة المحتوى القابلة للتمرير */
         .scrollable-content {
-            flex: 1 1 auto; /* تتمدد لتملأ الفراغ المتبقي */
-            overflow-y: auto; /* السماح بالتمرير الداخلي */
+            flex: 1 1 auto;
+            overflow-y: auto;
             padding: 15px;
             width: 100%;
         }
 
         .container-app { max-width: 600px; margin: auto; }
         
-        /* التذييل ثابت الحجم */
         .footer-pro { 
             background: linear-gradient(to bottom, var(--secondary), #00251a);
-            padding: 15px 0 10px; /* تقليل الحشو ليكون مضغوطاً */
+            padding: 15px 0 10px;
             color: white; 
             border-radius: 20px 20px 0 0; 
             box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-            flex: 0 0 auto; /* لا يتمدد ولا ينكمش */
+            flex: 0 0 auto;
             z-index: 100;
         }
 
-        /* --- باقي التنسيقات --- */
         .search-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .section-title { font-weight: 700; color: var(--primary); font-size: 16px; margin-bottom: 8px; margin-top: 15px; }
         .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid #ddd; background: #f8f9fa; }
@@ -136,11 +131,9 @@
         .btn-share { background: #3b5998; color: white; border: none; border-radius: 20px; padding: 8px 15px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 10px; transition: 0.3s; }
         .btn-share:hover { background: #2d4373; color: white; }
 
-        /* واتساب كارد */
         .whatsapp-card { background: #e7fceb; border: 1px solid #25D366; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; color: inherit; }
         .icon-whatsapp { background: #25D366; }
         
-        /* توجيه كارد (الجديد) */
         .tawjih-card { background: #e3f2fd; border: 1px solid var(--tawjih); border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; color: inherit; }
         .icon-tawjih { background: var(--tawjih); }
 
@@ -190,58 +183,19 @@
         @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* تنسيقات الفوتر المضغوط */
-        .footer-menu { 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            margin-bottom: 5px; 
-            flex-wrap: wrap;
-        }
-        .footer-menu span { 
-            cursor: pointer; 
-            color: rgba(255,255,255,0.9); 
-            font-size: 0.85rem; 
-            transition: 0.3s; 
-            font-weight: 600;
-        }
-        .footer-menu span:hover { 
-            color: var(--gold); 
-        }
-        .dev-container {
-            margin-top: 5px;
-        }
-        .dev-name-pro { 
-            color: var(--gold); 
-            font-weight: 700; 
-            text-decoration: none; 
-            font-size: 0.9rem; 
-            display: inline-flex;
-            align-items: center;
-            padding: 5px 15px; 
-            border: 1px solid rgba(255, 193, 7, 0.5); 
-            border-radius: 50px; 
-            background: rgba(255, 193, 7, 0.1); 
-            transition: all 0.3s ease; 
-        }
-        .dev-name-pro:hover { 
-            background: var(--gold); 
-            color: #000; 
-        }
-        .footer-copyright { 
-            font-size: 0.7rem; 
-            color: rgba(255,255,255,0.4); 
-            margin-top: 5px;
-        }
+        .footer-menu { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap; }
+        .footer-menu span { cursor: pointer; color: rgba(255,255,255,0.9); font-size: 0.85rem; transition: 0.3s; font-weight: 600; }
+        .footer-menu span:hover { color: var(--gold); }
+        .dev-container { margin-top: 5px; }
+        .dev-name-pro { color: var(--gold); font-weight: 700; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; padding: 5px 15px; border: 1px solid rgba(255, 193, 7, 0.5); border-radius: 50px; background: rgba(255, 193, 7, 0.1); transition: all 0.3s ease; }
+        .dev-name-pro:hover { background: var(--gold); color: #000; }
+        .footer-copyright { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 5px; }
     </style>
 </head>
-<!-- منع النسخ والزر الأيمن من داخل تاج البودي -->
 <body oncontextmenu="return false;">
 
-    <!-- الشريط العلوي (ثابت) -->
     <nav class="navbar">
         <div class="container-app w-100 d-flex align-items-center justify-content-between">
-            <!-- تمت إضافة معرف brandLogo وزيادة cursor pointer للتفاعل -->
             <span id="brandLogo" class="navbar-brand m-0 fw-bold fs-4" style="cursor: pointer; user-select: none;"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
             <div>
                 <button id="installBtn" class="nav-btn"><i class="fas fa-download me-1"></i> تثبيت</button>
@@ -249,7 +203,6 @@
         </div>
     </nav>
 
-    <!-- منطقة المحتوى القابلة للتمرير (الوسط) -->
     <div class="scrollable-content">
         <div class="container-app">
             
@@ -291,7 +244,6 @@
         </div>
     </div>
 
-    <!-- التذييل (ثابت في الأسفل) -->
     <footer class="footer-pro">
         <div class="container-app text-center">
             <div class="footer-menu">
@@ -312,7 +264,6 @@
         </div>
     </footer>
 
-    <!-- بقية العناصر (الاحتفال، النوافذ المنبثقة) -->
     <div id="celebrationOverlay">
         <div class="congrats-box">
             <div style="font-size: 3rem; margin-bottom: 10px;">🎉🌺🥰</div>
@@ -354,7 +305,6 @@
         </div>
     </div>
 
-    <!-- شاشة حاسبة المعدل -->
     <div id="simulatorOverlay">
         <div class="sim-header">
             <h5 class="m-0 fw-bold text-success"><i class="fas fa-calculator me-2"></i>حاسبة المعدل</h5>
@@ -385,31 +335,42 @@
         </div>
     </div>
 
-    <!-- شاشة الإدارة (Admin Upload Overlay) -->
+    <!-- شاشة الإدارة المحمية -->
     <div id="adminOverlay">
         <div class="top-header">
             <h5 class="m-0 fw-bold text-danger"><i class="fas fa-lock me-2"></i>إدارة البيانات</h5>
             <button onclick="closeAdminPanel()" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i></button>
         </div>
-        <div class="container-app pt-4">
-            <!-- قسم تسجيل الدخول -->
+        <div class="container-app pt-4 px-3">
+            
+            <!-- قسم تسجيل الدخول الجديد -->
             <div id="adminLoginSection">
                 <div class="text-center mb-4">
                     <i class="fas fa-user-shield fa-3x text-secondary"></i>
-                    <h5 class="mt-3">منطقة محظورة</h5>
+                    <h5 class="mt-3">منطقة الإدارة الآمنة</h5>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">رمز الدخول:</label>
-                    <input type="password" id="adminPassword" class="form-control" placeholder="أدخل الرمز السري">
+                
+                <div id="loginError" class="alert alert-danger d-none small"></div>
+                
+                <div class="mb-3 text-start">
+                    <label class="form-label">البريد الإلكتروني:</label>
+                    <input type="email" id="adminEmail" class="form-control" placeholder="admin@resultat-rim.com" dir="ltr">
                 </div>
-                <button onclick="checkAdminPassword()" class="btn btn-main">دخول</button>
+                <div class="mb-3 text-start">
+                    <label class="form-label">كلمة المرور:</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="أدخل كلمة المرور" dir="ltr">
+                </div>
+                <button id="loginBtn" onclick="doAdminLogin()" class="btn btn-main">تسجيل الدخول</button>
             </div>
 
-            <!-- قسم الرفع (يظهر بعد الرمز الصحيح) -->
+            <!-- قسم الرفع (يظهر بعد تسجيل الدخول) -->
             <div id="adminUploadSection" class="d-none">
-                <div class="alert alert-success small"><i class="fas fa-check-circle me-1"></i> تم تسجيل الدخول بنجاح.</div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="alert alert-success small m-0 py-2 w-100 me-2"><i class="fas fa-check-circle me-1"></i> متصل كمسؤول</div>
+                    <button onclick="doAdminLogout()" class="btn btn-sm btn-outline-danger" style="white-space: nowrap;"><i class="fas fa-sign-out-alt"></i> خروج</button>
+                </div>
                 
-                <h6 class="fw-bold mt-4 mb-3 border-bottom pb-2">رفع ملف النتائج (CSV)</h6>
+                <h6 class="fw-bold mt-3 mb-3 border-bottom pb-2">رفع ملف النتائج (CSV)</h6>
                 
                 <div class="mb-3">
                     <label class="form-label">نوع المسابقة:</label>
@@ -487,7 +448,6 @@
         const SUPABASE_URL = 'https://chjxwcliodlevzorjush.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoanh3Y2xpb2RsZXZ6b3JqdXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MjUzNDIsImV4cCI6MjA3OTMwMTM0Mn0.PVvBRAMsscwbnDQt5Qg6Ni9z39WeI981aBCkMnZOnJQ'; 
         
-        // إنشاء عميل Supabase
         let supabaseClient = null;
         try {
             if (typeof supabase !== 'undefined') {
@@ -497,23 +457,28 @@
             console.error('Supabase Setup Error:', e);
         }
 
-        // رابط التخزين العام لـ bucket: rim_files
         const STORAGE_BASE_URL = `${SUPABASE_URL}/storage/v1/object/public/rim_files/`;
 
-        // ----------------------------------------------------
-
-        // --- حماية الموقع (منع الاختصارات والزر الأيمن) ---
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.onkeydown = function(e) {
-            if(e.keyCode == 123) return false;
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
-            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
-            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false;
+        // --- إدارة الجلسة للمسؤول (الجديد) ---
+        if (supabaseClient) {
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                const loginSec = document.getElementById('adminLoginSection');
+                const uploadSec = document.getElementById('adminUploadSection');
+                
+                if (session) {
+                    if(loginSec) loginSec.classList.add('d-none');
+                    if(uploadSec) uploadSec.classList.remove('d-none');
+                } else {
+                    if(loginSec) loginSec.classList.remove('d-none');
+                    if(uploadSec) uploadSec.classList.add('d-none');
+                }
+            });
         }
+
+        // --- حماية الموقع الأساسية ---
+        document.addEventListener('contextmenu', event => event.preventDefault());
         
-        // --- منطق الزر السري للوحة الإدارة ---
+        // --- فتح لوحة الإدارة المخفية (5 ضغطات على الشعار) ---
         let logoTapCount = 0;
         let logoTapTimer = null;
         const brandLogo = document.getElementById('brandLogo');
@@ -530,31 +495,59 @@
 
         function closeAdminPanel() {
             document.getElementById('adminOverlay').style.display = 'none';
-            document.getElementById('adminLoginSection').classList.remove('d-none');
-            document.getElementById('adminUploadSection').classList.add('d-none');
             document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').classList.add('d-none');
+            const uploadStatus = document.getElementById('uploadStatus');
+            if(uploadStatus) uploadStatus.classList.add('d-none');
         }
 
-        function checkAdminPassword() {
+        // --- دوال تسجيل الدخول والخروج للمسؤول (الجديدة والآمنة) ---
+        async function doAdminLogin() {
+            if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
+            
+            const email = document.getElementById('adminEmail').value.trim();
             const pass = document.getElementById('adminPassword').value;
-            if (pass === 'I21567@RIM@MDA') {
-                document.getElementById('adminLoginSection').classList.add('d-none');
-                document.getElementById('adminUploadSection').classList.remove('d-none');
+            const btn = document.getElementById('loginBtn');
+            const errDiv = document.getElementById('loginError');
+
+            if(!email || !pass) {
+                errDiv.innerText = "الرجاء إدخال البريد الإلكتروني وكلمة المرور.";
+                errDiv.classList.remove('d-none');
+                return;
+            }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري التحقق...';
+            btn.disabled = true;
+            errDiv.classList.add('d-none');
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: pass
+            });
+
+            if (error) {
+                errDiv.innerText = "بيانات الدخول غير صحيحة 🚫";
+                errDiv.classList.remove('d-none');
             } else {
-                alert('الرمز خاطئ 🚫');
+                document.getElementById('adminEmail').value = '';
                 document.getElementById('adminPassword').value = '';
+            }
+
+            btn.innerHTML = 'تسجيل الدخول';
+            btn.disabled = false;
+        }
+
+        async function doAdminLogout() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+                const uploadStatus = document.getElementById('uploadStatus');
+                if(uploadStatus) uploadStatus.classList.add('d-none');
             }
         }
 
+        // --- دالة رفع الملفات إلى الخادم ---
         async function uploadToSupabase() {
-    // التأكد من أن المستخدم مسجل الدخول قبل المحاولة
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) {
-        alert("غير مصرح لك بالرفع! يجب تسجيل الدخول.");
-        return;
-    }
-
-    // ... باقي كود الرفع الخاص بك كما هو ...
+            if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
             const examType = document.getElementById('uploadExamType').value;
             const fileInput = document.getElementById('csvFileInput');
             const statusDiv = document.getElementById('uploadStatus');
@@ -569,12 +562,14 @@
             statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الرفع...';
 
             try {
+                // الكود سيتم قبوله فقط لأننا استخدمنا تسجيل الدخول (Session)
                 const { data, error } = await supabaseClient.storage.from('rim_files').upload(fileName, file, { cacheControl: '3600', upsert: true });
                 if (error) throw error;
                 statusDiv.classList.remove('alert-info');
                 statusDiv.classList.add('alert-success');
                 statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> تم رفع ملف ${fileName} بنجاح!`;
-                cache[examType] = null;
+                
+                cache[examType] = null; // تفريغ الكاش المحلي للملف
             } catch (err) {
                 console.error(err);
                 statusDiv.classList.remove('alert-info');
@@ -598,30 +593,30 @@
         function closeAbout() { document.getElementById('aboutPageOverlay').style.display = 'none'; }
 
         const examConfig = {
-            "bac_n": { file: "bac_n.csv", searchKeys: ["NODOSS", "Num", "N°"], nameKeys: ["NOM_AR", "Nom", "Nom complet"], scoreKeys: ["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], placeKeys: ["Etablissement_AR", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision", "Resultat"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN", "Wilaya_FR"], majorKeys: ["SERIE", "Serie", "Option"] },
-            "bac_c": { file: "bac_c.csv", searchKeys: ["NODOSS", "Num"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["Moy Bac_Session", "Moy Bac", "Moyenne"], placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN"], majorKeys: ["SERIE", "Serie"] },
-            "brevet": { file: "brevet.csv", searchKeys: ["Num_Bepc", "Num"], nameKeys: ["NOM", "Nom"], scoreKeys: ["Moyenne_Bepc", "Moyenne"], placeKeys: ["Ecole", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision"], stateKeys: ["WILAYA", "Wilaya", "Wilaya_AR"], majorKeys: [] },
-            "concours": { file: "concours.csv", searchKeys: ["Noreg", "NODOSS"], nameKeys: ["NOM_AR", "Nom"], scoreKeys: ["TOTAL", "Score"], placeKeys: ["Ecole_AR", "Ecole"], decisionKeys: [], stateKeys: ["WILAYA_AR", "Wilaya"], majorKeys: [] }
+            "bac_n": { file: "bac_n.csv", searchKeys: ["NODOSS", "Num", "N°"], nameKeys: ["NOM_AR", "Nom", "Nom complet"], scoreKeys:["Moy Bac", "Moyenne", "Moyenne_Bac", "Moy"], placeKeys:["Etablissement_AR", "Etablissement", "Centre", "Lieu"], decisionKeys:["Decision", "Resultat"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN", "Wilaya_FR"], majorKeys: ["SERIE", "Serie", "Option"] },
+            "bac_c": { file: "bac_c.csv", searchKeys: ["NODOSS", "Num"], nameKeys:["NOM_AR", "Nom"], scoreKeys: ["Moy Bac_Session", "Moy Bac", "Moyenne"], placeKeys: ["Etablissement_AR", "Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR", "Wilaya", "DREN"], majorKeys:["SERIE", "Serie"] },
+            "brevet": { file: "brevet.csv", searchKeys:["Num_Bepc", "Num"], nameKeys: ["NOM", "Nom"], scoreKeys:["Moyenne_Bepc", "Moyenne"], placeKeys:["Ecole", "Etablissement", "Centre", "Lieu"], decisionKeys: ["Decision"], stateKeys:["WILAYA", "Wilaya", "Wilaya_AR"], majorKeys:[] },
+            "concours": { file: "concours.csv", searchKeys: ["Noreg", "NODOSS"], nameKeys: ["NOM_AR", "Nom"], scoreKeys:["TOTAL", "Score"], placeKeys: ["Ecole_AR", "Ecole"], decisionKeys: [], stateKeys:["WILAYA_AR", "Wilaya"], majorKeys: [] }
         };
 
-        const staticMajors = [ { label: "العلوم الطبيعية (SN)", searchVal: ["SN"] }, { label: "الآداب الأصلية (LO)", searchVal: ["LO"] }, { label: "الآداب العصرية (LM)", searchVal: ["LM"] }, { label: "الرياضيات (M)", searchVal: ["M", "C"] }, { label: "التقنية (TM)", searchVal: ["TM", "T"] }, { label: "الهندسة الكهربائية (TS)", searchVal: ["TS"] }, { label: "اللغات (LA)", searchVal: ["LA"] } ];
+        const staticMajors =[ { label: "العلوم الطبيعية (SN)", searchVal: ["SN"] }, { label: "الآداب الأصلية (LO)", searchVal: ["LO"] }, { label: "الآداب العصرية (LM)", searchVal: ["LM"] }, { label: "الرياضيات (M)", searchVal:["M", "C"] }, { label: "التقنية (TM)", searchVal:["TM", "T"] }, { label: "الهندسة الكهربائية (TS)", searchVal: ["TS"] }, { label: "اللغات (LA)", searchVal: ["LA"] } ];
         
-        const staticWilayas = [
-            { label: "الحوض الشرقي", searchVal: ["الحوض الشرقي", "Hod Charghi"] },
-            { label: "الحوض الغربي", searchVal: ["الحوض الغربي", "Hod Gharbi"] },
-            { label: "لعصابه", searchVal: ["لعصابه", "لعصابة", "ASSABA"] },
-            { label: "كوركل", searchVal: ["كوركل", "GORGOL"] },
-            { label: "لبراكنه", searchVal: ["لبراكنه", "لبراكنة", "BRAKNA"] },
+        const staticWilayas =[
+            { label: "الحوض الشرقي", searchVal:["الحوض الشرقي", "Hod Charghi"] },
+            { label: "الحوض الغربي", searchVal:["الحوض الغربي", "Hod Gharbi"] },
+            { label: "لعصابه", searchVal:["لعصابه", "لعصابة", "ASSABA"] },
+            { label: "كوركل", searchVal:["كوركل", "GORGOL"] },
+            { label: "لبراكنه", searchVal:["لبراكنه", "لبراكنة", "BRAKNA"] },
             { label: "اترارزه", searchVal: ["اترارزه", "اترارزة", "TRARZA"] },
             { label: "آدرار", searchVal: ["آدرار", "ADRAR", "ادرار"] },
-            { label: "داخلت انواذيبو", searchVal: ["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] },
+            { label: "داخلت انواذيبو", searchVal:["داخلت انواذيبو", "NOUADHIBOU", "داخلت انواذيب", "Dakhlet Nouadhibou"] },
             { label: "تكانت", searchVal: ["تكانت", "TAGANT"] },
-            { label: "كيديماغا", searchVal: ["كيديماغا", "GUIDIMAGHA", "كيدي ماغه", "Guidimakha"] },
-            { label: "تيرس زمور", searchVal: ["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
+            { label: "كيديماغا", searchVal:["كيديماغا", "GUIDIMAGHA", "كيدي ماغه", "Guidimakha"] },
+            { label: "تيرس زمور", searchVal:["تيرس زمور", "TIRIS ZEMMOUR", "تيرس ازمور", "Tiris Zemour", "Zemour"] },
             { label: "اينشيري", searchVal: ["اينشيري", "INCHIRI"] },
-            { label: "انواكشوط 1 (الشمالية)", searchVal: ["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord"] },
-            { label: "انواكشوط 2 (الغربية)", searchVal: ["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST"] },
-            { label: "انواكشوط 3 (الجنوبية)", searchVal: ["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
+            { label: "انواكشوط 1 (الشمالية)", searchVal:["انواكشوط الشمالية", "NKTT NORD", "NORD", "Nouakchott Nord"] },
+            { label: "انواكشوط 2 (الغربية)", searchVal:["انواكشوط الغربية", "Nouakchott Ouest", "NKTT OUEST"] },
+            { label: "انواكشوط 3 (الجنوبية)", searchVal:["انواكشوط الجنوبية", "NKTT SUD", "SUD", "Nouakchott Sud"] }
         ];
 
         const examSelect = document.getElementById('examType');
@@ -631,16 +626,11 @@
         document.addEventListener('DOMContentLoaded', updateSearchCategory);
 
         let cache = {}; 
-        let currentFilteredResults = [], currentRenderCount = 0, currentBatchSize = 100, currentSearchConfig = null, currentSearchExamType = null, currentSearchMode = 'school';
+        let currentFilteredResults =[], currentRenderCount = 0, currentBatchSize = 100, currentSearchConfig = null, currentSearchExamType = null, currentSearchMode = 'school';
 
         function getVal(item, keysArray) { if (!item || !keysArray) return ""; for (let key of keysArray) { if (item[key] !== undefined && item[key] !== null) return item[key]; } return ""; }
         function parseScore(val) { if (!val) return 0; let clean = String(val).trim().replace(/[^0-9.,]/g, '').replace(',', '.'); let num = parseFloat(clean); return isNaN(num) ? 0 : num; }
-        
-        function formatScore(val) {
-            let num = parseFloat(val);
-            if (isNaN(num)) return "0.00";
-            return (Math.floor(num * 100) / 100).toFixed(2);
-        }
+        function formatScore(val) { let num = parseFloat(val); if (isNaN(num)) return "0.00"; return (Math.floor(num * 100) / 100).toFixed(2); }
 
         function getNormalizedState(rawState) {
             if (!rawState) return "unknown";
@@ -702,15 +692,11 @@
 
             let sortedWilayas = Object.keys(wilayaStats).map(key => {
                 return { name: key, rate: (wilayaStats[key].pass / wilayaStats[key].total) * 100, count: wilayaStats[key].pass, total: wilayaStats[key].total };
-            })
-            .filter(w => w.total > 30) 
-            .sort((a, b) => b.rate - a.rate);
+            }).filter(w => w.total > 30).sort((a, b) => b.rate - a.rate);
 
             let sortedSchools = Object.keys(schoolStats).map(key => {
                 return { name: key, rate: (schoolStats[key].pass / schoolStats[key].total) * 100, count: schoolStats[key].pass, total: schoolStats[key].total };
-            })
-            .filter(s => s.total > 30) 
-            .sort((a, b) => b.rate - a.rate);
+            }).filter(s => s.total > 30).sort((a, b) => b.rate - a.rate);
 
             let sortedSeries = Object.keys(serieStats).map(key => {
                 return { name: key, rate: (serieStats[key].pass / serieStats[key].total) * 100 };
@@ -751,9 +737,7 @@
                 html += `<div class="stats-section-title"><i class="fas fa-map-marker-alt me-2"></i>ترتيب الولايات (نسبة النجاح)</div>`;
                 html += `<div class="table-responsive bg-white rounded p-2 border"><table class="table table-sm table-striped mb-0 small">
                     <thead><tr><th>الولاية</th><th class="text-end">النسبة</th></tr></thead><tbody>`;
-                sortedWilayas.forEach(w => {
-                    html += `<tr><td>${w.name}</td><td class="text-end fw-bold text-success">%${w.rate.toFixed(2)}</td></tr>`;
-                });
+                sortedWilayas.forEach(w => { html += `<tr><td>${w.name}</td><td class="text-end fw-bold text-success">%${w.rate.toFixed(2)}</td></tr>`; });
                 html += `</tbody></table></div>`;
             }
 
@@ -778,13 +762,7 @@
             if(sortedSeries.length > 0) {
                 html += `<div class="stats-section-title"><i class="fas fa-book me-2"></i>أفضل 5 شعب</div>`;
                 html += `<div class="stat-grid-compact">`;
-                sortedSeries.slice(0, 5).forEach(s => {
-                    html += `
-                    <div class="stat-mini-card">
-                        <div class="fw-bold text-dark small">${s.name}</div>
-                        <div class="text-success fw-bold">%${s.rate.toFixed(1)}</div>
-                    </div>`;
-                });
+                sortedSeries.slice(0, 5).forEach(s => { html += `<div class="stat-mini-card"><div class="fw-bold text-dark small">${s.name}</div><div class="text-success fw-bold">%${s.rate.toFixed(1)}</div></div>`; });
                 html += `</div>`;
             }
 
@@ -807,9 +785,7 @@
             try {
                 const data = await fetchData(examType);
                 container.innerHTML = '<h6 class="text-center fw-bold text-success mb-3">أعلى 20 معدل على المستوى الوطني</h6>';
-                data.slice(0, 20).forEach((student, index) => {
-                    renderCard(student, config, container, index + 1, examType, 'top');
-                });
+                data.slice(0, 20).forEach((student, index) => { renderCard(student, config, container, index + 1, examType, 'top'); });
             } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
@@ -826,27 +802,14 @@
             container.classList.remove('d-none');
             container.innerHTML = '<div class="text-center"><div class="spinner-border text-success"></div></div>';
             
-            try {
-                const data = await fetchData(examType);
-                calculateAndRenderStats(data, config, examType);
-            } catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
+            try { const data = await fetchData(examType); calculateAndRenderStats(data, config, examType); } 
+            catch (e) { container.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`; }
         }
 
-        function searchBySchoolName(schoolName) {
-            document.getElementById('topPageOverlay').style.display = 'none';
-            document.getElementById('searchCategory').value = 'school';
-            document.getElementById('searchInput').value = schoolName;
-            document.getElementById('searchBtn').click();
-        }
+        function searchBySchoolName(schoolName) { document.getElementById('topPageOverlay').style.display = 'none'; document.getElementById('searchCategory').value = 'school'; document.getElementById('searchInput').value = schoolName; document.getElementById('searchBtn').click(); }
+        function searchByNumber(num) { document.getElementById('topPageOverlay').style.display = 'none'; document.getElementById('searchCategory').value = 'number'; document.getElementById('searchInput').value = num; document.getElementById('searchBtn').click(); }
 
-        function searchByNumber(num) {
-            document.getElementById('topPageOverlay').style.display = 'none';
-            document.getElementById('searchCategory').value = 'number';
-            document.getElementById('searchInput').value = num;
-            document.getElementById('searchBtn').click();
-        }
-
-        // --- دالة الجلب الذكية السريعة (بدون منع الكاش) ---
+        // --- دالة الجلب مع كسر الكاش للتحديث الفوري ---
         async function fetchData(examType) {
             if (cache[examType]) return cache[examType];
             
@@ -854,12 +817,12 @@
             const fileName = config.file; 
             let csvText = null;
 
-            // تحديث واجهة المستخدم
             document.getElementById('loadingText').innerText = "جاري تحميل الملف (قد يستغرق بضع ثوانٍ لأول مرة)...";
 
             try {
-                // 1. Supabase (بدون timestamp للسماح بالكاش)
-                const supabaseUrl = `${STORAGE_BASE_URL}${fileName}`;
+                // إضافة timestamp لضمان سحب أحدث ملف من السيرفر وعدم استخدام القديم المحفوظ في الكاش
+                const timestamp = new Date().getTime();
+                const supabaseUrl = `${STORAGE_BASE_URL}${fileName}?t=${timestamp}`;
                 const responseSupabase = await fetch(supabaseUrl);
                 
                 if (responseSupabase.ok) {
@@ -869,38 +832,24 @@
                     throw new Error("Not found in Supabase");
                 }
             } catch (errSupabase) {
-                // 2. GitHub / محلي
                 try {
                     const localUrl = `./${fileName}`; 
                     const responseLocal = await fetch(localUrl);
-                    
-                    if (responseLocal.ok) {
-                        csvText = await responseLocal.text();
-                        console.log("تم جلب النتائج من الملفات المحلية.");
-                    } else {
-                        throw new Error("Not found anywhere");
-                    }
-                } catch (errLocal) {
-                    throw new Error("FILE_NOT_FOUND");
-                }
+                    if (responseLocal.ok) { csvText = await responseLocal.text(); } else { throw new Error("Not found anywhere"); }
+                } catch (errLocal) { throw new Error("FILE_NOT_FOUND"); }
             }
 
-            // معالجة البيانات
             document.getElementById('loadingText').innerText = "جاري معالجة البيانات...";
             
-            // استخدام Promise للسماح للمتصفح بتحديث الواجهة قبل التجميد للمعالجة
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
                         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                         if(parsed.data.length === 0) throw new Error("EMPTY_FILE");
-                        
                         const processedData = preprocessData(parsed.data, config, examType);
                         cache[examType] = processedData;
                         resolve(processedData);
-                    } catch (parseError) {
-                        reject(parseError);
-                    }
+                    } catch (parseError) { reject(parseError); }
                 }, 50);
             });
         }
@@ -938,7 +887,6 @@
             return data;
         }
 
-        // --- تعديل زر البحث ---
         document.getElementById('searchBtn').addEventListener('click', async () => {
             const examType = document.getElementById('examType').value;
             const searchCat = document.getElementById('searchCategory').value;
@@ -956,19 +904,13 @@
             setTimeout(async () => {
                 try {
                     const data = await fetchData(examType);
-                    let results = [];
-                    if (searchCat === 'number') {
-                        results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
-                    } else {
-                        results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
-                    }
+                    let results =[];
+                    if (searchCat === 'number') { results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal); } 
+                    else { results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal)); }
                     
                     loading.classList.add('d-none');
                     
-                    if (results.length === 0) { 
-                        container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج مطابقة.</div>'; 
-                        return; 
-                    }
+                    if (results.length === 0) { container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج مطابقة.</div>'; return; }
                     
                     container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
                     currentFilteredResults = results; currentRenderCount = 0; currentSearchConfig = config; currentSearchExamType = examType; currentSearchMode = searchCat; 
@@ -978,18 +920,9 @@
                     
                 } catch (error) { 
                     loading.classList.add('d-none');
-                    if (error.message === "FILE_NOT_FOUND" || error.message.includes("404")) {
-                        container.innerHTML = `
-                            <div class="alert alert-info text-center">
-                                <i class="fas fa-clock fa-2x mb-2"></i><br>
-                                <strong>لم يتم رفع نتائج هذه المسابقة بعد.</strong><br>
-                                يرجى المحاولة لاحقاً.
-                            </div>`;
-                    } else if (error.message === "EMPTY_FILE") {
-                        container.innerHTML = '<div class="alert alert-warning text-center">ملف النتائج فارغ أو تالف.</div>';
-                    } else {
-                        alert("حدث خطأ غير متوقع: " + error.message); 
-                    }
+                    if (error.message === "FILE_NOT_FOUND" || error.message.includes("404")) { container.innerHTML = `<div class="alert alert-info text-center"><i class="fas fa-clock fa-2x mb-2"></i><br><strong>لم يتم رفع نتائج هذه المسابقة بعد.</strong><br>يرجى المحاولة لاحقاً.</div>`; } 
+                    else if (error.message === "EMPTY_FILE") { container.innerHTML = '<div class="alert alert-warning text-center">ملف النتائج فارغ أو تالف.</div>'; } 
+                    else { alert("حدث خطأ غير متوقع: " + error.message); }
                 }
             }, 50);
         });
@@ -999,9 +932,7 @@
             const oldBtn = document.getElementById('showMoreBtn');
             if(oldBtn) oldBtn.remove();
             const nextLimit = Math.min(currentRenderCount + currentBatchSize, currentFilteredResults.length);
-            for (let i = currentRenderCount; i < nextLimit; i++) {
-                renderCard(currentFilteredResults[i], currentSearchConfig, container, null, currentSearchExamType, currentSearchMode);
-            }
+            for (let i = currentRenderCount; i < nextLimit; i++) { renderCard(currentFilteredResults[i], currentSearchConfig, container, null, currentSearchExamType, currentSearchMode); }
             currentRenderCount = nextLimit;
             if (currentRenderCount < currentFilteredResults.length) {
                 const remaining = currentFilteredResults.length - currentRenderCount;
@@ -1061,7 +992,7 @@
 
             let rankBadge = rank ? `<div class="rank-badge">${rank}</div>` : '';
             let extraStyle = rank ? 'padding-left: 50px;' : '';
-            let gridHtml = '', items = [];
+            let gridHtml = '', items =[];
             if(student._serie) items.push({l: 'الشعبة', v: student._serie});
             if(student._serieRank) items.push({l: 'الرتبة في الشعبة', v: student._serieRank});
             if(student._nationalRank) items.push({l: 'الرتبة الوطنية', v: student._nationalRank});
@@ -1069,32 +1000,10 @@
             if(student._schoolRank) items.push({l: 'الرتبة في المركز', v: student._schoolRank});
             if (items.length > 0) { gridHtml = `<div class="info-grid">`; items.forEach(item => { gridHtml += `<div class="info-item"><span class="info-label">${item.l}</span><span class="info-value">${item.v}</span></div>`; }); gridHtml += `</div>`; }
             
-            // --- إضافة الأزرار (واتساب + التوجيه الجديد) ---
             let buttonsHtml = '';
-            
-            // شرط الواتساب والتوجيه: (ناجح + بحث برقم الجلوس + باكلوريا)
             if (isAdmis && searchMode === 'number' && (examType === 'bac_n' || examType === 'bac_c')) {
-                 buttonsHtml += `
-                 <a href="${orientationGroupLink}" target="_blank" class="whatsapp-card">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle icon-whatsapp"><i class="fas fa-university"></i></div>
-                        <div class="ms-2">
-                            <h6 class="fw-bold mb-1" style="color:#0f5132">🎓 توجيه وتخصصات</h6>
-                            <p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات شرح التخصصات.</p>
-                        </div>
-                    </div>
-                 </a>`;
-
-                 buttonsHtml += `
-                 <a href="${tawjihOfficialLink}" target="_blank" class="tawjih-card">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle icon-tawjih"><i class="fas fa-laptop"></i></div>
-                        <div class="ms-2">
-                            <h6 class="fw-bold mb-1" style="color:#0d47a1">التسجيل في التوجيه</h6>
-                            <p class="m-0 small text-secondary">اضغط هنا للدخول لمنصة التوجيه الرسمية.</p>
-                        </div>
-                    </div>
-                 </a>`;
+                 buttonsHtml += `<a href="${orientationGroupLink}" target="_blank" class="whatsapp-card"><div class="d-flex align-items-center"><div class="icon-circle icon-whatsapp"><i class="fas fa-university"></i></div><div class="ms-2"><h6 class="fw-bold mb-1" style="color:#0f5132">🎓 توجيه وتخصصات</h6><p class="m-0 small text-secondary">اضغط هنا للانضمام لمجموعات شرح التخصصات.</p></div></div></a>`;
+                 buttonsHtml += `<a href="${tawjihOfficialLink}" target="_blank" class="tawjih-card"><div class="d-flex align-items-center"><div class="icon-circle icon-tawjih"><i class="fas fa-laptop"></i></div><div class="ms-2"><h6 class="fw-bold mb-1" style="color:#0d47a1">التسجيل في التوجيه</h6><p class="m-0 small text-secondary">اضغط هنا للدخول لمنصة التوجيه الرسمية.</p></div></div></a>`;
             }
 
             const safePlace = place.replace(/'/g, "\\'");
@@ -1147,12 +1056,12 @@
         }
 
         const simData = {
-            "brevet": [ { name: "الرياضيات", coef: 5 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 2 }, { name: "العلوم الطبيعية", coef: 2 }, { name: "الفيزياء والكيمياء", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "التاريخ والجغرافيا", coef: 1 }, { name: "التربية المدنية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_sn": [ { name: "العلوم الطبيعية", coef: 8 }, { name: "الفيزياء والكيمياء", coef: 7 }, { name: "الرياضيات", coef: 6 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 3 }, { name: "الإنجليزية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_m": [ { name: "الرياضيات", coef: 9 }, { name: "الفيزياء والكيمياء", coef: 8 }, { name: "العلوم الطبيعية", coef: 4 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 3 }, { name: "الإنجليزية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_lm": [ { name: "اللغة العربية", coef: 6 }, { name: "الفلسفة", coef: 6 }, { name: "الفرنسية", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 5 }, { name: "الإنجليزية", coef: 4 }, { name: "الرياضيات", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_lo": [ { name: "التشريع الإسلامي", coef: 7 }, { name: "اللغة العربية", coef: 7 }, { name: "الفكر الإسلامي", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 4 }, { name: "القرآن والحديث", coef: 3 }, { name: "الفرنسية", coef: 2 }, { name: "الرياضيات", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_tm": [ { name: "الهندسة/الرسم التقني", coef: 7 }, { name: "الإلكترونيات/التخصص", coef: 6 }, { name: "الرياضيات", coef: 4 }, { name: "الفيزياء والكيمياء", coef: 3 }, { name: "الورشة (Atelier)", coef: 3 }, { name: "اللغة العربية", coef: 2 }, { name: "الفرنسية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ]
+            "brevet":[ { name: "الرياضيات", coef: 5 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 2 }, { name: "العلوم الطبيعية", coef: 2 }, { name: "الفيزياء والكيمياء", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "التاريخ والجغرافيا", coef: 1 }, { name: "التربية المدنية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ],
+            "bac_sn":[ { name: "العلوم الطبيعية", coef: 8 }, { name: "الفيزياء والكيمياء", coef: 7 }, { name: "الرياضيات", coef: 6 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 3 }, { name: "الإنجليزية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
+            "bac_m":[ { name: "الرياضيات", coef: 9 }, { name: "الفيزياء والكيمياء", coef: 8 }, { name: "العلوم الطبيعية", coef: 4 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 3 }, { name: "الإنجليزية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
+            "bac_lm":[ { name: "اللغة العربية", coef: 6 }, { name: "الفلسفة", coef: 6 }, { name: "الفرنسية", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 5 }, { name: "الإنجليزية", coef: 4 }, { name: "الرياضيات", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
+            "bac_lo":[ { name: "التشريع الإسلامي", coef: 7 }, { name: "اللغة العربية", coef: 7 }, { name: "الفكر الإسلامي", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 4 }, { name: "القرآن والحديث", coef: 3 }, { name: "الفرنسية", coef: 2 }, { name: "الرياضيات", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
+            "bac_tm":[ { name: "الهندسة/الرسم التقني", coef: 7 }, { name: "الإلكترونيات/التخصص", coef: 6 }, { name: "الرياضيات", coef: 4 }, { name: "الفيزياء والكيمياء", coef: 3 }, { name: "الورشة (Atelier)", coef: 3 }, { name: "اللغة العربية", coef: 2 }, { name: "الفرنسية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ]
         };
 
         function openSimulator() { document.getElementById('simulatorOverlay').style.display = 'block'; renderSimulatorInputs(); }
@@ -1162,9 +1071,7 @@
             const container = document.getElementById('simInputsContainer');
             const subjects = simData[type];
             container.innerHTML = '';
-            subjects.forEach((sub, idx) => {
-                container.innerHTML += `<div class="subject-row"><div class="d-flex align-items-center"><span class="coeff-badge">ض: ${sub.coef}</span><span class="fw-bold text-secondary" style="font-size: 0.9rem;">${sub.name}</span></div><input type="number" inputmode="decimal" class="grade-input" placeholder="0" min="0" max="20" data-coef="${sub.coef}" oninput="calculateSimScore()"></div>`;
-            });
+            subjects.forEach((sub, idx) => { container.innerHTML += `<div class="subject-row"><div class="d-flex align-items-center"><span class="coeff-badge">ض: ${sub.coef}</span><span class="fw-bold text-secondary" style="font-size: 0.9rem;">${sub.name}</span></div><input type="number" inputmode="decimal" class="grade-input" placeholder="0" min="0" max="20" data-coef="${sub.coef}" oninput="calculateSimScore()"></div>`; });
             calculateSimScore();
         }
         function calculateSimScore() {
@@ -1180,63 +1087,31 @@
             const resultEl = document.getElementById('simResult');
             const feedbackEl = document.getElementById('simFeedback');
             
-            if(parseFloat(average) >= 10) { 
-                resultEl.style.color = '#fff'; 
-                resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--primary), #25D366)'; 
-            } else { 
-                resultEl.style.color = '#ffeb3b'; 
-                resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))'; 
-            }
+            if(parseFloat(average) >= 10) { resultEl.style.color = '#fff'; resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--primary), #25D366)'; } 
+            else { resultEl.style.color = '#ffeb3b'; resultEl.parentElement.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))'; }
 
-            if (parseFloat(average) >= 16) {
-                feedbackEl.style.display = 'block';
-                feedbackEl.innerHTML = '🥇👑 بهذه النتائج نتوقع أن تكون من الأوائل بإذن الله تعالى';
-            } else {
-                feedbackEl.style.display = 'none';
-            }
+            if (parseFloat(average) >= 16) { feedbackEl.style.display = 'block'; feedbackEl.innerHTML = '🥇👑 بهذه النتائج نتوقع أن تكون من الأوائل بإذن الله تعالى'; } 
+            else { feedbackEl.style.display = 'none'; }
         }
 
-        const emojis = ['🌸', '🌹', '💐', '❤️', '🎉', '🎊', '🌷', '✨', '💕', '🥰'];
+        const emojis =['🌸', '🌹', '💐', '❤️', '🎉', '🎊', '🌷', '✨', '💕', '🥰'];
         let celebrationInterval;
         function createConfetti() { const overlay = document.getElementById('celebrationOverlay'); if(overlay.style.display === 'none') return; const el = document.createElement('div'); el.classList.add('confetti-piece'); el.innerText = emojis[Math.floor(Math.random() * emojis.length)]; el.style.left = Math.random() * 100 + 'vw'; el.style.animationDuration = (Math.random() * 3 + 2) + 's'; el.style.fontSize = (Math.random() * 20 + 20) + 'px'; overlay.appendChild(el); setTimeout(() => { el.remove(); }, 5000); }
         function triggerCelebration() { const overlay = document.getElementById('celebrationOverlay'); overlay.style.display = 'flex'; if(celebrationInterval) clearInterval(celebrationInterval); celebrationInterval = setInterval(createConfetti, 100); }
         function closeCelebration() { document.getElementById('celebrationOverlay').style.display = 'none'; if(celebrationInterval) clearInterval(celebrationInterval); document.querySelectorAll('.confetti-piece').forEach(e => e.remove()); }
     </script>
 
-    <!-- START PROTECTION CODE -->
     <script>
     (function() {
-        // منع الزر الأيمن
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        // منع اختصارات لوحة المفاتيح
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.onkeydown = function(e) {
-            // F12
-            if(e.keyCode == 123) {
-                return false;
-            }
-            // Ctrl+I (DevTools)
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+J (Console)
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+C (Inspect)
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+U (View Source)
-            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
-                return false;
-            }
+            if(e.keyCode == 123) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
         }
     })();
     </script>
-    <!-- END PROTECTION CODE -->
-    
 </body>
 </html>
