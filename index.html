@@ -173,85 +173,28 @@
             animation: fadeIn 0.5s;
         }
 
-        /* ----- تعديلات الاحتفالية الرسمية (الأكاديمية) ----- */
-        #celebrationOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
-        
-        .congrats-box { 
-            background: #ffffff; 
-            padding: 40px 30px; 
-            border-radius: 16px; 
-            text-align: center; 
-            position: relative; 
-            z-index: 10000; 
-            animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            max-width: 90%; 
-            border: 6px double var(--gold); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+        /* ----- احتفالية مطابقة للصورة ----- */
+        #celebrationOverlay { 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; /* يسمح بالتمرير والنقر على البطاقة أثناء الاحتفال */
+            z-index: 9999; 
+            display: none; 
+            overflow: hidden; 
         }
         
-        .academic-icon { font-size: 3.5rem; color: var(--primary); margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .congrats-title { font-size: 1.8rem; color: var(--secondary); font-weight: 800; margin-bottom: 15px; }
-        .congrats-text { font-size: 1.1rem; color: #444; margin-bottom: 25px; line-height: 1.7; font-weight: 600; }
-        
-        /* بالونات أكاديمية */
-        .balloon {
+        .rim-confetti {
             position: absolute;
-            bottom: -100px;
-            width: 45px;
-            height: 60px;
-            background-color: var(--balloon-color);
-            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            top: -20px;
             z-index: 9998;
-            opacity: 0.95;
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.2);
-            animation: floatUp 4s ease-in forwards;
-        }
-        .balloon::before {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 10px solid var(--balloon-color);
-        }
-        .balloon::after {
-            content: '';
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 40px;
-            background: rgba(255,255,255,0.6);
+            animation: fallConfetti linear forwards;
         }
 
-        /* قصاصات الانفجار */
-        .formal-confetti {
-            position: absolute;
-            width: 8px;
-            height: 16px;
-            z-index: 9998;
-            animation: explodePop 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        @keyframes fallConfetti {
+            0% { transform: translateY(-5vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 1; }
         }
-
-        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            10% { opacity: 0.9; transform: translateY(-10vh) scale(1) rotate(5deg); }
-            100% { transform: translateY(-120vh) scale(1.2) rotate(-10deg); opacity: 0; }
-        }
-        
-        @keyframes explodePop {
-            0% { transform: translateY(0) scale(0); opacity: 1; }
-            50% { opacity: 1; }
-            100% { transform: translateY(calc(100vh * var(--dir-y))) translateX(calc(100vw * var(--dir-x))) rotate(720deg); opacity: 0; }
-        }
         /* --------------------------------------------------- */
 
         .footer-menu { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap; }
@@ -335,18 +278,8 @@
         </div>
     </footer>
 
-    <!-- الاحتفالية الأكاديمية الجديدة -->
-    <div id="celebrationOverlay">
-        <div class="congrats-box">
-            <i class="fas fa-graduation-cap academic-icon"></i>
-            <div class="congrats-title">تهنئة بالنجاح الأكاديمي</div>
-            <div class="congrats-text">
-                نبارك لكم هذا التفوق والنجاح المتميز في الامتحانات الوطنية.<br>
-                نسأل الله لكم دوام التوفيق والسداد في مسيرتكم العلمية والعملية.
-            </div>
-            <button class="btn btn-outline" style="width: auto; padding: 10px 40px; border-radius: 30px;" onclick="closeCelebration()">متابعة</button>
-        </div>
-    </div>
+    <!-- حاوية الاحتفالية الشفافة -->
+    <div id="celebrationOverlay"></div>
 
     <div id="aboutPageOverlay">
         <div class="top-header">
@@ -1143,7 +1076,7 @@
             "bac_m":[ { name: "الرياضيات", coef: 9 }, { name: "الفيزياء والكيمياء", coef: 8 }, { name: "العلوم الطبيعية", coef: 4 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 3 }, { name: "الإنجليزية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
             "bac_lm":[ { name: "اللغة العربية", coef: 6 }, { name: "الفلسفة", coef: 6 }, { name: "الفرنسية", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 5 }, { name: "الإنجليزية", coef: 4 }, { name: "الرياضيات", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
             "bac_lo":[ { name: "التشريع الإسلامي", coef: 7 }, { name: "اللغة العربية", coef: 7 }, { name: "الفكر الإسلامي", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 4 }, { name: "القرآن والحديث", coef: 3 }, { name: "الفرنسية", coef: 2 }, { name: "الرياضيات", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_tm":[ { name: "الهندسة/الرسم التقني", coef: 7 }, { name: "الإلكترونيات/التخصص", coef: 6 }, { name: "الرياضيات", coef: 4 }, { name: "الفيزياء والكيمياء", coef: 3 }, { name: "الورشة (Atelier)", coef: 3 }, { name: "اللغة العربية", coef: 2 }, { name: "الفرنسية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ]
+            "bac_tm":[ { name: "الهندسة/الرسم التقني", coef: 7 }, { name: "الإلكترونيات/التخصص", coef: 6 }, { name: "الرياضيات", coef: 4 }, { name: "الفيزياء والكيمياء", Math: 3 }, { name: "الورشة (Atelier)", coef: 3 }, { name: "اللغة العربية", coef: 2 }, { name: "الفرنسية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ]
         };
 
         function openSimulator() { document.getElementById('simulatorOverlay').style.display = 'block'; renderSimulatorInputs(); }
@@ -1176,64 +1109,61 @@
             else { feedbackEl.style.display = 'none'; }
         }
 
-        // --- دوال الاحتفالية الأكاديمية ---
-        const formalColors = ['#ffc107', '#00695c', '#004d40', '#ffffff', '#e0e0e0', '#198754'];
-        let celebrationInterval;
-        let balloonTimeout;
-
-        function createBalloon() {
+        // --- دوال صنع الاحتفالية الشبيهة بالصورة تماماً ---
+        function createConfettiPiece() {
             const overlay = document.getElementById('celebrationOverlay');
-            if(overlay.style.display === 'none') return;
+            if (overlay.style.display === 'none') return;
+            
+            const colors = ['#FF007F', '#00FF00', '#FFEA00', '#00E5FF', '#B900FF'];
             const el = document.createElement('div');
-            el.classList.add('balloon');
+            el.classList.add('rim-confetti');
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            el.style.left = Math.random() * 100 + 'vw';
             
-            const color = formalColors[Math.floor(Math.random() * formalColors.length)];
-            el.style.setProperty('--balloon-color', color);
-            el.style.left = Math.random() * 90 + 5 + 'vw';
-            el.style.animationDuration = (Math.random() * 2 + 3) + 's';
-            
-            overlay.appendChild(el);
-            setTimeout(() => { el.remove(); }, 5000);
-        }
+            // سرعات سقوط مختلفة
+            el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            el.style.animationDelay = Math.random() * 2 + 's';
 
-        function createConfettiExplosion() {
-            const overlay = document.getElementById('celebrationOverlay');
-            if(overlay.style.display === 'none') return;
-            for(let i = 0; i < 60; i++) {
-                const el = document.createElement('div');
-                el.classList.add('formal-confetti');
-                el.style.backgroundColor = formalColors[Math.floor(Math.random() * formalColors.length)];
-                el.style.left = '50vw';
-                el.style.top = '50vh';
-                
-                el.style.setProperty('--dir-x', (Math.random() - 0.5) * 2.5);
-                el.style.setProperty('--dir-y', (Math.random() - 0.5) * 2.5);
-                
-                overlay.appendChild(el);
-                setTimeout(() => { el.remove(); }, 2500);
+            // توزيع عشوائي بين شكل الدائرة وشكل الشريط (مثل الصورة)
+            if (Math.random() > 0.3) {
+                // دوائر (الأغلبية)
+                const size = Math.random() * 10 + 10 + 'px';
+                el.style.width = size;
+                el.style.height = size;
+                el.style.borderRadius = '50%';
+            } else {
+                // شرائط
+                el.style.width = Math.random() * 15 + 15 + 'px';
+                el.style.height = Math.random() * 5 + 5 + 'px';
+                el.style.borderRadius = '10px';
             }
+
+            overlay.appendChild(el);
+
+            // حذف العنصر بعد سقوط الشاشة
+            setTimeout(() => { el.remove(); }, 6000);
         }
 
-        function triggerCelebration() { 
-            const overlay = document.getElementById('celebrationOverlay'); 
-            overlay.style.display = 'flex'; 
-            
-            createConfettiExplosion();
-            
-            if(celebrationInterval) clearInterval(celebrationInterval); 
-            celebrationInterval = setInterval(createBalloon, 250); 
-            
-            if(balloonTimeout) clearTimeout(balloonTimeout);
-            balloonTimeout = setTimeout(() => {
-                clearInterval(celebrationInterval);
-            }, 4500);
+        function triggerCelebration() {
+            const overlay = document.getElementById('celebrationOverlay');
+            overlay.style.display = 'block'; // الحاوية الآن شفافة وتسمح بالتفاعل مع النتيجة
+
+            // تفريغ أي قصاصات قديمة
+            overlay.innerHTML = '';
+
+            // توليد كمية كبيرة من القصاصات دفعة واحدة لتغطي الشاشة
+            for(let i = 0; i < 150; i++) {
+                createConfettiPiece();
+            }
+
+            // إخفاء الاحتفالية وتنظيف الشاشة تلقائياً بعد 8 ثوانٍ
+            setTimeout(closeCelebration, 8000);
         }
 
-        function closeCelebration() { 
-            document.getElementById('celebrationOverlay').style.display = 'none'; 
-            if(celebrationInterval) clearInterval(celebrationInterval); 
-            if(balloonTimeout) clearTimeout(balloonTimeout);
-            document.querySelectorAll('.balloon, .formal-confetti').forEach(e => e.remove()); 
+        function closeCelebration() {
+            const overlay = document.getElementById('celebrationOverlay');
+            overlay.style.display = 'none';
+            overlay.innerHTML = '';
         }
     </script>
 
