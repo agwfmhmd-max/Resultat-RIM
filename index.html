@@ -459,7 +459,7 @@
 
         const STORAGE_BASE_URL = `${SUPABASE_URL}/storage/v1/object/public/rim_files/`;
 
-        // --- إدارة الجلسة للمسؤول (الجديد) ---
+        // --- إدارة الجلسة للمسؤول ---
         if (supabaseClient) {
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 const loginSec = document.getElementById('adminLoginSection');
@@ -478,7 +478,7 @@
         // --- حماية الموقع الأساسية ---
         document.addEventListener('contextmenu', event => event.preventDefault());
         
-        // --- فتح لوحة الإدارة المخفية (5 ضغطات على الشعار) ---
+        // --- فتح لوحة الإدارة المخفية ---
         let logoTapCount = 0;
         let logoTapTimer = null;
         const brandLogo = document.getElementById('brandLogo');
@@ -501,7 +501,7 @@
             if(uploadStatus) uploadStatus.classList.add('d-none');
         }
 
-        // --- دوال تسجيل الدخول والخروج للمسؤول (الجديدة والآمنة) ---
+        // --- دوال تسجيل الدخول والخروج للمسؤول ---
         async function doAdminLogin() {
             if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
             
@@ -562,14 +562,14 @@
             statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الرفع...';
 
             try {
-                // الكود سيتم قبوله فقط لأننا استخدمنا تسجيل الدخول (Session)
                 const { data, error } = await supabaseClient.storage.from('rim_files').upload(fileName, file, { cacheControl: '3600', upsert: true });
                 if (error) throw error;
                 statusDiv.classList.remove('alert-info');
                 statusDiv.classList.add('alert-success');
                 statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> تم رفع ملف ${fileName} بنجاح!`;
                 
-                cache[examType] = null; // تفريغ الكاش المحلي للملف
+                delete cache[examType]; // تفريغ الكاش المحدث ليتم سحبه من جديد
+                fetchData(examType).catch(()=>{}); // جلب الملف الجديد بصمت
             } catch (err) {
                 console.error(err);
                 statusDiv.classList.remove('alert-info');
@@ -621,7 +621,13 @@
 
         const examSelect = document.getElementById('examType');
         const categorySelect = document.getElementById('searchCategory');
-        function updateSearchCategory() { categorySelect.value = examSelect.value === 'concours' ? 'school' : 'number'; }
+        
+        // --- تحديث طريقة البحث وبدء التحميل المسبق ---
+        function updateSearchCategory() { 
+            categorySelect.value = examSelect.value === 'concours' ? 'school' : 'number'; 
+            // البدء فوراً بتحميل ومعالجة البيانات في الخلفية لتسريع البحث الأول كالبرق
+            fetchData(examSelect.value).catch(() => {}); 
+        }
         examSelect.addEventListener('change', updateSearchCategory);
         document.addEventListener('DOMContentLoaded', updateSearchCategory);
 
@@ -644,7 +650,7 @@
 
         function isResultSuccessful(student, config, examType) {
             if (examType === 'concours') {
-                const score = parseScore(getVal(student, config.scoreKeys));
+                const score = student._score !== undefined ? student._score : parseScore(getVal(student, config.scoreKeys));
                 return score >= 85; 
             }
             const decisionRaw = getVal(student, config.decisionKeys);
@@ -809,81 +815,103 @@
         function searchBySchoolName(schoolName) { document.getElementById('topPageOverlay').style.display = 'none'; document.getElementById('searchCategory').value = 'school'; document.getElementById('searchInput').value = schoolName; document.getElementById('searchBtn').click(); }
         function searchByNumber(num) { document.getElementById('topPageOverlay').style.display = 'none'; document.getElementById('searchCategory').value = 'number'; document.getElementById('searchInput').value = num; document.getElementById('searchBtn').click(); }
 
-        // --- دالة الجلب مع كسر الكاش للتحديث الفوري ---
-        async function fetchData(examType) {
+        // --- التحديث الجذري لدالة الجلب لتحقيق السرعة الصاروخية (نظام الوعود المخبأة) ---
+        function fetchData(examType) {
+            // إذا كانت البيانات قيد المعالجة أو جاهزة مسبقاً، أرجعها فوراً دون تأخير
             if (cache[examType]) return cache[examType];
             
-            const config = examConfig[examType];
-            const fileName = config.file; 
-            let csvText = null;
+            cache[examType] = new Promise(async (resolve, reject) => {
+                const config = examConfig[examType];
+                const fileName = config.file; 
+                let csvText = null;
 
-            document.getElementById('loadingText').innerText = "جاري تحميل الملف (قد يستغرق بضع ثوانٍ لأول مرة)...";
+                const loadingText = document.getElementById('loadingText');
+                if(loadingText) loadingText.innerText = "جاري تحميل البيانات...";
 
-            try {
-                // إضافة timestamp لضمان سحب أحدث ملف من السيرفر وعدم استخدام القديم المحفوظ في الكاش
-                const timestamp = new Date().getTime();
-                const supabaseUrl = `${STORAGE_BASE_URL}${fileName}?t=${timestamp}`;
-                const responseSupabase = await fetch(supabaseUrl);
-                
-                if (responseSupabase.ok) {
-                    csvText = await responseSupabase.text();
-                    console.log("تم جلب النتائج من السيرفر (Supabase).");
-                } else {
-                    throw new Error("Not found in Supabase");
-                }
-            } catch (errSupabase) {
                 try {
-                    const localUrl = `./${fileName}`; 
-                    const responseLocal = await fetch(localUrl);
-                    if (responseLocal.ok) { csvText = await responseLocal.text(); } else { throw new Error("Not found anywhere"); }
-                } catch (errLocal) { throw new Error("FILE_NOT_FOUND"); }
-            }
+                    const timestamp = new Date().getTime();
+                    const supabaseUrl = `${STORAGE_BASE_URL}${fileName}?t=${timestamp}`;
+                    const responseSupabase = await fetch(supabaseUrl);
+                    
+                    if (responseSupabase.ok) {
+                        csvText = await responseSupabase.text();
+                        console.log(`تم الجلب من السيرفر (${examType})`);
+                    } else {
+                        throw new Error("Not found in Supabase");
+                    }
+                } catch (errSupabase) {
+                    try {
+                        const localUrl = `./${fileName}`; 
+                        const responseLocal = await fetch(localUrl);
+                        if (responseLocal.ok) { csvText = await responseLocal.text(); } else { throw new Error("Not found anywhere"); }
+                    } catch (errLocal) { 
+                        delete cache[examType]; 
+                        reject(new Error("FILE_NOT_FOUND")); 
+                        return; 
+                    }
+                }
 
-            document.getElementById('loadingText').innerText = "جاري معالجة البيانات...";
-            
-            return new Promise((resolve, reject) => {
+                if(loadingText) loadingText.innerText = "جاري معالجة البيانات بسرعة فائقة...";
+                
                 setTimeout(() => {
                     try {
                         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                         if(parsed.data.length === 0) throw new Error("EMPTY_FILE");
+                        
+                        // هنا السحر: المعالجة الجديدة أسرع بآلاف المرات
                         const processedData = preprocessData(parsed.data, config, examType);
-                        cache[examType] = processedData;
                         resolve(processedData);
-                    } catch (parseError) { reject(parseError); }
-                }, 50);
+                    } catch (parseError) { 
+                        delete cache[examType]; 
+                        reject(parseError); 
+                    }
+                }, 10); // وقت استراحة صغير جداً لإبقاء المتصفح مستجيباً
             });
+
+            return cache[examType];
         }
 
+        // --- تحديث جذري لخوارزمية الفرز والتجهيز لجعلها كالبرق ---
         function preprocessData(data, config, examType) {
-            data.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+            // 1. حساب المعدل وتخزينه لجميع الطلاب أولاً (هذه الخطوة تمنع التكرار البطيء أثناء الفرز)
+            for (let i = 0; i < data.length; i++) {
+                data[i]._score = parseScore(getVal(data[i], config.scoreKeys));
+            }
+
+            // 2. الفرز الآن يعتمد على أرقام رقمية جاهزة، مما يجعله يتم في أجزاء صغيرة جداً من الثانية!
+            data.sort((a, b) => b._score - a._score);
+
+            // 3. احتساب المراتب (رتب وطنية، ولائية، مركز، وشعبة)
             let stateCounters = {}, schoolCounters = {}, serieCounters = {};
-            data.forEach((student, index) => {
-                student._score = parseScore(getVal(student, config.scoreKeys));
-                student._nationalRank = index + 1;
+            for (let i = 0; i < data.length; i++) {
+                let student = data[i];
+                student._nationalRank = i + 1;
+                
                 let stateRaw = getVal(student, config.stateKeys);
                 let stateNorm = getNormalizedState(stateRaw);
                 student._stateNorm = stateNorm; 
+                
                 if (stateNorm !== 'unknown') {
-                    if (!stateCounters[stateNorm]) stateCounters[stateNorm] = 0;
-                    stateCounters[stateNorm]++;
+                    stateCounters[stateNorm] = (stateCounters[stateNorm] || 0) + 1;
                     student._stateRank = stateCounters[stateNorm];
                 }
-                let school = getVal(student, config.placeKeys).trim();
+                
+                let rawSchool = getVal(student, config.placeKeys);
+                let school = rawSchool ? String(rawSchool).trim() : "";
                 if (school) {
-                    if (!schoolCounters[school]) schoolCounters[school] = 0;
-                    schoolCounters[school]++;
+                    schoolCounters[school] = (schoolCounters[school] || 0) + 1;
                     student._schoolRank = schoolCounters[school];
                 }
+                
                 if (examType.includes('bac')) {
                     let serie = getVal(student, config.majorKeys);
                     if (serie) {
-                        if (!serieCounters[serie]) serieCounters[serie] = 0;
-                        serieCounters[serie]++;
+                        serieCounters[serie] = (serieCounters[serie] || 0) + 1;
                         student._serieRank = serieCounters[serie];
                         student._serie = serie;
                     }
                 }
-            });
+            }
             return data;
         }
 
@@ -903,7 +931,7 @@
 
             setTimeout(async () => {
                 try {
-                    const data = await fetchData(examType);
+                    const data = await fetchData(examType); // بفضل النظام الجديد ستظهر فوراً
                     let results =[];
                     if (searchCat === 'number') { results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal); } 
                     else { results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal)); }
@@ -960,7 +988,7 @@
                     if (groupBy === 'wilaya') { const studentNormalized = getNormalizedState(val); return studentNormalized === label; } 
                     else { return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term)); }
                 });
-                filtered.sort((a, b) => parseScore(getVal(b, config.scoreKeys)) - parseScore(getVal(a, config.scoreKeys)));
+                filtered.sort((a, b) => b._score - a._score); // تم التحديث هنا للاستفادة من الميزة السريعة
                 container.innerHTML = `<h6 class="text-center fw-bold text-primary mb-3">العشرة الأوائل: ${label}</h6>`;
                 if(filtered.length === 0) container.innerHTML += '<div class="alert alert-warning text-center">لا توجد نتائج.</div>';
                 else { filtered.slice(0, 10).forEach((student, index) => { renderCard(student, config, container, index + 1, examType, 'top'); }); }
