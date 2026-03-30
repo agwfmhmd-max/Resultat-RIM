@@ -173,15 +173,86 @@
             animation: fadeIn 0.5s;
         }
 
-        #celebrationOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
-        .congrats-box { background: white; padding: 30px; border-radius: 20px; text-align: center; position: relative; z-index: 10000; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .congrats-title { font-size: 2rem; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
-        .congrats-text { font-size: 1.1rem; color: #555; margin-bottom: 20px; }
-        .confetti-piece { position: absolute; font-size: 20px; top: -20px; animation: fall linear forwards; z-index: 9998; }
+        /* ----- تعديلات الاحتفالية الرسمية (الأكاديمية) ----- */
+        #celebrationOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         
+        .congrats-box { 
+            background: #ffffff; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            text-align: center; 
+            position: relative; 
+            z-index: 10000; 
+            animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            max-width: 90%; 
+            border: 6px double var(--gold); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+        }
+        
+        .academic-icon { font-size: 3.5rem; color: var(--primary); margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .congrats-title { font-size: 1.8rem; color: var(--secondary); font-weight: 800; margin-bottom: 15px; }
+        .congrats-text { font-size: 1.1rem; color: #444; margin-bottom: 25px; line-height: 1.7; font-weight: 600; }
+        
+        /* بالونات أكاديمية */
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            width: 45px;
+            height: 60px;
+            background-color: var(--balloon-color);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            z-index: 9998;
+            opacity: 0.95;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.2);
+            animation: floatUp 4s ease-in forwards;
+        }
+        .balloon::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid var(--balloon-color);
+        }
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background: rgba(255,255,255,0.6);
+        }
+
+        /* قصاصات الانفجار */
+        .formal-confetti {
+            position: absolute;
+            width: 8px;
+            height: 16px;
+            z-index: 9998;
+            animation: explodePop 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
         @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            10% { opacity: 0.9; transform: translateY(-10vh) scale(1) rotate(5deg); }
+            100% { transform: translateY(-120vh) scale(1.2) rotate(-10deg); opacity: 0; }
+        }
+        
+        @keyframes explodePop {
+            0% { transform: translateY(0) scale(0); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translateY(calc(100vh * var(--dir-y))) translateX(calc(100vw * var(--dir-x))) rotate(720deg); opacity: 0; }
+        }
+        /* --------------------------------------------------- */
 
         .footer-menu { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap; }
         .footer-menu span { cursor: pointer; color: rgba(255,255,255,0.9); font-size: 0.85rem; transition: 0.3s; font-weight: 600; }
@@ -264,15 +335,16 @@
         </div>
     </footer>
 
+    <!-- الاحتفالية الأكاديمية الجديدة -->
     <div id="celebrationOverlay">
         <div class="congrats-box">
-            <div style="font-size: 3rem; margin-bottom: 10px;">🎉🌺🥰</div>
-            <div class="congrats-title">ألف ألف مبروك!</div>
+            <i class="fas fa-graduation-cap academic-icon"></i>
+            <div class="congrats-title">تهنئة بالنجاح الأكاديمي</div>
             <div class="congrats-text">
-                تهانينا الحارة بمناسبة النجاح وتجاوز الامتحان بجدارة.<br>
-                نتمنى لك مسيرة دراسية مليئة بالتفوق.
+                نبارك لكم هذا التفوق والنجاح المتميز في الامتحانات الوطنية.<br>
+                نسأل الله لكم دوام التوفيق والسداد في مسيرتكم العلمية والعملية.
             </div>
-            <button class="btn btn-main" onclick="closeCelebration()">شكراً ❤️</button>
+            <button class="btn btn-outline" style="width: auto; padding: 10px 40px; border-radius: 30px;" onclick="closeCelebration()">متابعة</button>
         </div>
     </div>
 
@@ -343,7 +415,6 @@
         </div>
         <div class="container-app pt-4 px-3">
             
-            <!-- قسم تسجيل الدخول الجديد -->
             <div id="adminLoginSection">
                 <div class="text-center mb-4">
                     <i class="fas fa-user-shield fa-3x text-secondary"></i>
@@ -363,7 +434,6 @@
                 <button id="loginBtn" onclick="doAdminLogin()" class="btn btn-main">تسجيل الدخول</button>
             </div>
 
-            <!-- قسم الرفع (يظهر بعد تسجيل الدخول) -->
             <div id="adminUploadSection" class="d-none">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="alert alert-success small m-0 py-2 w-100 me-2"><i class="fas fa-check-circle me-1"></i> متصل كمسؤول</div>
@@ -459,7 +529,6 @@
 
         const STORAGE_BASE_URL = `${SUPABASE_URL}/storage/v1/object/public/rim_files/`;
 
-        // --- إدارة الجلسة للمسؤول ---
         if (supabaseClient) {
             supabaseClient.auth.onAuthStateChange((event, session) => {
                 const loginSec = document.getElementById('adminLoginSection');
@@ -475,10 +544,8 @@
             });
         }
 
-        // --- حماية الموقع الأساسية ---
         document.addEventListener('contextmenu', event => event.preventDefault());
         
-        // --- فتح لوحة الإدارة المخفية ---
         let logoTapCount = 0;
         let logoTapTimer = null;
         const brandLogo = document.getElementById('brandLogo');
@@ -501,7 +568,6 @@
             if(uploadStatus) uploadStatus.classList.add('d-none');
         }
 
-        // --- دوال تسجيل الدخول والخروج للمسؤول ---
         async function doAdminLogin() {
             if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
             
@@ -545,7 +611,6 @@
             }
         }
 
-        // --- دالة رفع الملفات إلى الخادم ---
         async function uploadToSupabase() {
             if (!supabaseClient) { alert("خطأ: لم يتم إعداد Supabase."); return; }
             const examType = document.getElementById('uploadExamType').value;
@@ -568,8 +633,8 @@
                 statusDiv.classList.add('alert-success');
                 statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> تم رفع ملف ${fileName} بنجاح!`;
                 
-                delete cache[examType]; // تفريغ الكاش المحدث ليتم سحبه من جديد
-                fetchData(examType).catch(()=>{}); // جلب الملف الجديد بصمت
+                delete cache[examType]; 
+                fetchData(examType).catch(()=>{}); 
             } catch (err) {
                 console.error(err);
                 statusDiv.classList.remove('alert-info');
@@ -578,7 +643,6 @@
             }
         }
         
-        // PWA Setup
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log(err)); }); }
 
         let deferredPrompt;
@@ -622,10 +686,8 @@
         const examSelect = document.getElementById('examType');
         const categorySelect = document.getElementById('searchCategory');
         
-        // --- تحديث طريقة البحث وبدء التحميل المسبق ---
         function updateSearchCategory() { 
             categorySelect.value = examSelect.value === 'concours' ? 'school' : 'number'; 
-            // البدء فوراً بتحميل ومعالجة البيانات في الخلفية لتسريع البحث الأول كالبرق
             fetchData(examSelect.value).catch(() => {}); 
         }
         examSelect.addEventListener('change', updateSearchCategory);
@@ -815,9 +877,7 @@
         function searchBySchoolName(schoolName) { document.getElementById('topPageOverlay').style.display = 'none'; document.getElementById('searchCategory').value = 'school'; document.getElementById('searchInput').value = schoolName; document.getElementById('searchBtn').click(); }
         function searchByNumber(num) { document.getElementById('topPageOverlay').style.display = 'none'; document.getElementById('searchCategory').value = 'number'; document.getElementById('searchInput').value = num; document.getElementById('searchBtn').click(); }
 
-        // --- التحديث الجذري لدالة الجلب لتحقيق السرعة الصاروخية (نظام الوعود المخبأة) ---
         function fetchData(examType) {
-            // إذا كانت البيانات قيد المعالجة أو جاهزة مسبقاً، أرجعها فوراً دون تأخير
             if (cache[examType]) return cache[examType];
             
             cache[examType] = new Promise(async (resolve, reject) => {
@@ -835,7 +895,6 @@
                     
                     if (responseSupabase.ok) {
                         csvText = await responseSupabase.text();
-                        console.log(`تم الجلب من السيرفر (${examType})`);
                     } else {
                         throw new Error("Not found in Supabase");
                     }
@@ -858,30 +917,25 @@
                         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                         if(parsed.data.length === 0) throw new Error("EMPTY_FILE");
                         
-                        // هنا السحر: المعالجة الجديدة أسرع بآلاف المرات
                         const processedData = preprocessData(parsed.data, config, examType);
                         resolve(processedData);
                     } catch (parseError) { 
                         delete cache[examType]; 
                         reject(parseError); 
                     }
-                }, 10); // وقت استراحة صغير جداً لإبقاء المتصفح مستجيباً
+                }, 10); 
             });
 
             return cache[examType];
         }
 
-        // --- تحديث جذري لخوارزمية الفرز والتجهيز لجعلها كالبرق ---
         function preprocessData(data, config, examType) {
-            // 1. حساب المعدل وتخزينه لجميع الطلاب أولاً (هذه الخطوة تمنع التكرار البطيء أثناء الفرز)
             for (let i = 0; i < data.length; i++) {
                 data[i]._score = parseScore(getVal(data[i], config.scoreKeys));
             }
 
-            // 2. الفرز الآن يعتمد على أرقام رقمية جاهزة، مما يجعله يتم في أجزاء صغيرة جداً من الثانية!
             data.sort((a, b) => b._score - a._score);
 
-            // 3. احتساب المراتب (رتب وطنية، ولائية، مركز، وشعبة)
             let stateCounters = {}, schoolCounters = {}, serieCounters = {};
             for (let i = 0; i < data.length; i++) {
                 let student = data[i];
@@ -931,7 +985,7 @@
 
             setTimeout(async () => {
                 try {
-                    const data = await fetchData(examType); // بفضل النظام الجديد ستظهر فوراً
+                    const data = await fetchData(examType); 
                     let results =[];
                     if (searchCat === 'number') { results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal); } 
                     else { results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal)); }
@@ -988,7 +1042,7 @@
                     if (groupBy === 'wilaya') { const studentNormalized = getNormalizedState(val); return studentNormalized === label; } 
                     else { return searchTerms.some(term => val.toLowerCase() === term.toLowerCase() || val.includes(term)); }
                 });
-                filtered.sort((a, b) => b._score - a._score); // تم التحديث هنا للاستفادة من الميزة السريعة
+                filtered.sort((a, b) => b._score - a._score); 
                 container.innerHTML = `<h6 class="text-center fw-bold text-primary mb-3">العشرة الأوائل: ${label}</h6>`;
                 if(filtered.length === 0) container.innerHTML += '<div class="alert alert-warning text-center">لا توجد نتائج.</div>';
                 else { filtered.slice(0, 10).forEach((student, index) => { renderCard(student, config, container, index + 1, examType, 'top'); }); }
@@ -1122,11 +1176,65 @@
             else { feedbackEl.style.display = 'none'; }
         }
 
-        const emojis =['🌸', '🌹', '💐', '❤️', '🎉', '🎊', '🌷', '✨', '💕', '🥰'];
+        // --- دوال الاحتفالية الأكاديمية ---
+        const formalColors = ['#ffc107', '#00695c', '#004d40', '#ffffff', '#e0e0e0', '#198754'];
         let celebrationInterval;
-        function createConfetti() { const overlay = document.getElementById('celebrationOverlay'); if(overlay.style.display === 'none') return; const el = document.createElement('div'); el.classList.add('confetti-piece'); el.innerText = emojis[Math.floor(Math.random() * emojis.length)]; el.style.left = Math.random() * 100 + 'vw'; el.style.animationDuration = (Math.random() * 3 + 2) + 's'; el.style.fontSize = (Math.random() * 20 + 20) + 'px'; overlay.appendChild(el); setTimeout(() => { el.remove(); }, 5000); }
-        function triggerCelebration() { const overlay = document.getElementById('celebrationOverlay'); overlay.style.display = 'flex'; if(celebrationInterval) clearInterval(celebrationInterval); celebrationInterval = setInterval(createConfetti, 100); }
-        function closeCelebration() { document.getElementById('celebrationOverlay').style.display = 'none'; if(celebrationInterval) clearInterval(celebrationInterval); document.querySelectorAll('.confetti-piece').forEach(e => e.remove()); }
+        let balloonTimeout;
+
+        function createBalloon() {
+            const overlay = document.getElementById('celebrationOverlay');
+            if(overlay.style.display === 'none') return;
+            const el = document.createElement('div');
+            el.classList.add('balloon');
+            
+            const color = formalColors[Math.floor(Math.random() * formalColors.length)];
+            el.style.setProperty('--balloon-color', color);
+            el.style.left = Math.random() * 90 + 5 + 'vw';
+            el.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            
+            overlay.appendChild(el);
+            setTimeout(() => { el.remove(); }, 5000);
+        }
+
+        function createConfettiExplosion() {
+            const overlay = document.getElementById('celebrationOverlay');
+            if(overlay.style.display === 'none') return;
+            for(let i = 0; i < 60; i++) {
+                const el = document.createElement('div');
+                el.classList.add('formal-confetti');
+                el.style.backgroundColor = formalColors[Math.floor(Math.random() * formalColors.length)];
+                el.style.left = '50vw';
+                el.style.top = '50vh';
+                
+                el.style.setProperty('--dir-x', (Math.random() - 0.5) * 2.5);
+                el.style.setProperty('--dir-y', (Math.random() - 0.5) * 2.5);
+                
+                overlay.appendChild(el);
+                setTimeout(() => { el.remove(); }, 2500);
+            }
+        }
+
+        function triggerCelebration() { 
+            const overlay = document.getElementById('celebrationOverlay'); 
+            overlay.style.display = 'flex'; 
+            
+            createConfettiExplosion();
+            
+            if(celebrationInterval) clearInterval(celebrationInterval); 
+            celebrationInterval = setInterval(createBalloon, 250); 
+            
+            if(balloonTimeout) clearTimeout(balloonTimeout);
+            balloonTimeout = setTimeout(() => {
+                clearInterval(celebrationInterval);
+            }, 4500);
+        }
+
+        function closeCelebration() { 
+            document.getElementById('celebrationOverlay').style.display = 'none'; 
+            if(celebrationInterval) clearInterval(celebrationInterval); 
+            if(balloonTimeout) clearTimeout(balloonTimeout);
+            document.querySelectorAll('.balloon, .formal-confetti').forEach(e => e.remove()); 
+        }
     </script>
 
     <script>
