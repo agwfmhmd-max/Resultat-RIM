@@ -173,7 +173,7 @@
             animation: fadeIn 0.5s;
         }
 
-        /* ----- احتفالية مطابقة للصورة ----- */
+        /* ----- احتفالية مطابقة للصورة مع نص التهنئة ----- */
         #celebrationOverlay { 
             position: fixed; 
             top: 0; left: 0; width: 100%; height: 100%; 
@@ -188,6 +188,47 @@
             top: -20px;
             z-index: 9998;
             animation: fallConfetti linear forwards;
+        }
+
+        /* نص التهنئة الاحترافي */
+        .congrats-floating-text {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10000;
+            width: 100%;
+            pointer-events: none; 
+            animation: popAndFloat 7s forwards;
+        }
+
+        .congrats-floating-text h2 {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.3;
+            text-shadow: 
+                0px 4px 15px rgba(0, 0, 0, 0.6),
+                0px 0px 25px var(--gold),
+                0px 0px 45px var(--gold);
+        }
+
+        .congrats-floating-text .emojis {
+            display: block;
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin-top: 5px;
+            filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));
+        }
+
+        @keyframes popAndFloat {
+            0% { transform: translate(-50%, -20%) scale(0.5); opacity: 0; }
+            10% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            15% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            80% { transform: translate(-50%, -60%) scale(1); opacity: 1; } /* طفو بطيء للأعلى */
+            100% { transform: translate(-50%, -70%) scale(0.9); opacity: 0; }
         }
 
         @keyframes fallConfetti {
@@ -1076,7 +1117,7 @@
             "bac_m":[ { name: "الرياضيات", coef: 9 }, { name: "الفيزياء والكيمياء", coef: 8 }, { name: "العلوم الطبيعية", coef: 4 }, { name: "اللغة العربية", coef: 3 }, { name: "الفرنسية", coef: 3 }, { name: "الإنجليزية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
             "bac_lm":[ { name: "اللغة العربية", coef: 6 }, { name: "الفلسفة", coef: 6 }, { name: "الفرنسية", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 5 }, { name: "الإنجليزية", coef: 4 }, { name: "الرياضيات", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
             "bac_lo":[ { name: "التشريع الإسلامي", coef: 7 }, { name: "اللغة العربية", coef: 7 }, { name: "الفكر الإسلامي", coef: 6 }, { name: "التاريخ والجغرافيا", coef: 4 }, { name: "القرآن والحديث", coef: 3 }, { name: "الفرنسية", coef: 2 }, { name: "الرياضيات", coef: 2 }, { name: "الرياضة البدنية", coef: 1 } ],
-            "bac_tm":[ { name: "الهندسة/الرسم التقني", coef: 7 }, { name: "الإلكترونيات/التخصص", coef: 6 }, { name: "الرياضيات", coef: 4 }, { name: "الفيزياء والكيمياء", Math: 3 }, { name: "الورشة (Atelier)", coef: 3 }, { name: "اللغة العربية", coef: 2 }, { name: "الفرنسية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ]
+            "bac_tm":[ { name: "الهندسة/الرسم التقني", coef: 7 }, { name: "الإلكترونيات/التخصص", coef: 6 }, { name: "الرياضيات", coef: 4 }, { name: "الفيزياء والكيمياء", coef: 3 }, { name: "الورشة (Atelier)", coef: 3 }, { name: "اللغة العربية", coef: 2 }, { name: "الفرنسية", coef: 2 }, { name: "التربية الإسلامية", coef: 2 }, { name: "الإنجليزية", coef: 1 }, { name: "الرياضة البدنية", coef: 1 } ]
         };
 
         function openSimulator() { document.getElementById('simulatorOverlay').style.display = 'block'; renderSimulatorInputs(); }
@@ -1120,43 +1161,43 @@
             el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
             el.style.left = Math.random() * 100 + 'vw';
             
-            // سرعات سقوط مختلفة
             el.style.animationDuration = (Math.random() * 3 + 2) + 's';
             el.style.animationDelay = Math.random() * 2 + 's';
 
-            // توزيع عشوائي بين شكل الدائرة وشكل الشريط (مثل الصورة)
             if (Math.random() > 0.3) {
-                // دوائر (الأغلبية)
                 const size = Math.random() * 10 + 10 + 'px';
                 el.style.width = size;
                 el.style.height = size;
                 el.style.borderRadius = '50%';
             } else {
-                // شرائط
                 el.style.width = Math.random() * 15 + 15 + 'px';
                 el.style.height = Math.random() * 5 + 5 + 'px';
                 el.style.borderRadius = '10px';
             }
 
             overlay.appendChild(el);
-
-            // حذف العنصر بعد سقوط الشاشة
             setTimeout(() => { el.remove(); }, 6000);
         }
 
         function triggerCelebration() {
             const overlay = document.getElementById('celebrationOverlay');
-            overlay.style.display = 'block'; // الحاوية الآن شفافة وتسمح بالتفاعل مع النتيجة
-
-            // تفريغ أي قصاصات قديمة
+            overlay.style.display = 'block'; 
             overlay.innerHTML = '';
 
-            // توليد كمية كبيرة من القصاصات دفعة واحدة لتغطي الشاشة
+            // --- إضافة نص التهنئة الاحترافي العائم ---
+            const textEl = document.createElement('div');
+            textEl.className = 'congrats-floating-text';
+            textEl.innerHTML = `
+                <h2>ألف مبروك النجاح</h2>
+                <span class="emojis">🎊🎉</span>
+            `;
+            overlay.appendChild(textEl);
+            // ----------------------------------------
+
             for(let i = 0; i < 150; i++) {
                 createConfettiPiece();
             }
 
-            // إخفاء الاحتفالية وتنظيف الشاشة تلقائياً بعد 8 ثوانٍ
             setTimeout(closeCelebration, 8000);
         }
 
