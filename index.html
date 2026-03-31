@@ -82,10 +82,11 @@
         .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid #ddd; background: #f8f9fa; }
         .form-control:focus { box-shadow: none; border-color: var(--primary); }
         
-        .btn-main { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+        .btn-main { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; margin-bottom: 10px; cursor: pointer; }
         .btn-main:hover { background: var(--secondary); color: white; }
-        .btn-gold { background: var(--gold); color: #000; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; }
-        .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: white; border-radius: 12px; padding: 10px; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn-gold { background: var(--gold); color: #000; border: none; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn-gold:hover { background: #ffb300; color: #000; }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: white; border-radius: 12px; padding: 10px; font-weight: bold; width: 100%; transition: 0.3s; cursor: pointer; }
         .btn-outline:hover { background: var(--primary); color: white; }
         
         .school-link { text-decoration: underline; cursor: pointer; font-weight: 700; transition: opacity 0.2s; }
@@ -128,7 +129,7 @@
         .nav-btn:hover { background: rgba(255,255,255,0.4); }
         #installBtn { display: none; margin-left: 5px; }
 
-        .btn-share { background: #3b5998; color: white; border: none; border-radius: 20px; padding: 8px 15px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 10px; transition: 0.3s; }
+        .btn-share { background: #3b5998; color: white; border: none; border-radius: 20px; padding: 8px 15px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 10px; transition: 0.3s; cursor: pointer; }
         .btn-share:hover { background: #2d4373; color: white; }
 
         .whatsapp-card { background: #e7fceb; border: 1px solid #25D366; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; animation: fadeIn 0.5s; text-decoration: none; display: block; color: inherit; }
@@ -173,70 +174,215 @@
             animation: fadeIn 0.5s;
         }
 
-        /* ----- احتفالية مطابقة للصورة مع نص التهنئة ----- */
+        /* ===== تأثيرات الاحتفالية الاحترافية والمحسنة ===== */
         #celebrationOverlay { 
             position: fixed; 
             top: 0; left: 0; width: 100%; height: 100%; 
-            pointer-events: none; /* يسمح بالتمرير والنقر على البطاقة أثناء الاحتفال */
+            pointer-events: none;
             z-index: 9999; 
             display: none; 
-            overflow: hidden; 
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, rgba(0, 105, 92, 0.15) 0%, transparent 70%);
         }
         
+        /* جزيئات الاحتفالية المتقدمة */
         .rim-confetti {
             position: absolute;
             top: -20px;
             z-index: 9998;
             animation: fallConfetti linear forwards;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
         }
 
-        /* نص التهنئة الاحترافي */
+        /* نص التهنئة الاحترافي مع تأثيرات متقدمة */
         .congrats-floating-text {
-            position: absolute;
-            top: 25%;
+            position: fixed;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10000;
-            width: 100%;
-            pointer-events: none; 
-            animation: popAndFloat 7s forwards;
+            width: 90%;
+            max-width: 500px;
+            pointer-events: none;
+            animation: popAndFloat 8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         .congrats-floating-text h2 {
             font-family: 'Cairo', sans-serif;
             font-weight: 800;
-            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-size: clamp(2rem, 10vw, 3.5rem);
             color: #ffffff;
             margin: 0;
             line-height: 1.3;
             text-shadow: 
-                0px 4px 15px rgba(0, 0, 0, 0.6),
-                0px 0px 25px var(--gold),
-                0px 0px 45px var(--gold);
+                0px 0px 30px rgba(255, 215, 0, 0.8),
+                0px 0px 50px rgba(0, 105, 92, 0.6),
+                0px 4px 20px rgba(0, 0, 0, 0.4);
+            letter-spacing: 1px;
+            animation: textPulse 0.6s ease-out;
         }
 
         .congrats-floating-text .emojis {
             display: block;
-            font-size: clamp(2rem, 6vw, 3rem);
-            margin-top: 5px;
-            filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-top: 10px;
+            filter: drop-shadow(0px 4px 15px rgba(0,0,0,0.3));
+            animation: emojiJump 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
 
+        .congrats-floating-text .success-badge {
+            display: block;
+            font-size: clamp(0.9rem, 3vw, 1.3rem);
+            margin-top: 12px;
+            color: #ffc107;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        /* طبقة توهج خلفية */
+        .glow-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9993;
+            pointer-events: none;
+            animation: glowPulse 1.5s ease-in-out;
+        }
+
+        /* تأثيرات الضوء المتوهج */
+        .shine-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9995;
+            pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shineEffect 1.2s ease-in-out;
+        }
+
+        /* شرائط ملونة عائمة */
+        .colored-ribbon {
+            position: absolute;
+            z-index: 9996;
+            animation: ribbonFloat 4s ease-in-out forwards;
+        }
+
+        /* ===== الحركات الكيفية (Keyframes) ===== */
+
         @keyframes popAndFloat {
-            0% { transform: translate(-50%, -20%) scale(0.5); opacity: 0; }
-            10% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-            15% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            80% { transform: translate(-50%, -60%) scale(1); opacity: 1; } /* طفو بطيء للأعلى */
-            100% { transform: translate(-50%, -70%) scale(0.9); opacity: 0; }
+            0% {
+                transform: translate(-50%, 150%) scale(0);
+                opacity: 0;
+            }
+            10% {
+                transform: translate(-50%, -50%) scale(1.15);
+                opacity: 1;
+            }
+            15% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            85% {
+                transform: translate(-50%, -60%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -100%) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        @keyframes textPulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes emojiJump {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-30px) scale(1.1);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes fallConfetti {
-            0% { transform: translateY(-5vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(110vh) rotate(720deg); opacity: 1; }
+            0% {
+                transform: translateY(-10vh) rotateX(0deg) rotateY(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(120vh) rotateX(720deg) rotateY(360deg);
+                opacity: 0;
+            }
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* --------------------------------------------------- */
+
+        @keyframes glowPulse {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes shineEffect {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes ribbonFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* ================================================ */
 
         .footer-menu { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap; }
         .footer-menu span { cursor: pointer; color: rgba(255,255,255,0.9); font-size: 0.85rem; transition: 0.3s; font-weight: 600; }
@@ -319,7 +465,7 @@
         </div>
     </footer>
 
-    <!-- حاوية الاحتفالية الشفافة -->
+    <!-- حاوية الاحتفالية الاحترافية -->
     <div id="celebrationOverlay"></div>
 
     <div id="aboutPageOverlay">
@@ -487,6 +633,7 @@
         </div>
     </div>
 
+    <!-- الكود البرمجي الكامل (JavaScript) -->
     <script>
         // --- إعدادات SUPABASE ---
         const SUPABASE_URL = 'https://chjxwcliodlevzorjush.supabase.co'; 
@@ -993,7 +1140,7 @@
             if (currentRenderCount < currentFilteredResults.length) {
                 const remaining = currentFilteredResults.length - currentRenderCount;
                 const nextCount = Math.min(currentBatchSize, remaining);
-                container.innerHTML += `<button id="showMoreBtn" class="btn-show-more" onclick="renderNextBatch()">عرض المزيد (${nextCount}) <i class="fas fa-chevron-down"></i></button>`;
+                container.innerHTML += `<button id="showMoreBtn" class="btn-main mt-2" onclick="renderNextBatch()">عرض المزيد (${nextCount}) <i class="fas fa-chevron-down"></i></button>`;
             }
         }
 
@@ -1150,7 +1297,7 @@
             else { feedbackEl.style.display = 'none'; }
         }
 
-        // --- دوال صنع الاحتفالية الشبيهة بالصورة تماماً ---
+        // --- دوال صنع الاحتفالية الشبيهة بالصورة تماماً والتي تتوافق مع الـ CSS المتقدم ---
         function createConfettiPiece() {
             const overlay = document.getElementById('celebrationOverlay');
             if (overlay.style.display === 'none') return;
@@ -1184,12 +1331,19 @@
             overlay.style.display = 'block'; 
             overlay.innerHTML = '';
 
+            // إضافة تأثيرات التوهج واللمعان المتقدمة
+            const glow = document.createElement('div'); glow.className = 'glow-background';
+            const shine = document.createElement('div'); shine.className = 'shine-effect';
+            overlay.appendChild(glow);
+            overlay.appendChild(shine);
+
             // --- إضافة نص التهنئة الاحترافي العائم ---
             const textEl = document.createElement('div');
             textEl.className = 'congrats-floating-text';
             textEl.innerHTML = `
                 <h2>ألف مبروك النجاح</h2>
                 <span class="emojis">🎊🎉</span>
+                <span class="success-badge">نتيجة مشرفة!</span>
             `;
             overlay.appendChild(textEl);
             // ----------------------------------------
