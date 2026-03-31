@@ -1119,7 +1119,12 @@
                     currentFilteredResults = results; currentRenderCount = 0; currentSearchConfig = config; currentSearchExamType = examType; currentSearchMode = searchCat; 
                     renderNextBatch();
                     setTimeout(() => { const firstResult = document.querySelector('.result-card-wrapper'); if (firstResult) firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
-                    if (searchCat === 'number' && results.length > 0) { const winner = results.find(s => isResultSuccessful(s, config, examType)); if (winner) triggerCelebration(); }
+                    
+                    // تمرير المعدل ونوع المسابقة إلى دالة الاحتفال
+                    if (searchCat === 'number' && results.length > 0) { 
+                        const winner = results.find(s => isResultSuccessful(s, config, examType)); 
+                        if (winner) triggerCelebration(winner._score, examType); 
+                    }
                     
                 } catch (error) { 
                     loading.classList.add('d-none');
@@ -1298,6 +1303,13 @@
         }
 
         // --- دوال صنع الاحتفالية الشبيهة بالصورة تماماً والتي تتوافق مع الـ CSS المتقدم ---
+        
+        // تهيئة الأصوات الاحترافية والمستقرة (أصوات من مكتبة مفتوحة وموثوقة)
+        const popSound = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+        const cheerSound = new Audio('https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg');
+        popSound.volume = 0.8;
+        cheerSound.volume = 0.5;
+
         function createConfettiPiece() {
             const overlay = document.getElementById('celebrationOverlay');
             if (overlay.style.display === 'none') return;
@@ -1326,10 +1338,22 @@
             setTimeout(() => { el.remove(); }, 6000);
         }
 
-        function triggerCelebration() {
+        function triggerCelebration(score = 0, examType = '') {
             const overlay = document.getElementById('celebrationOverlay');
             overlay.style.display = 'block'; 
             overlay.innerHTML = '';
+
+            // تشغيل الأصوات
+            try {
+                popSound.currentTime = 0;
+                popSound.play();
+                setTimeout(() => {
+                    cheerSound.currentTime = 0;
+                    cheerSound.play();
+                }, 300);
+            } catch (err) {
+                console.log("Autoplay prevented by browser", err);
+            }
 
             // إضافة تأثيرات التوهج واللمعان المتقدمة
             const glow = document.createElement('div'); glow.className = 'glow-background';
@@ -1337,13 +1361,27 @@
             overlay.appendChild(glow);
             overlay.appendChild(shine);
 
+            // التحقق من شرط عرض "نتيجة مشرفة"
+            let badgeHtml = '';
+            let numericScore = parseFloat(score) || 0;
+            
+            if (examType === 'concours') {
+                if (numericScore >= 120) {
+                    badgeHtml = `<span class="success-badge">نتيجة مشرفة</span>`;
+                }
+            } else {
+                if (numericScore >= 13) {
+                    badgeHtml = `<span class="success-badge">نتيجة مشرفة</span>`;
+                }
+            }
+
             // --- إضافة نص التهنئة الاحترافي العائم ---
             const textEl = document.createElement('div');
             textEl.className = 'congrats-floating-text';
             textEl.innerHTML = `
                 <h2>ألف مبروك النجاح</h2>
                 <span class="emojis">🎊🎉</span>
-                <span class="success-badge">نتيجة مشرفة!</span>
+                ${badgeHtml}
             `;
             overlay.appendChild(textEl);
             // ----------------------------------------
@@ -1359,6 +1397,12 @@
             const overlay = document.getElementById('celebrationOverlay');
             overlay.style.display = 'none';
             overlay.innerHTML = '';
+
+            // إيقاف الصوت عند الإغلاق
+            try {
+                cheerSound.pause();
+                cheerSound.currentTime = 0;
+            } catch (e) {}
         }
     </script>
 
