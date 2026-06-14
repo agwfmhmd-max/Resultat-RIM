@@ -168,7 +168,7 @@
         .hero h1 { font-weight:800; font-size: clamp(1.05rem, 3.6vw, 1.45rem); margin: 6px 0 2px; line-height:1.3; }
         .hero p { opacity:.88; font-size:.72rem; max-width:480px; margin:0 auto; }
 
-        .exam-cards { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-bottom:10px; position:relative; z-index:3; }
+        .exam-cards { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:10px; position:relative; z-index:3; }
         @media(max-width: 520px){ .exam-cards { grid-template-columns: repeat(3,1fr); } }
         .exam-card { background:#fff; border-radius:12px; padding:8px 4px; text-align:center; cursor:pointer; box-shadow:0 4px 12px rgba(11,106,79,.08); border:2px solid transparent; transition:.2s; }
         .exam-card:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(11,106,79,.18); }
@@ -311,15 +311,10 @@
         </div>
 
         <div class="exam-cards">
-            <div class="exam-card" data-exam="bac_n">
+            <div class="exam-card" data-exam="bac_n" id="bacExamCard">
                 <div class="ic"><i class="fas fa-graduation-cap"></i></div>
                 <div class="t">باكالوريا</div>
-                <div class="s">الدورة العادية</div>
-            </div>
-            <div class="exam-card" data-exam="bac_c">
-                <div class="ic"><i class="fas fa-book"></i></div>
-                <div class="t">باكالوريا</div>
-                <div class="s">الدورة التكميلية</div>
+                <div class="s">العادية والتكميلية</div>
             </div>
             <div class="exam-card" data-exam="brevet">
                 <div class="ic"><i class="fas fa-award"></i></div>
@@ -365,6 +360,13 @@
                     <option value="college">امتياز الإعدادية</option>
                     <option value="lycee">امتياز الثانوية</option>
                 </select>
+            </div>
+
+            <div id="bacSessionWrap" style="display:none;">
+                <div class="sub-tabs" id="bacSessionTabs">
+                    <button type="button" data-exam="bac_c">الدورة التكميلية</button>
+                    <button type="button" data-exam="bac_n" class="active">الدورة العادية</button>
+                </div>
             </div>
 
             <label class="section-title">البحث بواسطة:</label>
@@ -430,6 +432,15 @@
           subSel.value = b.dataset.sub;
           subSel.dispatchEvent(new Event('change', { bubbles: true }));
         }
+      });
+    });
+    document.querySelectorAll('#bacSessionTabs button').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('#bacSessionTabs button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        sel.value = b.dataset.exam;
+        if (lbl) lbl.textContent = examLabels[b.dataset.exam] || '';
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
       });
     });
   })();
@@ -541,7 +552,7 @@
                     <option value="college">امتياز الإعدادية</option>
                     <option value="lycee">امتياز الثانوية</option>
                 </select>
-                <div class="form-text small text-muted">سيتم دمج المحتوى داخل ملف واحد (excellence.csv) مع عمود يحدد النوع.</div>
+                <div class="form-text small text-muted">يتم حفظ كل نوع في ملف منفصل: excellence_college.csv أو excellence_lycee.csv (لا يتم خلطهما).</div>
             </div>
 
             <div class="mb-2">
@@ -705,7 +716,7 @@ const WANTED_COLS = {
     bac_c:     ['NODOSS','SERIE','NOM_AR','Moy Bac','Moy Bac_Session','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
     brevet:    ['Num_Bepc','NOM','NOM_AR','Moyenne_Bepc','Decision','WILAYA','Wilaya_AR','Ecole','Centre Examen_AR'],
     concours:  ['Noreg','Numéro_C1AS','NODOSS','NOM_AR','Ecole_AR','WILAYA_AR','Centre Examen_AR','TOTAL'],
-    excellence:['NODOSS','Num_Bepc','NOM_AR','NOM','Moy Bac','Moyenne_Bepc','Moy','Decision','Wilaya_AR','WILAYA','Etablissement_AR','Ecole','SERIE','TYPE']
+    excellence:['NODOSS','Num_Bepc','Num_Excellence_Bepc','Num_Excellence_1AS','NOM_AR','NOM','Nom','Moy Bac','Moyenne_Bepc','Moy','Mgex','Decision','Wilaya_AR','Wilaya_FR','WILAYA','Etablissement_AR','Ecole','CENTRE_AR','CENTRE_FR','Lieu','SERIE','TYPE']
 };
 
 function normHeaderKey(h){ return String(h||'').replace(/\uFEFF/g,'').trim().toLowerCase().replace(/\s+/g,' '); }
@@ -728,6 +739,24 @@ function cleanRows(rawRows, examType, extra = {}) {
     const keep = [];
     wanted.forEach(w => { const orig = idx[normHeaderKey(w)]; if (orig) keep.push({ out: w, src: orig }); });
 
+    // Aliases: unify Excellence Excel column names with what the rest of the app expects
+    if (examType === 'excellence') {
+        const aliases = {
+            'Mgex': 'Moy',
+            'Nom': 'NOM_AR',
+            'Wilaya_FR': 'Wilaya_AR',
+            'CENTRE_FR': 'Centre Examen_AR',
+            'CENTRE_AR': 'Centre Examen_AR',
+            'Num_Excellence_Bepc': 'Num_Bepc',
+            'Num_Excellence_1AS': 'Num_Bepc',
+            'Lieu': 'Etablissement_AR'
+        };
+        keep.forEach(k => { if (aliases[k.out]) k.out = aliases[k.out]; });
+        const seen = new Set();
+        for (let i = keep.length - 1; i >= 0; i--) {
+            if (seen.has(keep[i].out)) keep.splice(i,1); else seen.add(keep[i].out);
+        }
+    }
     const outHeaders = keep.map(k => k.out);
     if (examType === 'excellence' && !outHeaders.includes('TYPE')) outHeaders.push('TYPE');
 
@@ -859,7 +888,8 @@ async function uploadToSupabase(replaceAll) {
     if (!fileInput.files.length) { alert("الرجاء اختيار ملف أولاً."); return; }
     const file = fileInput.files[0];
     const subType = (examType === 'excellence') ? document.getElementById('uploadExcellenceSub').value : null;
-    const fileName = examType + '.csv';
+    const fileName = (examType === 'excellence') ? `excellence_${subType}.csv` : `${examType}.csv`;
+    const cacheKey = (examType === 'excellence') ? `excellence_${subType}` : examType;
 
     statusDiv.classList.remove('d-none','alert-success','alert-danger'); statusDiv.classList.add('alert-info');
     statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> بدء المعالجة...';
@@ -870,24 +900,9 @@ async function uploadToSupabase(replaceAll) {
         const raw = await readUploadedFile(file, p => setUploadProgress('قراءة الملف...', Math.max(1, p*0.25)));
         setUploadProgress('تنظيف البيانات...', 30, `صفوف خام: ${raw.length}`);
 
-        // 2) تنظيف
+        // 2) تنظيف (كل نوع امتياز يحفظ في ملف مستقل، لا حاجة للدمج)
         await new Promise(r => setTimeout(r, 10));
         let cleaned = cleanRows(raw, examType, { subType });
-
-        // 2.b للامتياز: دمج مع الملف الحالي إن لم يكن استبدالاً كاملاً
-        if (examType === 'excellence' && !replaceAll) {
-            try {
-                const existing = await fetch(`${STORAGE_BASE_URL}excellence.csv?t=${Date.now()}`);
-                if (existing.ok) {
-                    const txt = await existing.text();
-                    const prev = Papa.parse(txt, { header:true, skipEmptyLines:true, transformHeader: h=>h.trim() }).data;
-                    // احتفظ بالصفوف من النوع الآخر فقط
-                    const keepPrev = prev.filter(r => (r.TYPE || '').toLowerCase() !== subType);
-                    const merged = keepPrev.concat(cleaned.rows);
-                    cleaned = { headers: cleaned.headers, rows: merged };
-                }
-            } catch(e){ /* لا يوجد ملف سابق – عادي */ }
-        }
 
         setUploadProgress('تحويل إلى CSV...', 50, `بعد التنظيف: ${cleaned.rows.length}`);
         await new Promise(r => setTimeout(r, 10));
@@ -902,12 +917,14 @@ async function uploadToSupabase(replaceAll) {
         statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> تم رفع ${fileName} بنجاح (${cleaned.rows.length} سجل).`;
 
         // تحديث الذواكر
+        delete cache[cacheKey];
         delete cache[examType];
+        try { localStorage.removeItem('rim_cache_'+cacheKey); } catch(e){}
         try { localStorage.removeItem('rim_cache_'+examType); } catch(e){}
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage({ type: 'PURGE_DATA_CACHE' });
         }
-        addUploadHistory({ when: new Date().toISOString(), examType, file: file.name, rows: cleaned.rows.length, mode: replaceAll ? 'replace' : 'upsert' });
+        addUploadHistory({ when: new Date().toISOString(), examType: cacheKey, file: file.name, rows: cleaned.rows.length, mode: replaceAll ? 'replace' : 'upsert' });
         renderUploadHistory();
         refreshAdminFilesStatus();
         fetchData(examType).catch(()=>{});
@@ -922,15 +939,23 @@ async function uploadToSupabase(replaceAll) {
 async function deleteRemoteFile() {
     if (!supabaseClient) return;
     const examType = document.getElementById('uploadExamType').value;
-    const fileName = examType + '.csv';
+    let fileName, cacheKey;
+    if (examType === 'excellence') {
+        const sub = document.getElementById('uploadExcellenceSub').value;
+        fileName = `excellence_${sub}.csv`;
+        cacheKey = `excellence_${sub}`;
+    } else {
+        fileName = examType + '.csv';
+        cacheKey = examType;
+    }
     if (!confirm(`هل تريد فعلاً حذف ${fileName} من الخادم؟ لا يمكن التراجع.`)) return;
     try {
         const { error } = await supabaseClient.storage.from(STORAGE_BUCKET).remove([fileName]);
         if (error) throw error;
-        delete cache[examType];
-        try { localStorage.removeItem('rim_cache_'+examType); } catch(e){}
+        delete cache[cacheKey]; delete cache[examType];
+        try { localStorage.removeItem('rim_cache_'+cacheKey); } catch(e){}
         if (navigator.serviceWorker?.controller) navigator.serviceWorker.controller.postMessage({ type: 'PURGE_DATA_CACHE' });
-        addUploadHistory({ when: new Date().toISOString(), examType, file: fileName, rows: 0, mode: 'delete' });
+        addUploadHistory({ when: new Date().toISOString(), examType: cacheKey, file: fileName, rows: 0, mode: 'delete' });
         renderUploadHistory();
         refreshAdminFilesStatus();
         alert('تم الحذف ✅');
@@ -942,8 +967,14 @@ async function refreshAdminFilesStatus(){
     const wrap = document.getElementById('adminFilesStatus');
     if (!wrap) return;
     wrap.innerHTML = '<div class="text-muted small">جاري التحميل...</div>';
-    const examTypes = ['concours','brevet','bac_n','bac_c','excellence'];
-    const labels = { concours:'كونكور', brevet:'بريفة', bac_n:'باك - عادية', bac_c:'باك - تكميلية', excellence:'الامتياز' };
+    const entries = [
+        { key:'concours', file:'concours.csv', label:'كونكور' },
+        { key:'brevet', file:'brevet.csv', label:'بريفة' },
+        { key:'bac_n', file:'bac_n.csv', label:'باك - عادية' },
+        { key:'bac_c', file:'bac_c.csv', label:'باك - تكميلية' },
+        { key:'excellence_college', file:'excellence_college.csv', label:'الامتياز - الإعدادية' },
+        { key:'excellence_lycee',   file:'excellence_lycee.csv',   label:'الامتياز - الثانوية' },
+    ];
 
     try {
         const { data, error } = await supabaseClient.storage.from(STORAGE_BUCKET).list('', { limit: 200 });
@@ -951,14 +982,14 @@ async function refreshAdminFilesStatus(){
         const byName = {}; (data||[]).forEach(o => byName[o.name] = o);
 
         let html = '';
-        for (const t of examTypes) {
-            const f = byName[t + '.csv'];
+        for (const e of entries) {
+            const f = byName[e.file];
             const exists = !!f;
             const size = exists ? (f.metadata?.size || 0) : 0;
             const updated = exists ? new Date(f.updated_at || f.created_at) : null;
             html += `<div class="admin-stat-card d-flex justify-content-between align-items-center">
                 <div>
-                    <div class="value">${labels[t]} <span class="chip">${t}.csv</span></div>
+                    <div class="value">${e.label} <span class="chip">${e.file}</span></div>
                     <div class="label">${ exists ? `الحجم: ${(size/1024).toFixed(1)} KB · آخر تحديث: ${updated.toLocaleString('ar')}` : 'لا يوجد ملف' }</div>
                 </div>
                 <div class="text-end">
@@ -1025,17 +1056,17 @@ const staticMajors =[ { label: "العلوم الطبيعية (SN)", searchVal: 
 const staticWilayas =[
     { label: "الحوض الشرقي", searchVal:["الحوض الشرقي","Hod Charghi"] },
     { label: "الحوض الغربي", searchVal:["الحوض الغربي","Hod Gharbi"] },
-    { label: "لعصابه", searchVal:["لعصابه","لعصابة","ASSABA"] },
-    { label: "كوركل", searchVal:["كوركل","GORGOL"] },
-    { label: "لبراكنه", searchVal:["لبراكنه","لبراكنة","BRAKNA"] },
-    { label: "اترارزه", searchVal: ["اترارزه","اترارزة","TRARZA"] },
+    { label: "لعصابه", searchVal:["لعصابه","لعصابة","لعصابـــــه","ASSABA"] },
+    { label: "كوركل", searchVal:["كوركل","كـــوركل","GORGOL"] },
+    { label: "لبراكنه", searchVal:["لبراكنه","لبراكنة","لــبــراكــنــه","BRAKNA"] },
+    { label: "اترارزه", searchVal: ["اترارزه","اترارزة","اتـــرارزه","TRARZA"] },
     { label: "آدرار", searchVal: ["آدرار","ADRAR","ادرار"] },
-    { label: "داخلت انواذيبو", searchVal:["داخلت انواذيبو","NOUADHIBOU","داخلت انواذيب","Dakhlet Nouadhibou"] },
-    { label: "تكانت", searchVal: ["تكانت","TAGANT"] },
+    { label: "داخلت انواذيبو", searchVal:["داخلت انواذيبو","داخلت انواديـبـو","NOUADHIBOU","داخلت انواذيب","Dakhlet Nouadhibou"] },
+    { label: "تكانت", searchVal: ["تكانت","تــــكانت","TAGANT"] },
     { label: "كيديماغا", searchVal:["كيديماغا","GUIDIMAGHA","كيدي ماغه","Guidimakha"] },
-    { label: "تيرس زمور", searchVal:["تيرس زمور","TIRIS ZEMMOUR","تيرس ازمور","Tiris Zemour","Zemour"] },
-    { label: "اينشيري", searchVal: ["اينشيري","INCHIRI"] },
-    { label: "انواكشوط 1 (الشمالية)", searchVal:["انواكشوط الشمالية","NKTT NORD","NORD","Nouakchott Nord"] },
+    { label: "تيرس زمور", searchVal:["تيرس زمور","تـيــرس زمور","TIRIS ZEMMOUR","تيرس ازمور","Tiris Zemour","Zemour"] },
+    { label: "اينشيري", searchVal: ["اينشيري","انـــشـــيـــري","INCHIRI"] },
+    { label: "انواكشوط 1 (الشمالية)", searchVal:["انواكشوط الشمالية","انواكشوط الشرقية","NKTT NORD","NORD","Nouakchott Nord","Nouakchott Est","NKTT EST"] },
     { label: "انواكشوط 2 (الغربية)", searchVal:["انواكشوط الغربية","Nouakchott Ouest","NKTT OUEST"] },
     { label: "انواكشوط 3 (الجنوبية)", searchVal:["انواكشوط الجنوبية","NKTT SUD","SUD","Nouakchott Sud"] }
 ];
@@ -1044,15 +1075,18 @@ const examSelect = document.getElementById('examType');
 const categorySelect = document.getElementById('searchCategory');
 const excellenceSubWrap = document.getElementById('excellenceSubWrap');
 const excellenceSubSel = document.getElementById('excellenceSub');
+const bacSessionWrap = document.getElementById('bacSessionWrap');
 
 function updateSearchCategory() {
     const t = examSelect.value;
     categorySelect.value = (t === 'concours') ? 'school' : 'number';
     excellenceSubWrap.style.display = (t === 'excellence') ? 'block' : 'none';
+    bacSessionWrap.style.display = t.includes('bac') ? 'block' : 'none';
+    document.querySelectorAll('#bacSessionTabs button').forEach(button => button.classList.toggle('active', button.dataset.exam === t));
     fetchData(t).catch(()=>{});
 }
 examSelect.addEventListener('change', updateSearchCategory);
-excellenceSubSel.addEventListener('change', () => { /* لا حاجة لإعادة جلب البيانات؛ التصفية محلية */ });
+excellenceSubSel.addEventListener('change', () => { fetchData('excellence').catch(()=>{}); });
 document.addEventListener('DOMContentLoaded', () => {
     updateSearchCategory(); onUploadTypeChange(); loadImageAd(); loadCurrentImageAdAdmin();
     // Prefetch بقية ملفات النتائج في الخلفية لجعل البحث فوريًا عند تغيير النوع
@@ -1213,7 +1247,7 @@ function getNormalizedState(rawState) {
     if (!rawState) return "unknown";
     let text = String(rawState).trim().toLowerCase().replace(/\s+/g,' ');
     if (text.includes('ouest') || text.includes('الغربية')) return "انواكشوط 2 (الغربية)";
-    if (text.includes('nord') || text.includes('الشمالية')) return "انواكشوط 1 (الشمالية)";
+    if (text.includes('nord') || text.includes('est') || text.includes('الشمالية') || text.includes('الشرقية')) return "انواكشوط 1 (الشمالية)";
     if (text.includes('sud') || text.includes('الجنوبية')) return "انواكشوط 3 (الجنوبية)";
     for (let group of staticWilayas) { if(group.label.includes("انواكشوط")) continue; if (group.searchVal.some(term => text.includes(term.toLowerCase()))) return group.label; }
     return text;
@@ -1336,17 +1370,26 @@ async function fetchCsvNetwork(examType, fileName, throwOnFail) {
 }
 
 function fetchData(examType) {
-    if (cache[examType]) return cache[examType];
-    cache[examType] = (async () => {
+    let cacheKey = examType;
+    let fileName;
+    if (examType === 'excellence') {
+        const subEl = document.getElementById('excellenceSub');
+        const sub = (subEl && subEl.value) ? subEl.value : 'lycee';
+        cacheKey = 'excellence_' + sub;
+        fileName = cacheKey + '.csv';
+    } else {
+        fileName = examConfig[examType].file;
+    }
+    if (cache[cacheKey]) return cache[cacheKey];
+    cache[cacheKey] = (async () => {
         const config = examConfig[examType];
-        const fileName = config.file;
         const loadingText = document.getElementById('loadingText');
         if (loadingText) loadingText.innerText = "جاري تحميل البيانات...";
         let csvText;
         try {
-            csvText = await loadCsvText(examType, fileName);
+            csvText = await loadCsvText(cacheKey, fileName);
         } catch (e) {
-            delete cache[examType];
+            delete cache[cacheKey];
             throw new Error('FILE_NOT_FOUND');
         }
         if (loadingText) loadingText.innerText = "جاري معالجة البيانات...";
@@ -1355,11 +1398,11 @@ function fetchData(examType) {
             if (!parsed.data || parsed.data.length === 0) throw new Error("EMPTY_FILE");
             return preprocessData(parsed.data, config, examType);
         } catch (err) {
-            delete cache[examType];
+            delete cache[cacheKey];
             throw err;
         }
     })();
-    return cache[examType];
+    return cache[cacheKey];
 }
 
 function preprocessData(data, config, examType) {
@@ -1448,7 +1491,7 @@ function calculateAndRenderStats(data, config, examType) {
         html += `<div class="stats-section-title"><i class="fas fa-school me-2"></i>أفضل 10 مدارس</div>`;
         sortedS.slice(0,10).forEach((s,i)=>{ const safe = s.name.replace(/'/g,"\\'"); html += `<div class="stat-box" style="cursor:pointer;" onclick="searchBySchoolName('${safe}')"><div class="d-flex align-items-center" style="overflow:hidden;"><div class="stat-rank">${i+1}</div><div class="ms-2 text-truncate"><div class="stat-name text-truncate text-primary" style="text-decoration:underline;">${s.name}</div><div class="stat-meta">${s.total} مترشح</div></div></div><div class="stat-rate text-success ms-2">%${s.rate.toFixed(1)}</div></div>`; });
     }
-    if (sortedSe.length) {
+    if (examType !== 'excellence' && sortedSe.length) {
         html += `<div class="stats-section-title"><i class="fas fa-book me-2"></i>أفضل 5 شعب</div><div class="stat-grid-compact">`;
         sortedSe.slice(0,5).forEach(s => html += `<div class="stat-mini-card"><div class="fw-bold text-dark small">${s.name}</div><div class="text-success fw-bold">%${s.rate.toFixed(1)}</div></div>`);
         html += `</div>`;
