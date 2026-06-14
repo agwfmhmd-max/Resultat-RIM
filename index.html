@@ -24,6 +24,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- جديد: قراءة ملفات Excel مباشرة -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js لرسم بيانات الزيارات -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
         :root {
@@ -212,15 +214,106 @@
         .dev-name-pro { display:inline-block; background: linear-gradient(135deg,#ffc107,#ffb300) !important; color:#0a4a37 !important; border:none !important; padding:3px 12px; border-radius:50px; font-size:.7rem; font-weight:700; text-decoration:none; box-shadow:0 3px 10px rgba(255,193,7,.3); }
         .footer-copyright { font-size:.6rem; color:rgba(255,255,255,.6) !important; margin-top:5px !important; }
 
-        /* ====== إعلان الصورة (مُضاف من Resulta_rim) ====== */
-        .ad-banner { width: 100%; border-radius: 12px; overflow: hidden; margin: 12px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background:#f8f9fa; text-align:center; }
-        .ad-banner img { max-width: 100%; width: auto; height: auto; max-height: 320px; object-fit: contain; display:inline-block; margin:0 auto; }
-        @media (max-width: 576px){ .ad-banner img { max-height: 200px; } }
-        .ad-banner .ad-content { padding: 18px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-align: center; }
-        .ad-banner .ad-content h5 { margin-bottom: 8px; font-weight: 700; }
-        .ad-banner .ad-content p { margin-bottom: 12px; }
-        .ad-banner .ad-link { display: inline-block; background-color: white; color: var(--primary); padding: 7px 18px; border-radius: 25px; text-decoration: none; font-weight: 700; transition: all .3s; }
-        .ad-banner .ad-link:hover { background-color: var(--gold); transform: translateY(-2px); }
+        /* ====== إعلان الصورة — تصميم زجاجي عصري ====== */
+        .ad-banner {
+            position: relative;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 14px 0;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow:
+                0 8px 32px rgba(11, 106, 79, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            transition: transform .35s ease, box-shadow .35s ease;
+            animation: adFadeIn .6s cubic-bezier(.2,.8,.2,1) both;
+        }
+        .ad-banner:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 16px 48px rgba(11, 106, 79, 0.18),
+                0 4px 12px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+        .ad-banner .ad-label {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 5;
+            background: rgba(255, 193, 7, 0.92);
+            color: #0a4a37;
+            font-size: .62rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 50px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+            letter-spacing: .3px;
+            pointer-events: none;
+        }
+        .ad-banner .ad-wrap {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            margin: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2));
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+        }
+        .ad-banner img {
+            display: block;
+            width: 100%;
+            max-height: 320px;
+            object-fit: cover;
+            border-radius: 14px;
+            transition: transform .6s cubic-bezier(.2,.8,.2,1);
+        }
+        .ad-banner:hover img { transform: scale(1.04); }
+        .ad-banner .ad-content {
+            padding: 14px 18px 18px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(11,106,79,0.08), rgba(10,81,60,0.04));
+            border-top: 1px solid rgba(255,255,255,0.5);
+        }
+        .ad-banner .ad-content h5 {
+            margin-bottom: 6px;
+            font-weight: 800;
+            color: var(--primary);
+            font-size: .88rem;
+        }
+        .ad-banner .ad-content p {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: .78rem;
+        }
+        .ad-banner .ad-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #fff, #f8faf9);
+            color: var(--primary);
+            padding: 7px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .78rem;
+            border: 1px solid rgba(11,106,79,.15);
+            box-shadow: 0 2px 8px rgba(11,106,79,.1);
+            transition: all .3s ease;
+        }
+        .ad-banner .ad-link:hover {
+            background: linear-gradient(135deg, var(--gold), #ffb300);
+            color: #0a4a37;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,193,7,.35);
+        }
+        @keyframes adFadeIn {
+            from { opacity: 0; transform: translateY(16px) scale(.97); }
+            to   { opacity: 1; transform: none; }
+        }
         .upload-area { border: 2px dashed #ccc; border-radius: 10px; padding: 18px; text-align:center; cursor:pointer; background:#fafafa; }
         .upload-area:hover { background:#f0f0f0; }
         .image-preview { max-width: 100%; max-height: 160px; border-radius: 8px; margin-top: 10px; }
@@ -267,27 +360,39 @@
         .navbar, .footer-pro { flex: none !important; }
         .footer-pro { margin-top: 20px !important; }
 
-        /* صورة الإعلان: تأكد من أنها لا تتجاوز عرض الحاوية على أي شاشة */
+        /* صورة الإعلان: احترافية ومتجاوبة */
         .ad-banner { width: 100%; max-width: 100%; box-sizing: border-box; }
         .ad-banner img {
             display: block;
-            max-width: 100% !important;
-            width: auto !important;
-            height: auto !important;
-            max-height: 280px;
-            object-fit: contain;
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            max-height: 320px;
+            object-fit: cover;
             margin: 0 auto;
         }
         @media (max-width: 576px) {
-            .ad-banner img { max-height: 180px; }
+            .ad-banner img { max-height: 220px; }
         }
 
         /* احتياط: امنع أي عنصر من تجاوز عرض الشاشة على الهاتف */
         img, video, iframe, table { max-width: 100%; }
+        /* شارة المتصلين الآن (تظهر للمستخدمين عند تفعيل المشرف) */
+        #liveOnlineBadge {
+            position: fixed; bottom: 80px; left: 12px; z-index: 1500;
+            background: linear-gradient(135deg, #25D366, #128C7E); color:#fff;
+            padding: 8px 14px; border-radius: 30px; box-shadow: 0 4px 12px rgba(0,0,0,.25);
+            font-weight: 700; font-size: .9rem; display: none; align-items:center; gap:6px;
+        }
+        #liveOnlineBadge .dot { width:8px; height:8px; background:#fff; border-radius:50%; animation:pulseDot 1.5s infinite; }
+        @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.3} }
     </style>
 
 </head>
 <body oncontextmenu="return false;">
+
+<!-- شارة المتصلين الآن (المشرف يتحكم بإظهارها) -->
+<div id="liveOnlineBadge"><span class="dot"></span><i class="fas fa-users"></i> <span id="liveOnlineCount">0</span> متصل الآن</div>
 
 <nav class="navbar">
     <div class="container-app w-100 d-flex align-items-center justify-content-between" style="position:relative; z-index:2;">
@@ -583,6 +688,61 @@
                 </button>
             </div>
 
+            <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">📈 إحصائيات الزوار</h6>
+            <div id="visitorStatsBox">
+                <div class="row g-2">
+                    <div class="col-4">
+                        <div class="admin-stat-card text-center">
+                            <div class="label">إجمالي الزيارات</div>
+                            <div class="value fs-4" id="statTotalVisits">…</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="admin-stat-card text-center">
+                            <div class="label">زوار فريدون</div>
+                            <div class="value fs-4" id="statUniqueVisits">…</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="admin-stat-card text-center">
+                            <div class="label">زيارات اليوم</div>
+                            <div class="value fs-4" id="statTodayVisits">…</div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="refreshVisitorStats()" class="btn btn-sm btn-outline-secondary mt-2"><i class="fas fa-sync-alt me-1"></i> تحديث الإحصائيات</button>
+            </div>
+
+            <!-- ====== الرسم البياني للزيارات ====== -->
+            <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">📊 الرسم البياني للزيارات</h6>
+            <div class="admin-stat-card">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <label class="form-label m-0 small fw-bold">الفترة:</label>
+                    <select id="visitsPeriod" class="form-select form-select-sm" style="width:auto" onchange="renderVisitsChart()">
+                        <option value="7">آخر 7 أيام</option>
+                        <option value="14">آخر 14 يوم</option>
+                        <option value="30" selected>آخر 30 يوم</option>
+                        <option value="60">آخر 60 يوم</option>
+                        <option value="90">آخر 90 يوم</option>
+                    </select>
+                    <button onclick="renderVisitsChart()" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sync-alt"></i></button>
+                    <span id="visitsChartSummary" class="small text-muted ms-auto"></span>
+                </div>
+                <div style="position:relative;height:240px"><canvas id="visitsChart"></canvas></div>
+            </div>
+
+            <!-- ====== المتصلون الآن ====== -->
+            <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">🟢 المتصلون الآن على المنصة</h6>
+            <div class="admin-stat-card text-center">
+                <div class="label">عدد المتصلين حالياً</div>
+                <div class="value fs-2" id="onlineCount">…</div>
+                <div class="small text-muted mb-2">يتم التحديث تلقائياً في الوقت الفعلي</div>
+                <button id="toggleShowOnlineBtn" onclick="toggleShowOnlineToUsers()" class="btn btn-sm btn-primary">
+                    <i class="fas fa-eye me-1"></i> إظهار للمستخدمين
+                </button>
+                <div class="small text-muted mt-2" id="showOnlineStatus"></div>
+            </div>
+
             <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">🗂 سجل عمليات الرفع</h6>
             <div id="uploadHistoryBox" class="upload-log"><div class="text-muted">لا توجد عمليات سابقة.</div></div>
 
@@ -662,6 +822,7 @@ if (supabaseClient) {
             uploadSec?.classList.remove('d-none');
             refreshAdminFilesStatus();
             renderUploadHistory();
+            refreshVisitorStats();
         } else {
             loginSec?.classList.remove('d-none');
             uploadSec?.classList.add('d-none');
@@ -670,6 +831,198 @@ if (supabaseClient) {
 }
 
 document.addEventListener('contextmenu', e => e.preventDefault());
+
+/* ====== إحصائيات الزوار (عداد عالمي مجاني — Abacus) ====== */
+const VISIT_NS = 'resultat-rim-mr-v1';
+const VISIT_API = 'https://abacus.jasoncameron.dev';
+function _todayKey(){ const d=new Date(); return 'd'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
+async function _hit(key){
+    try { const r = await fetch(`${VISIT_API}/hit/${VISIT_NS}/${key}`); const j = await r.json(); return j.value; } catch(e){ return null; }
+}
+async function _get(key){
+    try { const r = await fetch(`${VISIT_API}/get/${VISIT_NS}/${key}`); const j = await r.json(); return j.value; } catch(e){ return null; }
+}
+async function trackVisit(){
+    try {
+        // Total visits — every page load
+        _hit('total');
+        // Today's visits
+        _hit(_todayKey());
+        // Unique visitor — only once per browser
+        if (!localStorage.getItem('rim_visitor_id')) {
+            localStorage.setItem('rim_visitor_id', Date.now()+''+Math.random().toString(36).slice(2));
+            _hit('unique');
+        }
+    } catch(e){}
+}
+async function refreshVisitorStats(){
+    const tEl = document.getElementById('statTotalVisits');
+    const uEl = document.getElementById('statUniqueVisits');
+    const dEl = document.getElementById('statTodayVisits');
+    if(!tEl) return;
+    tEl.textContent = uEl.textContent = dEl.textContent = '…';
+    const [t,u,d] = await Promise.all([_get('total'), _get('unique'), _get(_todayKey())]);
+    tEl.textContent = (t ?? 0).toLocaleString('ar-EG');
+    uEl.textContent = (u ?? 0).toLocaleString('ar-EG');
+    dEl.textContent = (d ?? 0).toLocaleString('ar-EG');
+}
+// Track once per session to avoid double-count on refresh spam
+if (!sessionStorage.getItem('rim_visit_tracked')) {
+    sessionStorage.setItem('rim_visit_tracked', '1');
+    trackVisit();
+}
+
+
+/* ====== الرسم البياني للزيارات (يستخدم نفس مفاتيح Abacus اليومية) ====== */
+let _visitsChartInstance = null;
+function _dayKeyFor(date){
+    return 'd'+date.getFullYear()+String(date.getMonth()+1).padStart(2,'0')+String(date.getDate()).padStart(2,'0');
+}
+function _fmtDayLabel(date){
+    return String(date.getDate()).padStart(2,'0')+'/'+String(date.getMonth()+1).padStart(2,'0');
+}
+async function renderVisitsChart(){
+    const sel = document.getElementById('visitsPeriod');
+    const summary = document.getElementById('visitsChartSummary');
+    const canvas = document.getElementById('visitsChart');
+    if(!sel || !canvas) return;
+    const days = parseInt(sel.value, 10) || 30;
+    if(summary) summary.textContent = 'جاري التحميل...';
+    const labels = [], promises = [], dates = [];
+    const today = new Date();
+    for(let i=days-1; i>=0; i--){
+        const d = new Date(today); d.setDate(today.getDate()-i);
+        dates.push(d); labels.push(_fmtDayLabel(d));
+        promises.push(_get(_dayKeyFor(d)));
+    }
+    const values = (await Promise.all(promises)).map(v => v ?? 0);
+    const total = values.reduce((a,b)=>a+b,0);
+    const avg = days ? Math.round(total/days) : 0;
+    if(summary) summary.textContent = `المجموع: ${total.toLocaleString('ar-EG')} • المتوسط/يوم: ${avg.toLocaleString('ar-EG')}`;
+
+    if(_visitsChartInstance){ _visitsChartInstance.destroy(); }
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0,0,0,240);
+    grad.addColorStop(0,'rgba(0,105,92,0.45)');
+    grad.addColorStop(1,'rgba(0,105,92,0.02)');
+    _visitsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'عدد الزيارات',
+                data: values,
+                borderColor: '#00695c',
+                backgroundColor: grad,
+                borderWidth: 2,
+                tension: 0.35,
+                fill: true,
+                pointRadius: days <= 14 ? 3 : 0,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#ffc107'
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { rtl: true, titleAlign:'right', bodyAlign:'right' }
+            },
+            scales: {
+                x: { ticks: { autoSkip:true, maxRotation:0, font:{size:10} }, grid:{display:false} },
+                y: { beginAtZero:true, ticks:{ precision:0, font:{size:10} }, grid:{color:'#eee'} }
+            }
+        }
+    });
+}
+// تحديث الرسم تلقائياً عند فتح لوحة الإدارة + توسعة refreshVisitorStats
+const _origRefreshVisitorStats = (typeof refreshVisitorStats === 'function') ? refreshVisitorStats : null;
+window.refreshVisitorStats = async function(){
+    if(_origRefreshVisitorStats) await _origRefreshVisitorStats();
+    renderVisitsChart();
+};
+
+/* ====== المتصلون الآن (Supabase Realtime Presence) ====== */
+let _presenceChannel = null;
+let _adminShowOnlineEnabled = false;
+const SHOW_ONLINE_FLAG_EVENT = 'show_online_flag';
+
+function _ensureVisitorId(){
+    let id = localStorage.getItem('rim_visitor_id');
+    if(!id){ id = Date.now()+''+Math.random().toString(36).slice(2); localStorage.setItem('rim_visitor_id', id); }
+    return id;
+}
+function _updateOnlineUI(count){
+    const adminEl = document.getElementById('onlineCount');
+    if(adminEl) adminEl.textContent = (count ?? 0).toLocaleString('ar-EG');
+    const badge = document.getElementById('liveOnlineBadge');
+    const badgeCount = document.getElementById('liveOnlineCount');
+    if(badgeCount) badgeCount.textContent = (count ?? 0).toLocaleString('ar-EG');
+    // إظهار الشارة فقط إذا فعّلها المشرف (يبث الحالة عبر القناة)
+    if(badge){
+        const show = localStorage.getItem('rim_show_online_badge') === '1';
+        badge.style.display = show ? 'inline-flex' : 'none';
+    }
+}
+function _getOnlineCount(){
+    if(!_presenceChannel) return 0;
+    try {
+        const state = _presenceChannel.presenceState() || {};
+        return Object.keys(state).length;
+    } catch(e){ return 0; }
+}
+function initPresence(){
+    if(!supabaseClient || _presenceChannel) return;
+    const vid = _ensureVisitorId();
+    _presenceChannel = supabaseClient.channel('site_presence', {
+        config: { presence: { key: vid } }
+    });
+    _presenceChannel
+        .on('presence', { event: 'sync' }, () => _updateOnlineUI(_getOnlineCount()))
+        .on('presence', { event: 'join' }, () => _updateOnlineUI(_getOnlineCount()))
+        .on('presence', { event: 'leave' }, () => _updateOnlineUI(_getOnlineCount()))
+        .on('broadcast', { event: SHOW_ONLINE_FLAG_EVENT }, (payload) => {
+            const show = !!(payload && payload.payload && payload.payload.show);
+            localStorage.setItem('rim_show_online_badge', show ? '1' : '0');
+            _updateOnlineUI(_getOnlineCount());
+        })
+        .subscribe(async (status) => {
+            if(status === 'SUBSCRIBED'){
+                await _presenceChannel.track({ online_at: new Date().toISOString() });
+                _updateOnlineUI(_getOnlineCount());
+            }
+        });
+}
+async function toggleShowOnlineToUsers(){
+    if(!_presenceChannel){ initPresence(); }
+    _adminShowOnlineEnabled = !_adminShowOnlineEnabled;
+    const btn = document.getElementById('toggleShowOnlineBtn');
+    const st  = document.getElementById('showOnlineStatus');
+    if(btn){
+        btn.innerHTML = _adminShowOnlineEnabled
+            ? '<i class="fas fa-eye-slash me-1"></i> إخفاء عن المستخدمين'
+            : '<i class="fas fa-eye me-1"></i> إظهار للمستخدمين';
+        btn.classList.toggle('btn-primary', !_adminShowOnlineEnabled);
+        btn.classList.toggle('btn-danger', _adminShowOnlineEnabled);
+    }
+    if(st) st.textContent = _adminShowOnlineEnabled ? 'الشارة ظاهرة لجميع المستخدمين' : 'الشارة مخفية عن المستخدمين';
+    localStorage.setItem('rim_show_online_badge', _adminShowOnlineEnabled ? '1' : '0');
+    try {
+        await _presenceChannel.send({
+            type: 'broadcast', event: SHOW_ONLINE_FLAG_EVENT,
+            payload: { show: _adminShowOnlineEnabled }
+        });
+    } catch(e){}
+    _updateOnlineUI(_getOnlineCount());
+}
+// تشغيل الحضور بعد تحميل الصفحة
+window.addEventListener('load', () => { setTimeout(initPresence, 600); });
+// تحديث دوري احتياطي لعدّاد المشرف
+setInterval(() => { if(document.getElementById('onlineCount')) _updateOnlineUI(_getOnlineCount()); }, 5000);
+
+
+
+
 
 /* فتح لوحة الإدارة بالضغط 5 مرات على الشعار */
 let logoTapCount = 0, logoTapTimer = null;
@@ -1122,9 +1475,15 @@ async function loadImageAd() {
         return;
     }
     const imgUrl = `${STORAGE_BASE_URL}${meta.image}?t=${Date.now()}`;
-    const inner = meta.link
-        ? `<a href="${meta.link}" target="_blank" rel="noopener"><img src="${imgUrl}" alt="إعلان"></a>`
-        : `<img src="${imgUrl}" alt="إعلان">`;
+    const makeAdHTML = (url, link) => {
+        const label = `<span class="ad-label">إعلان</span>`;
+        const img = `<div class="ad-wrap"><img src="${url}" alt="إعلان" loading="lazy"></div>`;
+        if (link) {
+            return `${label}<a href="${link}" target="_blank" rel="noopener">${img}</a>`;
+        }
+        return `${label}${img}`;
+    };
+    const inner = makeAdHTML(imgUrl, meta.link);
     if (before) { before.innerHTML = inner; before.classList.remove('d-none'); }
     if (after)  { after.innerHTML  = inner; after.dataset.has = '1'; }
 }
@@ -1847,9 +2206,29 @@ function triggerCelebration() {
     textEl.innerHTML = `<h2>ألف مبروك النجاح</h2><span class="emojis">🎊🎉</span>`;
     overlay.appendChild(textEl);
     for(let i=0;i<150;i++) createConfettiPiece();
+    playCelebrationSound();
     setTimeout(closeCelebration, 8000);
 }
-function closeCelebration() { const o = document.getElementById('celebrationOverlay'); o.style.display='none'; o.innerHTML=''; }
+function closeCelebration() {
+    const o = document.getElementById('celebrationOverlay'); o.style.display='none'; o.innerHTML='';
+    stopCelebrationSound();
+}
+
+/* ====== صوت الاحتفال (Pop + Cheer) — مستخرج من ملف ISCAE ====== */
+const popSound = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+const cheerSound = new Audio('https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg');
+popSound.volume = 0.8;
+cheerSound.volume = 0.5;
+function playCelebrationSound(){
+    try {
+        popSound.currentTime = 0; popSound.play();
+        setTimeout(() => { cheerSound.currentTime = 0; cheerSound.play(); }, 300);
+    } catch(err) {}
+}
+function stopCelebrationSound(){
+    try { cheerSound.pause(); cheerSound.currentTime = 0; } catch(e) {}
+    try { popSound.pause(); popSound.currentTime = 0; } catch(e) {}
+}
 </script>
 
 <script>
