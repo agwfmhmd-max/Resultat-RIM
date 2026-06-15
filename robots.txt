@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://resultatrim.vercel.app/sitemap.xml
