@@ -1,6 +1,6 @@
 // تغيير الرقم هنا هو ما يجبر المتصفح على التحديث
-// غيرناه من v15 إلى v16
-const CACHE_NAME = 'resultat-rim-v16';
+// غيرناه من v16 إلى v17
+const CACHE_NAME = 'resultat-rim-v17';
 
 // قائمة الملفات التي سيتم حفظها للعمل بدون إنترنت
 const ASSETS_TO_CACHE = [
