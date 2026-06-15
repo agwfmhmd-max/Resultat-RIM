@@ -180,6 +180,9 @@
         .exam-card .t { font-weight:800; font-size:.72rem; line-height:1.15; }
         .exam-card .s { font-size:.6rem; opacity:.7; margin-top:1px; }
         .exam-card.active .s { opacity:.9; }
+        .exam-card .y { display:none; margin-top:4px; font-size:.62rem; font-weight:800; background:var(--gold); color:#3b2a00; padding:2px 6px; border-radius:10px; direction:ltr; unicode-bidi:isolate; }
+        .exam-card .y.has { display:inline-block; }
+        .exam-card.active .y { background:#fff; color:var(--secondary); }
 
         .search-card { border-radius:16px; padding:12px 14px; box-shadow:0 8px 24px rgba(11,106,79,.08); border:1px solid #e8efe9; position:relative; z-index:3; background:#fff; }
         .search-card > h5 { color:#888; font-weight:600; font-size:.7rem; margin-bottom:0; text-align:right; }
@@ -420,21 +423,25 @@
                 <div class="ic"><i class="fas fa-graduation-cap"></i></div>
                 <div class="t">باكالوريا</div>
                 <div class="s">العادية والتكميلية</div>
+                <div class="y" data-year-for="bac_n"></div>
             </div>
             <div class="exam-card" data-exam="brevet">
                 <div class="ic"><i class="fas fa-award"></i></div>
                 <div class="t">شهادة الإعدادية</div>
                 <div class="s">ختم الدروس (بريفة)</div>
+                <div class="y" data-year-for="brevet"></div>
             </div>
             <div class="exam-card active" data-exam="concours">
                 <div class="ic"><i class="fas fa-school"></i></div>
                 <div class="t">دخول السنة الأولى</div>
                 <div class="s">مسابقة الكونكور</div>
+                <div class="y" data-year-for="concours"></div>
             </div>
             <div class="exam-card" data-exam="excellence">
                 <div class="ic"><i class="fas fa-star"></i></div>
                 <div class="t">الامتياز</div>
                 <div class="s">الإعدادية والثانوية</div>
+                <div class="y" data-year-for="excellence"></div>
             </div>
         </div>
 
@@ -653,11 +660,17 @@
 
             <div id="uploadExcellenceSubWrap" class="mb-3" style="display:none;">
                 <label class="form-label">نوع الامتياز:</label>
-                <select id="uploadExcellenceSub" class="form-select">
+                <select id="uploadExcellenceSub" class="form-select" onchange="onUploadTypeChange()">
                     <option value="college">امتياز الإعدادية</option>
                     <option value="lycee">امتياز الثانوية</option>
                 </select>
                 <div class="form-text small text-muted">يتم حفظ كل نوع في ملف منفصل: excellence_college.csv أو excellence_lycee.csv (لا يتم خلطهما).</div>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">السنة الدراسية للنتائج (تظهر للمستخدمين):</label>
+                <input type="text" id="uploadYearInput" class="form-control" placeholder="مثال: 2025 أو 2024-2025" dir="ltr" inputmode="numeric">
+                <div class="form-text small text-muted">ستُعرض هذه السنة بجانب اسم المسابقة في الواجهة الرئيسية للزوار.</div>
             </div>
 
             <div class="mb-2">
@@ -823,6 +836,7 @@ if (supabaseClient) {
             refreshAdminFilesStatus();
             renderUploadHistory();
             refreshVisitorStats();
+            applyAppSettings().then(() => { try { onUploadTypeChange(); } catch(e){} });
         } else {
             loginSec?.classList.remove('d-none');
             uploadSec?.classList.add('d-none');
@@ -862,9 +876,9 @@ async function refreshVisitorStats(){
     if(!tEl) return;
     tEl.textContent = uEl.textContent = dEl.textContent = '…';
     const [t,u,d] = await Promise.all([_get('total'), _get('unique'), _get(_todayKey())]);
-    tEl.textContent = (t ?? 0).toLocaleString('ar-EG');
-    uEl.textContent = (u ?? 0).toLocaleString('ar-EG');
-    dEl.textContent = (d ?? 0).toLocaleString('ar-EG');
+    tEl.textContent = (t ?? 0).toLocaleString('fr-FR');
+    uEl.textContent = (u ?? 0).toLocaleString('fr-FR');
+    dEl.textContent = (d ?? 0).toLocaleString('fr-FR');
 }
 // Track once per session to avoid double-count on refresh spam
 if (!sessionStorage.getItem('rim_visit_tracked')) {
@@ -898,7 +912,7 @@ async function renderVisitsChart(){
     const values = (await Promise.all(promises)).map(v => v ?? 0);
     const total = values.reduce((a,b)=>a+b,0);
     const avg = days ? Math.round(total/days) : 0;
-    if(summary) summary.textContent = `المجموع: ${total.toLocaleString('ar-EG')} • المتوسط/يوم: ${avg.toLocaleString('ar-EG')}`;
+    if(summary) summary.textContent = `المجموع: ${total.toLocaleString('fr-FR')} • المتوسط/يوم: ${avg.toLocaleString('fr-FR')}`;
 
     if(_visitsChartInstance){ _visitsChartInstance.destroy(); }
     const ctx = canvas.getContext('2d');
@@ -954,10 +968,10 @@ function _ensureVisitorId(){
 }
 function _updateOnlineUI(count){
     const adminEl = document.getElementById('onlineCount');
-    if(adminEl) adminEl.textContent = (count ?? 0).toLocaleString('ar-EG');
+    if(adminEl) adminEl.textContent = (count ?? 0).toLocaleString('fr-FR');
     const badge = document.getElementById('liveOnlineBadge');
     const badgeCount = document.getElementById('liveOnlineCount');
-    if(badgeCount) badgeCount.textContent = (count ?? 0).toLocaleString('ar-EG');
+    if(badgeCount) badgeCount.textContent = (count ?? 0).toLocaleString('fr-FR');
     // إظهار الشارة فقط إذا فعّلها المشرف (يبث الحالة عبر القناة)
     if(badge){
         const show = localStorage.getItem('rim_show_online_badge') === '1';
@@ -996,29 +1010,107 @@ function initPresence(){
 async function toggleShowOnlineToUsers(){
     if(!_presenceChannel){ initPresence(); }
     _adminShowOnlineEnabled = !_adminShowOnlineEnabled;
-    const btn = document.getElementById('toggleShowOnlineBtn');
-    const st  = document.getElementById('showOnlineStatus');
-    if(btn){
-        btn.innerHTML = _adminShowOnlineEnabled
-            ? '<i class="fas fa-eye-slash me-1"></i> إخفاء عن المستخدمين'
-            : '<i class="fas fa-eye me-1"></i> إظهار للمستخدمين';
-        btn.classList.toggle('btn-primary', !_adminShowOnlineEnabled);
-        btn.classList.toggle('btn-danger', _adminShowOnlineEnabled);
-    }
-    if(st) st.textContent = _adminShowOnlineEnabled ? 'الشارة ظاهرة لجميع المستخدمين' : 'الشارة مخفية عن المستخدمين';
+    _applyShowOnlineUI(_adminShowOnlineEnabled);
     localStorage.setItem('rim_show_online_badge', _adminShowOnlineEnabled ? '1' : '0');
+    // حفظ دائم في Supabase Storage حتى يظهر لجميع المتصفحات/الزوار
     try {
-        await _presenceChannel.send({
+        const s = await loadAppSettings(true);
+        s.show_online = _adminShowOnlineEnabled;
+        await saveAppSettings(s);
+    } catch(e){ console.warn('saveAppSettings failed', e); }
+    // بثّ فوري للمتصلين الحاليين
+    try {
+        if(_presenceChannel) await _presenceChannel.send({
             type: 'broadcast', event: SHOW_ONLINE_FLAG_EVENT,
             payload: { show: _adminShowOnlineEnabled }
         });
     } catch(e){}
     _updateOnlineUI(_getOnlineCount());
 }
+function _applyShowOnlineUI(enabled){
+    const btn = document.getElementById('toggleShowOnlineBtn');
+    const st  = document.getElementById('showOnlineStatus');
+    if(btn){
+        btn.innerHTML = enabled
+            ? '<i class="fas fa-eye-slash me-1"></i> إخفاء عن المستخدمين'
+            : '<i class="fas fa-eye me-1"></i> إظهار للمستخدمين';
+        btn.classList.toggle('btn-primary', !enabled);
+        btn.classList.toggle('btn-danger', enabled);
+    }
+    if(st) st.textContent = enabled ? 'الشارة ظاهرة لجميع المستخدمين' : 'الشارة مخفية عن المستخدمين';
+}
 // تشغيل الحضور بعد تحميل الصفحة
 window.addEventListener('load', () => { setTimeout(initPresence, 600); });
 // تحديث دوري احتياطي لعدّاد المشرف
 setInterval(() => { if(document.getElementById('onlineCount')) _updateOnlineUI(_getOnlineCount()); }, 5000);
+
+/* ====================================================================
+   إعدادات التطبيق المشتركة (Supabase Storage: app_settings.json)
+   - show_online: حالة شارة المتصلين الآن (مرئية لجميع الزوار/المتصفحات)
+   - years: السنة الدراسية لكل نوع نتائج، حددها المشرف عند الرفع
+   ==================================================================== */
+const APP_SETTINGS_FILE = 'app_settings.json';
+let _appSettingsCache = null;
+async function loadAppSettings(force=false){
+    if(_appSettingsCache && !force) return _appSettingsCache;
+    try {
+        const url = `${STORAGE_BASE_URL}${APP_SETTINGS_FILE}?t=${Date.now()}`;
+        const r = await fetch(url, { cache: 'no-store' });
+        if(r.ok){
+            const j = await r.json();
+            _appSettingsCache = j && typeof j === 'object' ? j : {};
+        } else {
+            _appSettingsCache = {};
+        }
+    } catch(e){ _appSettingsCache = {}; }
+    if(!_appSettingsCache.years || typeof _appSettingsCache.years !== 'object') _appSettingsCache.years = {};
+    if(typeof _appSettingsCache.show_online !== 'boolean') _appSettingsCache.show_online = false;
+    return _appSettingsCache;
+}
+async function saveAppSettings(obj){
+    if(!supabaseClient) throw new Error('Supabase not ready');
+    _appSettingsCache = obj;
+    const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+    const { error } = await supabaseClient.storage.from(STORAGE_BUCKET)
+        .upload(APP_SETTINGS_FILE, blob, { upsert: true, contentType: 'application/json', cacheControl: '0' });
+    if(error) throw error;
+}
+function _yearLabelForExam(settings, exam){
+    const y = settings.years || {};
+    if(exam === 'excellence'){
+        const c = y['excellence_college'], l = y['excellence_lycee'];
+        if(c && l && c !== l) return `${l} / ${c}`;
+        return l || c || y['excellence'] || '';
+    }
+    return y[exam] || '';
+}
+function applyYearBadges(settings){
+    document.querySelectorAll('.exam-card .y[data-year-for]').forEach(el => {
+        const exam = el.getAttribute('data-year-for');
+        const yr = _yearLabelForExam(settings, exam);
+        if(yr){
+            el.textContent = yr;
+            el.classList.add('has');
+        } else {
+            el.textContent = '';
+            el.classList.remove('has');
+        }
+    });
+}
+async function applyAppSettings(){
+    const s = await loadAppSettings(true);
+    // شارة المتصلين الآن — مرئية لجميع المتصفحات بحسب رغبة المشرف
+    localStorage.setItem('rim_show_online_badge', s.show_online ? '1' : '0');
+    _adminShowOnlineEnabled = !!s.show_online;
+    _applyShowOnlineUI(_adminShowOnlineEnabled);
+    _updateOnlineUI(_getOnlineCount());
+    // سنوات النتائج على البطاقات
+    applyYearBadges(s);
+}
+// تطبيق الإعدادات عند الإقلاع، وإعادة المزامنة دورياً للزوار
+window.addEventListener('load', () => { applyAppSettings(); });
+setInterval(() => { applyAppSettings(); }, 60000);
+
 
 
 
@@ -1223,6 +1315,18 @@ function uploadCSVString(filename, csvText, onProgress) {
 function onUploadTypeChange(){
     const t = document.getElementById('uploadExamType').value;
     document.getElementById('uploadExcellenceSubWrap').style.display = (t === 'excellence') ? 'block' : 'none';
+    // Pre-fill year input with current value (if any)
+    try {
+        const s = _appSettingsCache || {};
+        const y = s.years || {};
+        let key = t;
+        if(t === 'excellence'){
+            const sub = document.getElementById('uploadExcellenceSub')?.value || 'lycee';
+            key = `excellence_${sub}`;
+        }
+        const inp = document.getElementById('uploadYearInput');
+        if(inp) inp.value = y[key] || '';
+    } catch(e){}
 }
 
 function setUploadProgress(stage, pct, counts=''){
@@ -1280,6 +1384,17 @@ async function uploadToSupabase(replaceAll) {
         addUploadHistory({ when: new Date().toISOString(), examType: cacheKey, file: file.name, rows: cleaned.rows.length, mode: replaceAll ? 'replace' : 'upsert' });
         renderUploadHistory();
         refreshAdminFilesStatus();
+        // حفظ السنة الدراسية لعرضها على واجهة المستخدمين
+        try {
+            const yearVal = (document.getElementById('uploadYearInput')?.value || '').trim();
+            if(yearVal){
+                const s = await loadAppSettings(true);
+                s.years = s.years || {};
+                s.years[cacheKey] = yearVal;
+                await saveAppSettings(s);
+                applyYearBadges(s);
+            }
+        } catch(e){ console.warn('year save failed', e); }
         fetchData(examType).catch(()=>{});
     } catch (err) {
         console.error(err);
