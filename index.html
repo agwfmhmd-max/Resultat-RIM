@@ -388,6 +388,122 @@
         }
         #liveOnlineBadge .dot { width:8px; height:8px; background:#fff; border-radius:50%; animation:pulseDot 1.5s infinite; }
         @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        /* ============ زر الوضع الليلي ============ */
+        .theme-toggle {
+            position: relative;
+            width: 52px; height: 28px;
+            border-radius: 999px;
+            border: none;
+            background: rgba(255,255,255,.18);
+            cursor: pointer;
+            transition: background .3s ease;
+            padding: 0;
+            flex: 0 0 auto;
+        }
+        .theme-toggle::before {
+            content: "\f185"; /* sun */
+            font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; top: 50%; left: 8px;
+            transform: translateY(-50%);
+            color: #ffc107; font-size: 11px;
+            transition: opacity .3s;
+        }
+        .theme-toggle::after {
+            content: "\f186"; /* moon */
+            font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; top: 50%; right: 8px;
+            transform: translateY(-50%);
+            color: #cfd8ff; font-size: 11px;
+            transition: opacity .3s;
+        }
+        .theme-toggle .knob {
+            position: absolute; top: 3px; right: 3px;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,.3);
+            transition: transform .3s cubic-bezier(.4,.2,.2,1), background .3s;
+        }
+        body.dark-mode .theme-toggle { background: rgba(255,255,255,.12); }
+        body.dark-mode .theme-toggle .knob { transform: translateX(-24px); background: #1e2a3a; }
+
+        /* ============ الوضع الليلي ============ */
+        body.dark-mode {
+            --bg: #0f1620;
+            --card: #1a2433;
+            background: var(--bg) !important;
+            color: #e6ebf2;
+        }
+        body.dark-mode .scrollable-content { background: var(--bg); }
+        body.dark-mode .navbar { background: linear-gradient(135deg,#06231a 0%, #0a3b2c 60%, #0d5740 130%); }
+
+        /* البطاقات والأسطح */
+        body.dark-mode .search-card,
+        body.dark-mode .result-card,
+        body.dark-mode .exam-card,
+        body.dark-mode .hero,
+        body.dark-mode .modal-content,
+        body.dark-mode .list-group-item,
+        body.dark-mode .card,
+        body.dark-mode .dropdown-menu,
+        body.dark-mode .offcanvas {
+            background: var(--card) !important;
+            color: #e6ebf2 !important;
+            box-shadow: 0 4px 18px rgba(0,0,0,.45) !important;
+        }
+        body.dark-mode .result-card { color: #e6ebf2 !important; }
+
+        /* النصوص الثانوية */
+        body.dark-mode .text-muted,
+        body.dark-mode small,
+        body.dark-mode .hero p { color: #9aa7b8 !important; }
+        body.dark-mode .section-title { color: #4dd0c1 !important; }
+
+        /* عناصر الإدخال */
+        body.dark-mode .form-control,
+        body.dark-mode .form-select,
+        body.dark-mode .input-group-text {
+            background: #0f1a26 !important;
+            color: #e6ebf2 !important;
+            border-color: #2a3a52 !important;
+        }
+        body.dark-mode .form-control::placeholder { color: #6b7a90 !important; }
+        body.dark-mode .form-control:focus,
+        body.dark-mode .form-select:focus { border-color: #14855f !important; box-shadow: 0 0 0 .15rem rgba(20,133,95,.25) !important; }
+
+        /* الأزرار */
+        body.dark-mode .btn-outline {
+            background: transparent !important;
+            color: #4dd0c1 !important;
+            border-color: #4dd0c1 !important;
+        }
+        body.dark-mode .btn-outline:hover { background: #4dd0c1 !important; color: #0f1620 !important; }
+
+        /* الفواصل والحدود */
+        body.dark-mode hr,
+        body.dark-mode .border,
+        body.dark-mode .border-top,
+        body.dark-mode .border-bottom { border-color: #2a3a52 !important; }
+
+        /* الجداول */
+        body.dark-mode table,
+        body.dark-mode .table { color: #e6ebf2 !important; }
+        body.dark-mode .table > :not(caption) > * > * { background-color: transparent !important; color: #e6ebf2 !important; border-color: #2a3a52 !important; }
+        body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * { background-color: rgba(255,255,255,.03) !important; }
+
+        /* شريط التمرير */
+        body.dark-mode ::-webkit-scrollbar { width: 8px; height: 8px; }
+        body.dark-mode ::-webkit-scrollbar-track { background: #0f1620; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 8px; }
+
+        /* روابط */
+        body.dark-mode a { color: #4dd0c1; }
+        body.dark-mode .school-link, body.dark-mode .number-link { color: #ffd166 !important; }
+
+        /* meta theme color via JS، lkn nzid انتقال سلس */
+        body, .navbar, .search-card, .result-card, .exam-card, .form-control, .form-select, .modal-content {
+            transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+        }
     </style>
 
     <!-- SEO META TAGS -->
@@ -434,6 +550,7 @@
         <span id="brandLogo" class="navbar-brand m-0 fw-bold fs-5" style="cursor: pointer; user-select: none;"><i class="fas fa-graduation-cap me-2"></i>Resultat RIM</span>
         <div class="d-flex align-items-center gap-2">
             <span class="brand-pill d-none d-sm-inline">النتائج الوطنية الموريتانية</span>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="تبديل الوضع الليلي" title="الوضع الليلي/النهاري"><span class="knob"></span></button>
             <button id="installBtn" class="nav-btn"><i class="fas fa-download me-1"></i> تثبيت</button>
         </div>
     </div>
@@ -2387,6 +2504,37 @@ function stopCelebrationSound(){
         if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
         if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
         if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+    }
+})();
+</script>
+<script>
+/* ====== الوضع الليلي (Dark Mode) ====== */
+(function () {
+    const KEY = 'rr_theme';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const apply = (mode) => {
+        const dark = mode === 'dark';
+        document.body.classList.toggle('dark-mode', dark);
+        if (meta) meta.setAttribute('content', dark ? '#06231a' : '#00695c');
+        const btn = document.getElementById('themeToggle');
+        if (btn) btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    };
+    const saved = localStorage.getItem(KEY);
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    apply(saved || (prefersDark ? 'dark' : 'light'));
+
+    document.addEventListener('click', (e) => {
+        const t = e.target.closest('#themeToggle');
+        if (!t) return;
+        const next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+        localStorage.setItem(KEY, next);
+        apply(next);
+    });
+
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem(KEY)) apply(e.matches ? 'dark' : 'light');
+        });
     }
 })();
 </script>
