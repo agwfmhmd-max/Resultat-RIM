@@ -512,15 +512,6 @@ href="/sitemap.xml">
 
         /* احتياط: امنع أي عنصر من تجاوز عرض الشاشة على الهاتف */
         img, video, iframe, table { max-width: 100%; }
-        /* شارة المتصلين الآن (تظهر للمستخدمين عند تفعيل المشرف) */
-        #liveOnlineBadge {
-            position: fixed; bottom: 80px; left: 12px; z-index: 1500;
-            background: linear-gradient(135deg, #25D366, #128C7E); color:#fff;
-            padding: 8px 14px; border-radius: 30px; box-shadow: 0 4px 12px rgba(0,0,0,.25);
-            font-weight: 700; font-size: .9rem; display: none; align-items:center; gap:6px;
-        }
-        #liveOnlineBadge .dot { width:8px; height:8px; background:#fff; border-radius:50%; animation:pulseDot 1.5s infinite; }
-        @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.3} }
 
         /* ============ زر الوضع الليلي ============ */
         .theme-toggle {
@@ -666,8 +657,6 @@ href="/sitemap.xml">
 <body oncontextmenu="return false;">
 
 
-<!-- شارة المتصلين الآن (المشرف يتحكم بإظهارها) -->
-<div id="liveOnlineBadge"><span class="dot"></span><i class="fas fa-users"></i> <span id="liveOnlineCount">0</span> متصل الآن</div>
 
 <nav class="navbar">
     <div class="container-app w-100 d-flex align-items-center justify-content-between" style="position:relative; z-index:2;">
@@ -1017,17 +1006,6 @@ href="/sitemap.xml">
                 <div style="position:relative;height:240px"><canvas id="visitsChart"></canvas></div>
             </div>
 
-            <!-- ====== المتصلون الآن ====== -->
-            <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">🟢 المتصلون الآن على المنصة</h6>
-            <div class="admin-stat-card text-center">
-                <div class="label">عدد المتصلين حالياً</div>
-                <div class="value fs-2" id="onlineCount">…</div>
-                <div class="small text-muted mb-2">يتم التحديث تلقائياً في الوقت الفعلي</div>
-                <button id="toggleShowOnlineBtn" onclick="toggleShowOnlineToUsers()" class="btn btn-sm btn-primary">
-                    <i class="fas fa-eye me-1"></i> إظهار للمستخدمين
-                </button>
-                <div class="small text-muted mt-2" id="showOnlineStatus"></div>
-            </div>
 
             <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">🗂 سجل عمليات الرفع</h6>
             <div id="uploadHistoryBox" class="upload-log"><div class="text-muted">لا توجد عمليات سابقة.</div></div>
@@ -1229,97 +1207,10 @@ window.refreshVisitorStats = async function(){
     renderVisitsChart();
 };
 
-/* ====== المتصلون الآن (Supabase Realtime Presence) ====== */
-let _presenceChannel = null;
-let _adminShowOnlineEnabled = false;
-const SHOW_ONLINE_FLAG_EVENT = 'show_online_flag';
-
-function _ensureVisitorId(){
-    let id = localStorage.getItem('rim_visitor_id');
-    if(!id){ id = Date.now()+''+Math.random().toString(36).slice(2); localStorage.setItem('rim_visitor_id', id); }
-    return id;
-}
-function _updateOnlineUI(count){
-    const adminEl = document.getElementById('onlineCount');
-    if(adminEl) adminEl.textContent = (count ?? 0).toLocaleString('fr-FR');
-    const badge = document.getElementById('liveOnlineBadge');
-    const badgeCount = document.getElementById('liveOnlineCount');
-    if(badgeCount) badgeCount.textContent = (count ?? 0).toLocaleString('fr-FR');
-    // إظهار الشارة فقط إذا فعّلها المشرف (يبث الحالة عبر القناة)
-    if(badge){
-        const show = localStorage.getItem('rim_show_online_badge') === '1';
-        badge.style.display = show ? 'inline-flex' : 'none';
-    }
-}
-function _getOnlineCount(){
-    if(!_presenceChannel) return 0;
-    try {
-        const state = _presenceChannel.presenceState() || {};
-        return Object.keys(state).length;
-    } catch(e){ return 0; }
-}
-function initPresence(){
-    if(!supabaseClient || _presenceChannel) return;
-    const vid = _ensureVisitorId();
-    _presenceChannel = supabaseClient.channel('site_presence', {
-        config: { presence: { key: vid } }
-    });
-    _presenceChannel
-        .on('presence', { event: 'sync' }, () => _updateOnlineUI(_getOnlineCount()))
-        .on('presence', { event: 'join' }, () => _updateOnlineUI(_getOnlineCount()))
-        .on('presence', { event: 'leave' }, () => _updateOnlineUI(_getOnlineCount()))
-        .on('broadcast', { event: SHOW_ONLINE_FLAG_EVENT }, (payload) => {
-            const show = !!(payload && payload.payload && payload.payload.show);
-            localStorage.setItem('rim_show_online_badge', show ? '1' : '0');
-            _updateOnlineUI(_getOnlineCount());
-        })
-        .subscribe(async (status) => {
-            if(status === 'SUBSCRIBED'){
-                await _presenceChannel.track({ online_at: new Date().toISOString() });
-                _updateOnlineUI(_getOnlineCount());
-            }
-        });
-}
-async function toggleShowOnlineToUsers(){
-    if(!_presenceChannel){ initPresence(); }
-    _adminShowOnlineEnabled = !_adminShowOnlineEnabled;
-    _applyShowOnlineUI(_adminShowOnlineEnabled);
-    localStorage.setItem('rim_show_online_badge', _adminShowOnlineEnabled ? '1' : '0');
-    // حفظ دائم في Supabase Storage حتى يظهر لجميع المتصفحات/الزوار
-    try {
-        const s = await loadAppSettings(true);
-        s.show_online = _adminShowOnlineEnabled;
-        await saveAppSettings(s);
-    } catch(e){ console.warn('saveAppSettings failed', e); }
-    // بثّ فوري للمتصلين الحاليين
-    try {
-        if(_presenceChannel) await _presenceChannel.send({
-            type: 'broadcast', event: SHOW_ONLINE_FLAG_EVENT,
-            payload: { show: _adminShowOnlineEnabled }
-        });
-    } catch(e){}
-    _updateOnlineUI(_getOnlineCount());
-}
-function _applyShowOnlineUI(enabled){
-    const btn = document.getElementById('toggleShowOnlineBtn');
-    const st  = document.getElementById('showOnlineStatus');
-    if(btn){
-        btn.innerHTML = enabled
-            ? '<i class="fas fa-eye-slash me-1"></i> إخفاء عن المستخدمين'
-            : '<i class="fas fa-eye me-1"></i> إظهار للمستخدمين';
-        btn.classList.toggle('btn-primary', !enabled);
-        btn.classList.toggle('btn-danger', enabled);
-    }
-    if(st) st.textContent = enabled ? 'الشارة ظاهرة لجميع المستخدمين' : 'الشارة مخفية عن المستخدمين';
-}
-// تشغيل الحضور بعد تحميل الصفحة
-window.addEventListener('load', () => { setTimeout(initPresence, 600); });
-// تحديث دوري احتياطي لعدّاد المشرف
-setInterval(() => { if(document.getElementById('onlineCount')) _updateOnlineUI(_getOnlineCount()); }, 5000);
 
 /* ====================================================================
    إعدادات التطبيق المشتركة (Supabase Storage: app_settings.json)
-   - show_online: حالة شارة المتصلين الآن (مرئية لجميع الزوار/المتصفحات)
+
    - years: السنة الدراسية لكل نوع نتائج، حددها المشرف عند الرفع
    ==================================================================== */
 const APP_SETTINGS_FILE = 'app_settings.json';
@@ -1337,7 +1228,6 @@ async function loadAppSettings(force=false){
         }
     } catch(e){ _appSettingsCache = {}; }
     if(!_appSettingsCache.years || typeof _appSettingsCache.years !== 'object') _appSettingsCache.years = {};
-    if(typeof _appSettingsCache.show_online !== 'boolean') _appSettingsCache.show_online = false;
     return _appSettingsCache;
 }
 async function saveAppSettings(obj){
@@ -1372,11 +1262,6 @@ function applyYearBadges(settings){
 }
 async function applyAppSettings(){
     const s = await loadAppSettings(true);
-    // شارة المتصلين الآن — مرئية لجميع المتصفحات بحسب رغبة المشرف
-    localStorage.setItem('rim_show_online_badge', s.show_online ? '1' : '0');
-    _adminShowOnlineEnabled = !!s.show_online;
-    _applyShowOnlineUI(_adminShowOnlineEnabled);
-    _updateOnlineUI(_getOnlineCount());
     // سنوات النتائج على البطاقات
     applyYearBadges(s);
 }
@@ -2549,13 +2434,24 @@ function renderSimulatorInputs() {
     const container = document.getElementById('simInputsContainer');
     const subjects = simData[type];
     container.innerHTML = '';
-    subjects.forEach((sub) => { container.innerHTML += `<div class="subject-row"><div class="d-flex align-items-center"><span class="coeff-badge">ض: ${sub.coef}</span><span class="fw-bold text-secondary" style="font-size: 0.9rem;">${sub.name}</span></div><input type="number" inputmode="decimal" class="grade-input" placeholder="0" min="0" max="20" data-coef="${sub.coef}" oninput="calculateSimScore()"></div>`; });
+    subjects.forEach((sub) => { container.innerHTML += `<div class="subject-row"><div class="d-flex align-items-center"><span class="coeff-badge">ض: ${sub.coef}</span><span class="fw-bold text-secondary" style="font-size: 0.9rem;">${sub.name}</span></div><input type="number" inputmode="decimal" class="grade-input" placeholder="0" min="0" max="20" data-coef="${sub.coef}" oninput="validateGradeInput(this); calculateSimScore()"></div>`; });
     calculateSimScore();
+}
+function validateGradeInput(input){
+    let v = parseFloat(input.value);
+    if(!isNaN(v) && v > 20){
+        input.value = '';
+        input.classList.add('is-invalid');
+        try { alert('لا يمكن إدخال نتيجة أعلى من 20'); } catch(e){}
+        setTimeout(()=>input.classList.remove('is-invalid'), 1500);
+    } else if(!isNaN(v) && v < 0){
+        input.value = '';
+    }
 }
 function calculateSimScore() {
     const inputs = document.querySelectorAll('.grade-input');
     let totalPoints = 0, totalCoef = 0;
-    inputs.forEach(input => { let val = parseFloat(input.value); let coef = parseInt(input.getAttribute('data-coef')); if (!isNaN(val)) { if (val > 20) val = 20; if (val < 0) val = 0; totalPoints += val * coef; } totalCoef += coef; });
+    inputs.forEach(input => { let raw = input.value; let val = parseFloat(raw); let coef = parseInt(input.getAttribute('data-coef')); if (!isNaN(val) && val >= 0 && val <= 20) { totalPoints += val * coef; } totalCoef += coef; });
     const average = totalCoef > 0 ? (totalPoints / totalCoef).toFixed(4) : "00.00";
     document.getElementById('simResult').innerText = parseFloat(average).toFixed(2);
     document.getElementById('simTotalPoints').innerText = totalPoints.toFixed(2);
