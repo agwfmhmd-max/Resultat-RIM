@@ -1,6 +1,6 @@
 // تغيير الرقم هنا هو ما يجبر المتصفح على التحديث
-// غيرناه من v23 إلى v24
-const CACHE_NAME = 'resultat-rim-v24';
+// غيرناه من v24 إلى v25
+const CACHE_NAME = 'resultat-rim-v25';
 
 // قائمة الملفات التي سيتم حفظها للعمل بدون إنترنت
 const ASSETS_TO_CACHE = [
