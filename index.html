@@ -963,7 +963,57 @@ href="/sitemap.xml">
                 </button>
             </div>
 
+            <!-- ====== إعدادات قرار الكونكور (قابلة للتعديل من المشرف) ====== -->
+            <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">⚙️ إعدادات قرار الكونكور</h6>
+            <div class="admin-stat-card">
+                <div class="alert alert-info small py-2 mb-2">
+                    حدد هنا قواعد القرار النهائي للكونكور. تُطبَّق فوراً على جميع الزوار بعد الحفظ. يمكنك تخصيص حدود النجاح لكل ولاية على حدة أو تركها للافتراضي.
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">الولاية المستهدفة (الافتراضي أو تحديد ولاية معينة):</label>
+                    <select id="cfgConcoursWilaya" class="form-select form-select-sm" onchange="onConcoursWilayaChange()">
+                        <option value="default">الافتراضي لكل الولايات (الكل)</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">الحد الأدنى للنجاح في المسابقة (الكونكور):</label>
+                    <input type="number" id="cfgPassConcours" class="form-control form-control-sm" min="0" max="200" step="1" dir="ltr">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">الحد الأدنى للنجاح في الشهادة:</label>
+                    <input type="number" id="cfgPassCertificat" class="form-control form-control-sm" min="0" max="200" step="1" dir="ltr">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">اسم عمود نوع المترشح في ملف CSV:</label>
+                    <input type="text" id="cfgCandidateTypeField" class="form-control form-control-sm" placeholder="TYPE_CAND" dir="ltr">
+                    <div class="form-text small text-muted">العمود الذي يميّز بين مترشح المدرسة (عمومية/خصوصية) ومترشح شهادة الدروس الابتدائية.</div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">قيم تدل على «مترشح شهادة الدروس الابتدائية» (مفصولة بفواصل):</label>
+                    <input type="text" id="cfgCertificatValues" class="form-control form-control-sm" placeholder="CEP, شهادة, ابتدائ" dir="ltr">
+                    <div class="form-text small text-muted">أي مترشح لا تنطبق عليه هذه القيم يُعتبر مترشحاً من مدرسة عمومية أو خصوصية.</div>
+                </div>
+                <div id="concoursCfgStatus" class="alert alert-info d-none small py-2"></div>
+                <div class="d-grid gap-2">
+                    <button onclick="saveConcoursSettings()" class="btn btn-primary fw-bold py-2">
+                        <i class="fas fa-save me-2"></i> حفظ الإعدادات (للمستهدف المحدد)
+                    </button>
+                </div>
+
+                <div id="concoursOverridesTableWrap" class="mt-3"></div>
+
+                <div class="mt-3 small text-muted">
+                    <b>القواعد المطبَّقة:</b><br>
+                    ✅ ناجح في المسابقة والشهادة: مترشح مدرسة عمومية/خصوصية بمجموع ≥ الحد الأدنى للشهادة.<br>
+                    ✅ ناجح في المسابقة فقط: مترشح مدرسة عمومية/خصوصية بمجموع بين حد الكونكور وحد الشهادة (غير شامل).<br>
+                    ✅ ناجح في الشهادة فقط: مترشح لشهادة الدروس الابتدائية بمجموع ≥ الحد الأدنى للشهادة.<br>
+                    ❌ لم ينجح في الشهادة: مترشح لشهادة الدروس الابتدائية بمجموع &lt; الحد الأدنى للشهادة.<br>
+                    ❌ لم ينجح: مترشح مدرسة عمومية/خصوصية بمجموع &lt; حد الكونكور.
+                </div>
+            </div>
+
             <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">📈 إحصائيات الزوار</h6>
+
             <div id="visitorStatsBox">
                 <div class="row g-2">
                     <div class="col-4">
@@ -1228,6 +1278,12 @@ async function loadAppSettings(force=false){
         }
     } catch(e){ _appSettingsCache = {}; }
     if(!_appSettingsCache.years || typeof _appSettingsCache.years !== 'object') _appSettingsCache.years = {};
+    if(!_appSettingsCache.concours || typeof _appSettingsCache.concours !== 'object') _appSettingsCache.concours = {};
+    const c = _appSettingsCache.concours;
+    if(typeof c.passConcours !== 'number') c.passConcours = 85;
+    if(typeof c.passCertificat !== 'number') c.passCertificat = 100;
+    if(typeof c.candidateTypeField !== 'string') c.candidateTypeField = 'TYPE_CAND';
+    if(!Array.isArray(c.certificatValues)) c.certificatValues = ['CEP','certificat','شهادة','ابتدائ','ابتدائي','ابتدائية'];
     return _appSettingsCache;
 }
 async function saveAppSettings(obj){
@@ -1264,6 +1320,183 @@ async function applyAppSettings(){
     const s = await loadAppSettings(true);
     // سنوات النتائج على البطاقات
     applyYearBadges(s);
+    // ملء حقول إعدادات الكونكور في لوحة الإدارة إن وجدت
+    populateConcoursSettingsForm(s);
+}
+
+function populateConcoursSettingsForm(s){
+    const c = (s && s.concours) || {};
+    
+    const wilayaSelect = document.getElementById('cfgConcoursWilaya');
+    if (wilayaSelect && wilayaSelect.options.length <= 1) {
+        wilayaSelect.innerHTML = '<option value="default">الافتراضي لكل الولايات (الكل)</option>';
+        if (typeof staticWilayas !== 'undefined') {
+            staticWilayas.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w.label;
+                opt.textContent = w.label;
+                wilayaSelect.appendChild(opt);
+            });
+        }
+    }
+
+    const f3 = document.getElementById('cfgCandidateTypeField');
+    const f4 = document.getElementById('cfgCertificatValues');
+    if(f3) f3.value = c.candidateTypeField || 'TYPE_CAND';
+    if(f4) f4.value = Array.isArray(c.certificatValues) ? c.certificatValues.join(', ') : '';
+
+    onConcoursWilayaChange();
+    renderConcoursOverridesTable(s);
+}
+
+function onConcoursWilayaChange(){
+    const s = _appSettingsCache;
+    const c = (s && s.concours) || {};
+    const wilayaSelect = document.getElementById('cfgConcoursWilaya');
+    if (!wilayaSelect) return;
+    const selected = wilayaSelect.value;
+
+    const f1 = document.getElementById('cfgPassConcours');
+    const f2 = document.getElementById('cfgPassCertificat');
+
+    if (selected === 'default') {
+        if(f1) f1.value = (typeof c.passConcours === 'number') ? c.passConcours : 85;
+        if(f2) f2.value = (typeof c.passCertificat === 'number') ? c.passCertificat : 100;
+    } else {
+        const override = (c.byWilaya && c.byWilaya[selected]) || {};
+        if(f1) f1.value = (typeof override.passConcours === 'number') ? override.passConcours : ((typeof c.passConcours === 'number') ? c.passConcours : 85);
+        if(f2) f2.value = (typeof override.passCertificat === 'number') ? override.passCertificat : ((typeof c.passCertificat === 'number') ? c.passCertificat : 100);
+    }
+}
+
+function renderConcoursOverridesTable(s){
+    const wrap = document.getElementById('concoursOverridesTableWrap');
+    if (!wrap) return;
+    const c = (s && s.concours) || {};
+    const byWilaya = c.byWilaya || {};
+    const keys = Object.keys(byWilaya);
+
+    if (keys.length === 0) {
+        wrap.innerHTML = '<div class="text-muted small mt-2">لا توجد تخصيصات لولايات معينة حالياً. يتم تطبيق الحد الافتراضي على الجميع.</div>';
+        return;
+    }
+
+    let html = `
+        <div class="table-responsive mt-2">
+            <table class="table table-sm table-bordered" style="font-size: 0.8rem; text-align: center;">
+                <thead class="table-light">
+                    <tr>
+                        <th>الولاية</th>
+                        <th>حد الكونكور</th>
+                        <th>حد الشهادة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    keys.forEach(k => {
+        const item = byWilaya[k];
+        html += `
+            <tr>
+                <td class="fw-bold">${k}</td>
+                <td>${item.passConcours}</td>
+                <td>${item.passCertificat}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger py-0 px-2" onclick="deleteConcoursWilayaOverride('${k}')" style="font-size: 0.75rem;">
+                        <i class="fas fa-trash-alt"></i> حذف التخصيص
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    wrap.innerHTML = html;
+}
+
+async function deleteConcoursWilayaOverride(wilayaName) {
+    if (!confirm(`هل أنت متأكد من حذف تخصيص ولاية (${wilayaName}) والعودة للقيم الافتراضية؟`)) return;
+    try {
+        const statusEl = document.getElementById('concoursCfgStatus');
+        const setStatus = (msg, type='info') => {
+            if(!statusEl) return;
+            statusEl.className = 'alert alert-' + type + ' small py-2';
+            statusEl.textContent = msg;
+            statusEl.classList.remove('d-none');
+        };
+
+        setStatus('جاري الحذف...', 'info');
+        const current = await loadAppSettings(true);
+        if (current.concours && current.concours.byWilaya) {
+            delete current.concours.byWilaya[wilayaName];
+            await saveAppSettings(current);
+            _appSettingsCache = current;
+            populateConcoursSettingsForm(current);
+            
+            const wilayaSelect = document.getElementById('cfgConcoursWilaya');
+            if (wilayaSelect) {
+                wilayaSelect.value = 'default';
+                onConcoursWilayaChange();
+            }
+            setStatus('✅ تم حذف التخصيص والرجوع لافتراضي بنجاح', 'success');
+        }
+    } catch(e) {
+        alert('خطأ أثناء الحذف: ' + e.message);
+    }
+}
+
+async function saveConcoursSettings(){
+    const statusEl = document.getElementById('concoursCfgStatus');
+    const setStatus = (msg, type='info') => {
+        if(!statusEl) return;
+        statusEl.className = 'alert alert-' + type + ' small py-2';
+        statusEl.textContent = msg;
+        statusEl.classList.remove('d-none');
+    };
+    try {
+        if(!supabaseClient){ setStatus('Supabase غير مهيأ.', 'danger'); return; }
+        const passC = parseInt(document.getElementById('cfgPassConcours').value, 10);
+        const passS = parseInt(document.getElementById('cfgPassCertificat').value, 10);
+        const field = (document.getElementById('cfgCandidateTypeField').value || '').trim() || 'TYPE_CAND';
+        const valuesRaw = (document.getElementById('cfgCertificatValues').value || '').trim();
+        const values = valuesRaw ? valuesRaw.split(/[,،]/).map(v => v.trim()).filter(Boolean) : [];
+        if(!Number.isFinite(passC) || !Number.isFinite(passS)){
+            setStatus('الرجاء إدخال أرقام صحيحة لحدّي النجاح.', 'warning'); return;
+        }
+        setStatus('جاري الحفظ...', 'info');
+        const current = await loadAppSettings(true);
+        
+        if (!current.concours) current.concours = {};
+        
+        const wilayaSelect = document.getElementById('cfgConcoursWilaya');
+        const targetWilaya = wilayaSelect ? wilayaSelect.value : 'default';
+
+        current.concours.candidateTypeField = field;
+        current.concours.certificatValues = values;
+
+        if (targetWilaya === 'default') {
+            current.concours.passConcours = passC;
+            current.concours.passCertificat = passS;
+        } else {
+            if (!current.concours.byWilaya) current.concours.byWilaya = {};
+            current.concours.byWilaya[targetWilaya] = {
+                passConcours: passC,
+                passCertificat: passS
+            };
+        }
+
+        await saveAppSettings(current);
+        _appSettingsCache = current;
+        populateConcoursSettingsForm(current);
+        setStatus('✅ تم الحفظ. تم تطبيق الإعدادات فوراً.', 'success');
+    } catch(e){
+        setStatus('خطأ: ' + (e && e.message ? e.message : e), 'danger');
+    }
 }
 // تطبيق الإعدادات عند الإقلاع، وإعادة المزامنة دورياً للزوار
 window.addEventListener('load', () => { applyAppSettings(); });
@@ -1885,10 +2118,75 @@ function getNormalizedState(rawState) {
     return text;
 }
 
+/* ====== كشف نوع مترشح الكونكور وحساب القرار النهائي حسب إعدادات المشرف ====== */
+function getConcoursSettings(){
+    const c = (_appSettingsCache && _appSettingsCache.concours) || {};
+    return {
+        passConcours: (typeof c.passConcours === 'number') ? c.passConcours : 85,
+        passCertificat: (typeof c.passCertificat === 'number') ? c.passCertificat : 100,
+        candidateTypeField: c.candidateTypeField || 'TYPE_CAND',
+        certificatValues: Array.isArray(c.certificatValues) && c.certificatValues.length
+            ? c.certificatValues
+            : ['CEP','certificat','شهادة','ابتدائ','ابتدائي','ابتدائية']
+    };
+}
+function getConcoursSettingsForStudent(student) {
+    const globalCfg = getConcoursSettings();
+    if (!student) return globalCfg;
+    
+    const stateRaw = getVal(student, ["WILAYA_AR", "Wilaya"]);
+    const stateNorm = student._stateNorm || getNormalizedState(stateRaw);
+    
+    const c = (_appSettingsCache && _appSettingsCache.concours) || {};
+    if (stateNorm && c.byWilaya && c.byWilaya[stateNorm]) {
+        const override = c.byWilaya[stateNorm];
+        return {
+            passConcours: (typeof override.passConcours === 'number') ? override.passConcours : globalCfg.passConcours,
+            passCertificat: (typeof override.passCertificat === 'number') ? override.passCertificat : globalCfg.passCertificat,
+            candidateTypeField: globalCfg.candidateTypeField,
+            certificatValues: globalCfg.certificatValues
+        };
+    }
+    return globalCfg;
+}
+function isCertificatCandidate(student){
+    const cfg = getConcoursSettings();
+    const fieldName = String(cfg.candidateTypeField || '').toLowerCase().trim();
+    if(!fieldName) return false;
+    let raw = '';
+    for (const k in student){
+        if (Object.prototype.hasOwnProperty.call(student, k) && String(k).toLowerCase().trim() === fieldName){
+            raw = student[k]; break;
+        }
+    }
+    if(raw === null || raw === undefined || raw === '') return false;
+    const v = String(raw).toLowerCase().trim();
+    return cfg.certificatValues.some(t => {
+        const tt = String(t).toLowerCase().trim();
+        return tt && (v === tt || v.includes(tt));
+    });
+}
+function getConcoursDecision(student, score){
+    const cfg = getConcoursSettingsForStudent(student);
+    const isCert = isCertificatCandidate(student);
+    if(isCert){
+        return (score >= cfg.passCertificat)
+            ? { key:'cert_pass',  label:'ناجح في الشهادة فقط',          isAdmis:true,  cardClass:'card-admis',   badge:'text-success' }
+            : { key:'cert_fail',  label:'لم ينجح في الشهادة',            isAdmis:false, cardClass:'card-recale',  badge:'text-danger'  };
+    }
+    if(score >= cfg.passCertificat){
+        return { key:'school_full', label:'ناجح في المسابقة والشهادة', isAdmis:true,  cardClass:'card-admis',   badge:'text-success' };
+    }
+    if(score >= cfg.passConcours){
+        return { key:'school_concours_only', label:'ناجح في المسابقة فقط', isAdmis:true, cardClass:'card-session', badge:'text-warning' };
+    }
+    return { key:'school_fail', label:'لم ينجح', isAdmis:false, cardClass:'card-recale', badge:'text-danger' };
+}
+
 function isResultSuccessful(student, config, examType) {
     if (examType === 'concours') {
         const score = student._score !== undefined ? student._score : parseScore(getVal(student, config.scoreKeys));
-        return score >= 85;
+        return getConcoursDecision(student, score).isAdmis;
     }
     const decisionRaw = getVal(student, config.decisionKeys);
     if (!decisionRaw) return false;
@@ -2290,8 +2588,13 @@ function renderCard(student, config, targetElement, rank=null, examType='', sear
     const displayedScore = formatScore(score);
 
     if (examType === 'concours') {
-        if (score >= 85) { decisionHtml = `<span class="badge bg-white text-success border border-white">ناجح</span>`; isAdmis=true; cardClass='card-admis'; }
-        else { decisionHtml = `<span class="badge bg-white text-danger border border-white">راسب</span>`; cardClass='card-recale'; encouragementMsg = `<div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border:1px dashed rgba(255,255,255,0.5);"><span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span></div>`; }
+        const dec = getConcoursDecision(student, score);
+        decisionHtml = `<span class="badge bg-white ${dec.badge} border border-white">${dec.label}</span>`;
+        isAdmis = dec.isAdmis;
+        cardClass = dec.cardClass;
+        if (!dec.isAdmis) {
+            encouragementMsg = `<div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border:1px dashed rgba(255,255,255,0.5);"><span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span></div>`;
+        }
     } else {
         if (decisionRaw) {
             let d = String(decisionRaw).toLowerCase();
