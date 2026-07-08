@@ -1809,11 +1809,51 @@ async function deleteRemoteFile() {
     }
     if (!confirm(`هل تريد فعلاً حذف ${fileName} من الخادم؟ لا يمكن التراجع.`)) return;
     try {
+        // 1) حذف ملف النتائج من قاعدة البيانات (Supabase Storage)
         const { error } = await supabaseClient.storage.from(STORAGE_BUCKET).remove([fileName]);
         if (error) throw error;
+
+        // 2) حذف كل ما يخص هذه المسابقة من إعدادات التطبيق في قاعدة البيانات
+        //    (السنة المرتبطة بالمسابقة، وتخصيصات الولايات في حالة الكونكور)
+        try {
+            const current = await loadAppSettings(true);
+            let settingsChanged = false;
+
+            // حذف السنة المخزنة لهذه المسابقة
+            if (current.years && Object.prototype.hasOwnProperty.call(current.years, cacheKey)) {
+                delete current.years[cacheKey];
+                settingsChanged = true;
+            }
+            // في حالة الامتياز: تنظيف المفتاح العام إن كان مطابقاً
+            if (examType === 'excellence' && current.years && Object.prototype.hasOwnProperty.call(current.years, 'excellence')) {
+                delete current.years['excellence'];
+                settingsChanged = true;
+            }
+
+            // إذا كانت المسابقة المحذوفة هي الكونكور: حذف تخصيصات الولايات المرتبطة به
+            if (examType === 'concours' && current.concours) {
+                if (current.concours.byWilaya && Object.keys(current.concours.byWilaya).length) {
+                    current.concours.byWilaya = {};
+                    settingsChanged = true;
+                }
+            }
+
+            if (settingsChanged) {
+                await saveAppSettings(current);
+                _appSettingsCache = current;
+                try { applyYearBadges(current); } catch(_){}
+                try { populateConcoursSettingsForm(current); } catch(_){}
+            }
+        } catch (settingsErr) {
+            console.warn('تعذر تنظيف إعدادات المسابقة بعد الحذف:', settingsErr);
+        }
+
+        // 3) تنظيف الكاش المحلي وذاكرة الـ Service Worker
         delete cache[cacheKey]; delete cache[examType];
         try { localStorage.removeItem('rim_cache_'+cacheKey); } catch(e){}
+        try { localStorage.removeItem('rim_cache_'+examType); } catch(e){}
         if (navigator.serviceWorker?.controller) navigator.serviceWorker.controller.postMessage({ type: 'PURGE_DATA_CACHE' });
+
         addUploadHistory({ when: new Date().toISOString(), examType: cacheKey, file: fileName, rows: 0, mode: 'delete' });
         renderUploadHistory();
         refreshAdminFilesStatus();
