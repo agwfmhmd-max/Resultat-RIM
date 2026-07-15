@@ -747,7 +747,8 @@ href="/sitemap.xml">
             <div class="row g-2 mb-3">
                 <div class="col-5">
                     <select id="searchCategory" class="form-select">
-                        <option value="number">رقم المترشح</option>
+                        <option value="number">رقم الترشح</option>
+                        <option value="name">اسم المترشح</option>
                         <option value="school">اسم المدرسة</option>
                     </select>
                 </div>
@@ -1548,10 +1549,10 @@ async function doAdminLogout() {
    ==================================================================== */
 const WANTED_COLS = {
     // نحافظ على الأسماء التي يفهمها بقية التطبيق
-    bac_n:     ['NODOSS','SERIE','NOM_AR','Moy Bac','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
-    bac_c:     ['NODOSS','SERIE','NOM_AR','Moy Bac','Moy Bac_Session','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
+    bac_n:     ['NODOSS','SERIE','NOM_AR','NOM','Nom','Nom_FR','Moy Bac','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
+    bac_c:     ['NODOSS','SERIE','NOM_AR','NOM','Nom','Moy Bac','Moy Bac_Session','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
     brevet:    ['Num_Bepc','NOM','NOM_AR','Moyenne_Bepc','Decision','WILAYA','Wilaya_AR','Ecole','Centre Examen_AR'],
-    concours:  ['Noreg','Numéro_C1AS','NODOSS','NOM_AR','Ecole_AR','WILAYA_AR','Centre Examen_AR','TOTAL'],
+    concours:  ['Noreg','Numéro_C1AS','NODOSS','NOM_AR','NOM','Nom','Ecole_AR','WILAYA_AR','Centre Examen_AR','TOTAL'],
     excellence:['NODOSS','Num_Bepc','Num_Excellence_Bepc','Num_Excellence_1AS','NOM_AR','NOM','Nom','Moy Bac','Moyenne_Bepc','Moy','Mgex','Decision','Wilaya_AR','Wilaya_FR','WILAYA','Etablissement_AR','Ecole','CENTRE_AR','CENTRE_FR','Lieu','SERIE','TYPE']
 };
 
@@ -1944,10 +1945,10 @@ function closeAbout() { document.getElementById('aboutPageOverlay').style.displa
    إعدادات قراءة كل مسابقة (يضم الامتياز)
    ==================================================================== */
 const examConfig = {
-    "bac_n":  { file: "bac_n.csv",  searchKeys: ["NODOSS","Num","N°"], nameKeys: ["NOM_AR","Nom","Nom complet"], scoreKeys:["Moy Bac","Moyenne","Moyenne_Bac","Moy"], placeKeys:["Etablissement_AR","Etablissement","Centre","Lieu"], decisionKeys:["Decision","Resultat"], stateKeys: ["Wilaya_AR","Wilaya","DREN","Wilaya_FR"], majorKeys: ["SERIE","Serie","Option"] },
-    "bac_c":  { file: "bac_c.csv",  searchKeys: ["NODOSS","Num"], nameKeys:["NOM_AR","Nom"], scoreKeys: ["Moy Bac_Session","Moy Bac","Moyenne"], placeKeys: ["Etablissement_AR","Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR","Wilaya","DREN"], majorKeys:["SERIE","Serie"] },
+    "bac_n":  { file: "bac_n.csv",  searchKeys: ["NODOSS","Num","N°"], nameKeys: ["NOM_AR","NOM","Nom","Nom complet"], scoreKeys:["Moy Bac","Moyenne","Moyenne_Bac","Moy"], placeKeys:["Etablissement_AR","Etablissement","Centre","Lieu"], decisionKeys:["Decision","Resultat"], stateKeys: ["Wilaya_AR","Wilaya","DREN","Wilaya_FR"], majorKeys: ["SERIE","Serie","Option"] },
+    "bac_c":  { file: "bac_c.csv",  searchKeys: ["NODOSS","Num"], nameKeys:["NOM_AR","NOM","Nom"], scoreKeys: ["Moy Bac_Session","Moy Bac","Moyenne"], placeKeys: ["Etablissement_AR","Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR","Wilaya","DREN"], majorKeys:["SERIE","Serie"] },
     "brevet": { file: "brevet.csv", searchKeys:["Num_Bepc","Num"], nameKeys: ["NOM","NOM_AR","Nom"], scoreKeys:["Moyenne_Bepc","Moyenne"], placeKeys:["Ecole","Etablissement","Centre","Lieu"], decisionKeys: ["Decision"], stateKeys:["WILAYA","Wilaya","Wilaya_AR"], majorKeys:[] },
-    "concours":{ file: "concours.csv", searchKeys: ["Noreg","NODOSS"], nameKeys: ["NOM_AR","Nom"], scoreKeys:["TOTAL","Score"], placeKeys: ["Ecole_AR","Ecole"], decisionKeys: [], stateKeys:["WILAYA_AR","Wilaya"], majorKeys: [] },
+    "concours":{ file: "concours.csv", searchKeys: ["Noreg","NODOSS"], nameKeys: ["NOM_AR","NOM","Nom"], scoreKeys:["TOTAL","Score"], placeKeys: ["Ecole_AR","Ecole"], decisionKeys: [], stateKeys:["WILAYA_AR","Wilaya"], majorKeys: [] },
     "excellence":{ file: "excellence.csv", searchKeys:["NODOSS","Num_Bepc","Num"], nameKeys:["NOM_AR","NOM","Nom"], scoreKeys:["Moy Bac","Moyenne_Bepc","Moy","Moyenne"], placeKeys:["Etablissement_AR","Ecole"], decisionKeys:["Decision"], stateKeys:["Wilaya_AR","WILAYA"], majorKeys:["SERIE"] }
 };
 
@@ -1978,13 +1979,38 @@ const bacSessionWrap = document.getElementById('bacSessionWrap');
 
 function updateSearchCategory() {
     const t = examSelect.value;
-    categorySelect.value = (t === 'concours') ? 'school' : 'number';
+    // في مسابقة الكنكور: يُحذف خيار البحث برقم الترشح
+    const numberOpt = categorySelect.querySelector('option[value="number"]');
+    if (numberOpt) {
+        if (t === 'concours') {
+            numberOpt.disabled = true;
+            numberOpt.hidden = true;
+            if (categorySelect.value === 'number') categorySelect.value = 'school';
+        } else {
+            numberOpt.disabled = false;
+            numberOpt.hidden = false;
+        }
+    }
+    if (t !== 'concours') {
+        // في مسابقات الامتياز والبريفيه والباكلوريا: البحث برقم الترشح هو الافتراضي
+        categorySelect.value = 'number';
+    }
+    updateSearchPlaceholder();
     excellenceSubWrap.style.display = (t === 'excellence') ? 'block' : 'none';
     bacSessionWrap.style.display = t.includes('bac') ? 'block' : 'none';
     document.querySelectorAll('#bacSessionTabs button').forEach(button => button.classList.toggle('active', button.dataset.exam === t));
     fetchData(t).catch(()=>{});
 }
+function updateSearchPlaceholder() {
+    const inp = document.getElementById('searchInput');
+    if (!inp) return;
+    const cat = categorySelect.value;
+    if (cat === 'name') inp.placeholder = 'مثال: فاطمة أحمد سيدي محمد (الاسم الكامل)';
+    else if (cat === 'school') inp.placeholder = 'مثال: اسم المدرسة';
+    else inp.placeholder = 'مثال: 00001';
+}
 examSelect.addEventListener('change', updateSearchCategory);
+categorySelect.addEventListener('change', updateSearchPlaceholder);
 excellenceSubSel.addEventListener('change', () => { fetchData('excellence').catch(()=>{}); });
 document.addEventListener('DOMContentLoaded', () => {
     updateSearchCategory(); onUploadTypeChange(); loadImageAd(); loadCurrentImageAdAdmin();
@@ -2145,6 +2171,32 @@ let cache = {};
 let currentFilteredResults =[], currentRenderCount = 0, currentBatchSize = 100, currentSearchConfig = null, currentSearchExamType = null, currentSearchMode = 'school';
 
 function getVal(item, keysArray) { if (!item || !keysArray) return ""; for (let key of keysArray) { if (item[key] !== undefined && item[key] !== null && item[key] !== '') return item[key]; } return ""; }
+function getAllVals(item, keysArray) {
+    if (!item || !keysArray) return "";
+    const parts = [];
+    for (let key of keysArray) {
+        if (item[key] !== undefined && item[key] !== null && item[key] !== '') parts.push(String(item[key]));
+    }
+    return parts.join(' ');
+}
+function normalizeName(s) {
+    let t = String(s == null ? '' : s);
+    // إزالة التشكيل والتطويل
+    t = t.replace(/[\u064B-\u065F\u0670\u0640]/g, '');
+    // توحيد الهمزات والألفات
+    t = t.replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627'); // آ أ إ ٱ -> ا
+    t = t.replace(/\u0649/g, '\u064A'); // ى -> ي
+    t = t.replace(/\u0626/g, '\u064A'); // ئ -> ي
+    t = t.replace(/\u0624/g, '\u0648'); // ؤ -> و
+    t = t.replace(/\u0629/g, '\u0647'); // ة -> ه
+    // أرقام عربية إلى لاتينية
+    t = t.replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 0x30));
+    // إزالة كل ما ليس حرفًا/رقمًا (فواصل، شرطات، نقاط ...) ثم توحيد المسافات
+    t = t.replace(/[^\p{L}\p{N}\s]/gu, ' ');
+    t = t.replace(/\s+/g, ' ').trim().toLowerCase();
+    return t;
+}
+
 function parseScore(val) { if (val===undefined||val===null||val==='') return 0; let clean = String(val).trim().replace(/[^0-9.,-]/g,'').replace(',', '.'); let num = parseFloat(clean); return isNaN(num) ? 0 : num; }
 function formatScore(val) { let num = parseFloat(val); if (isNaN(num)) return "0.00"; return (Math.floor(num * 100) / 100).toFixed(2); }
 
@@ -2527,12 +2579,21 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
             data = filterByExcellenceSub(data, examType);
             let results = [];
             if (searchCat === 'number') {
+                if (examType === 'concours') {
+                    // البحث برقم الترشح غير متاح في مسابقة الكنكور
+                    loading.classList.add('d-none');
+                    container.innerHTML = '<div class="alert alert-warning text-center">البحث برقم الترشح غير متاح في مسابقة الكنكور. الرجاء استخدام اسم المترشح أو اسم المدرسة.</div>';
+                    return;
+                }
                 if (data.__numberMap && data.__numberMap.get(inputVal)) {
                     // فهرس فوري
                     results = data.__numberMap.get(inputVal).filter(r => (examType!=='excellence') || (String(r.TYPE||'').toLowerCase()===document.getElementById('excellenceSub').value));
                 } else {
                     results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
                 }
+            } else if (searchCat === 'name') {
+                const q = inputVal;
+                const qn = normalizeName(inputVal); const qTokens = qn.split(' ').filter(Boolean); results = data.filter(item => { const hay = normalizeName(getAllVals(item, config.nameKeys)); if (!hay) return false; if (hay.includes(qn)) return true; return qTokens.length > 0 && qTokens.every(tok => hay.includes(tok)); });
             } else {
                 results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
             }
