@@ -2858,10 +2858,20 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
                 } else {
                     results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
                 }
-            } else if (searchCat === 'name') {
-                const qn = normalizeName(inputVal); const qTokens = qn.split(' ').filter(Boolean); results = data.filter(item => { const hay = normalizeName(getAllVals(item, config.nameKeys)); if (!hay) return false; if (hay.includes(qn)) return true; return qTokens.length > 0 && qTokens.every(tok => hay.includes(tok)); });
-            } else {
-                results = data.filter(item => String(getAllVals(item, config.placeKeys)).toLowerCase().includes(inputVal));
+            } else if (searchCat === 'name' || searchCat === 'school') {
+                // بحث موحّد: يقبل العربية (تجاهل التشكيل/الهمزات/ة-ه/ى-ي)
+                // ويطابق سواء ورد النص في اسم المترشح أو في اسم المدرسة/المركز.
+                const qn = normalizeName(inputVal);
+                const qTokens = qn.split(' ').filter(Boolean);
+                const matchHay = (raw) => {
+                    const hay = normalizeName(raw);
+                    if (!hay) return false;
+                    if (hay.includes(qn)) return true;
+                    return qTokens.length > 0 && qTokens.every(tok => hay.includes(tok));
+                };
+                const primaryKeys = (searchCat === 'name') ? config.nameKeys : config.placeKeys;
+                const secondaryKeys = (searchCat === 'name') ? config.placeKeys : config.nameKeys;
+                results = data.filter(item => matchHay(getAllVals(item, primaryKeys)) || matchHay(getAllVals(item, secondaryKeys)));
             }
             // بحث ذكي بمساعد Groq: عند غياب النتائج، جرّب أشكال بديلة (عربي/فرنسي)
             if (results.length === 0 && (searchCat === 'name' || searchCat === 'school')) {
@@ -2870,14 +2880,15 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
                     if (variants && variants.length) {
                         const seen = new Set();
                         for (const v of variants) {
-                            const vLow = v.toLowerCase();
-                            let more = [];
-                            if (searchCat === 'name') {
-                                const vn = normalizeName(vLow); const vT = vn.split(' ').filter(Boolean);
-                                more = data.filter(item => { const hay = normalizeName(getAllVals(item, config.nameKeys)); if(!hay) return false; if(hay.includes(vn)) return true; return vT.length>0 && vT.every(tok => hay.includes(tok)); });
-                            } else {
-                                more = data.filter(item => String(getAllVals(item, config.placeKeys)).toLowerCase().includes(vLow));
-                            }
+                            const vn = normalizeName(v);
+                            const vT = vn.split(' ').filter(Boolean);
+                            const matchV = (raw) => {
+                                const hay = normalizeName(raw);
+                                if (!hay) return false;
+                                if (hay.includes(vn)) return true;
+                                return vT.length > 0 && vT.every(tok => hay.includes(tok));
+                            };
+                            const more = data.filter(item => matchV(getAllVals(item, config.nameKeys)) || matchV(getAllVals(item, config.placeKeys)));
                             more.forEach(r => { const k = getVal(r, config.searchKeys) || JSON.stringify(r); if(!seen.has(k)){ seen.add(k); results.push(r); } });
                             if (results.length > 200) break;
                         }
@@ -2887,6 +2898,28 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
             loading.classList.add('d-none');
             if (results.length === 0) { container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج مطابقة.</div>'; return; }
             container.innerHTML = `<div class="alert alert-success text-center fw-bold">تم العثور على ${results.length} نتيجة</div>`;
+            if (examType === 'brevet') {
+                const bepcBanner = document.createElement('div');
+                bepcBanner.className = 'alert d-flex flex-wrap align-items-center justify-content-between gap-2';
+                bepcBanner.style.cssText = 'border:0;border-right:5px solid #0b6a4f;background:linear-gradient(135deg,#e8f7f0,#ffffff);box-shadow:0 4px 15px rgba(11,106,79,.08);border-radius:12px;';
+                bepcBanner.innerHTML = `
+                    <div class="text-end" style="flex:1 1 220px;min-width:200px;">
+                        <div class="fw-bold mb-1" style="color:#0b6a4f;">
+                            <i class="fas fa-file-alt me-1"></i>
+                            للحصول على النتائج التفصيلية لختم الدروس (البريفة)
+                        </div>
+                        <div class="small text-muted">
+                            اضغط الزر للانتقال إلى الموقع الرسمي لوزارة التربية الوطنية واستخراج كشف النقاط الكامل.
+                        </div>
+                    </div>
+                    <a href="https://dec.education.gov.mr/search-bepc" target="_blank" rel="noopener noreferrer"
+                       class="btn btn-success fw-bold px-3"
+                       style="background:linear-gradient(135deg,#0b6a4f,#128a66);border:0;box-shadow:0 4px 12px rgba(11,106,79,.25);">
+                        <i class="fas fa-external-link-alt me-1"></i>
+                        النتائج التفصيلية
+                    </a>`;
+                container.appendChild(bepcBanner);
+            }
             currentFilteredResults = results; currentRenderCount = 0; currentSearchConfig = config; currentSearchExamType = examType; currentSearchMode = searchCat;
             renderNextBatch();
             // حفظ آخر بحث محلياً
