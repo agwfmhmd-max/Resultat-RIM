@@ -1013,6 +1013,37 @@ href="/sitemap.xml">
                 </div>
             </div>
 
+
+            <!-- ====== إعدادات مساعد الذكاء الاصطناعي (Groq) ====== -->
+            <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">🤖 مساعد الذكاء الاصطناعي (Groq)</h6>
+            <div class="admin-stat-card">
+                <div class="alert alert-info small py-2 mb-2">
+                    يُستخدم مساعد Groq تلقائياً عند رفع ملف تكون رؤوس أعمدته مختلفة عن الرؤوس المتوقعة لنوع النتائج، فيقوم بتحليل الأعمدة ومطابقتها بدقة قبل الرفع. المفتاح يُحفظ ضمن إعدادات التطبيق ويمكن تعديله في أي وقت.
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">مفتاح Groq API:</label>
+                    <input type="password" id="cfgGroqApiKey" class="form-control form-control-sm" placeholder="gsk_..." dir="ltr" autocomplete="off">
+                    <div class="form-text small text-muted">احصل عليه من <span dir="ltr">console.groq.com/keys</span></div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">النموذج (اختياري):</label>
+                    <input type="text" id="cfgGroqModel" class="form-control form-control-sm" placeholder="llama-3.3-70b-versatile" dir="ltr">
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="cfgGroqEnabled" checked>
+                    <label class="form-check-label small" for="cfgGroqEnabled">تفعيل التحليل الذكي عند اختلاف الأعمدة</label>
+                </div>
+                <div id="groqCfgStatus" class="alert alert-info d-none small py-2"></div>
+                <div class="d-grid gap-2">
+                    <button onclick="saveGroqSettings()" class="btn btn-primary fw-bold py-2">
+                        <i class="fas fa-save me-2"></i> حفظ إعدادات Groq
+                    </button>
+                    <button onclick="testGroqKey()" class="btn btn-outline-secondary fw-bold py-2">
+                        <i class="fas fa-vial me-2"></i> اختبار المفتاح
+                    </button>
+                </div>
+            </div>
+
             <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">📈 إحصائيات الزوار</h6>
 
             <div id="visitorStatsBox">
@@ -1285,6 +1316,11 @@ async function loadAppSettings(force=false){
     if(typeof c.passCertificat !== 'number') c.passCertificat = 100;
     if(typeof c.candidateTypeField !== 'string') c.candidateTypeField = 'TYPE_CAND';
     if(!Array.isArray(c.certificatValues)) c.certificatValues = ['CEP','certificat','شهادة','ابتدائ','ابتدائي','ابتدائية'];
+    if(!_appSettingsCache.groq || typeof _appSettingsCache.groq !== 'object') _appSettingsCache.groq = {};
+    const gg = _appSettingsCache.groq;
+    if(typeof gg.apiKey !== 'string') gg.apiKey = '';
+    if(typeof gg.model  !== 'string' || !gg.model) gg.model = 'llama-3.3-70b-versatile';
+    if(typeof gg.enabled !== 'boolean') gg.enabled = true;
     return _appSettingsCache;
 }
 async function saveAppSettings(obj){
@@ -1323,6 +1359,8 @@ async function applyAppSettings(){
     applyYearBadges(s);
     // ملء حقول إعدادات الكونكور في لوحة الإدارة إن وجدت
     populateConcoursSettingsForm(s);
+    // ملء حقول إعدادات Groq في لوحة الإدارة إن وجدت
+    try { populateGroqSettingsForm(s); } catch(e){}
 }
 
 function populateConcoursSettingsForm(s){
@@ -1551,7 +1589,7 @@ const WANTED_COLS = {
     // نحافظ على الأسماء التي يفهمها بقية التطبيق
     bac_n:     ['NODOSS','SERIE','NOM_AR','NOM','Nom','Nom_FR','Moy Bac','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
     bac_c:     ['NODOSS','SERIE','NOM_AR','NOM','Nom','Moy Bac','Moy Bac_Session','Decision','Wilaya_AR','Centre Examen_AR','Etablissement_AR'],
-    brevet:    ['Num_Bepc','NOM','NOM_AR','Moyenne_Bepc','Decision','WILAYA','Wilaya_AR','Ecole','Centre Examen_AR'],
+    brevet:    ['Num_Bepc','NOM','NOM_AR','Moyenne_Bepc','Decision','WILAYA','Wilaya_AR','Ecole','Centre Examen_AR','Centre Examen_FR'],
     concours:  ['Noreg','Numéro_C1AS','NODOSS','NOM_AR','NOM','Nom','Ecole_AR','WILAYA_AR','Centre Examen_AR','TOTAL'],
     excellence:['NODOSS','Num_Bepc','Num_Excellence_Bepc','Num_Excellence_1AS','NOM_AR','NOM','Nom','Moy Bac','Moyenne_Bepc','Moy','Mgex','Decision','Wilaya_AR','Wilaya_FR','WILAYA','Etablissement_AR','Ecole','CENTRE_AR','CENTRE_FR','Lieu','SERIE','TYPE']
 };
@@ -1616,6 +1654,211 @@ function cleanRows(rawRows, examType, extra = {}) {
     }
     return { headers: outHeaders, rows };
 }
+
+
+
+/* ====================================================================
+   🤖 مساعد الذكاء الاصطناعي (Groq) — تحليل رؤوس الملفات غير المطابقة
+   ==================================================================== */
+
+/* حفظ إعدادات Groq داخل app_settings.json */
+async function saveGroqSettings(){
+    const statusEl = document.getElementById('groqCfgStatus');
+    const setStatus = (msg, type='info') => {
+        if(!statusEl) return;
+        statusEl.className = 'alert alert-' + type + ' small py-2';
+        statusEl.textContent = msg;
+        statusEl.classList.remove('d-none');
+    };
+    try {
+        if(!supabaseClient){ setStatus('Supabase غير مهيأ.', 'danger'); return; }
+        const apiKey = (document.getElementById('cfgGroqApiKey').value || '').trim();
+        const model  = (document.getElementById('cfgGroqModel').value  || '').trim() || 'llama-3.3-70b-versatile';
+        const enabled= !!document.getElementById('cfgGroqEnabled').checked;
+        setStatus('جاري الحفظ...', 'info');
+        const current = await loadAppSettings(true);
+        current.groq = Object.assign({}, current.groq || {}, { apiKey, model, enabled });
+        await saveAppSettings(current);
+        _appSettingsCache = current;
+        setStatus('✅ تم حفظ إعدادات Groq بنجاح.', 'success');
+    } catch(e){
+        setStatus('خطأ أثناء الحفظ: ' + e.message, 'danger');
+    }
+}
+
+/* اختبار سريع لصلاحية المفتاح */
+async function testGroqKey(){
+    const statusEl = document.getElementById('groqCfgStatus');
+    const setStatus = (msg, type='info') => {
+        if(!statusEl) return;
+        statusEl.className = 'alert alert-' + type + ' small py-2';
+        statusEl.textContent = msg;
+        statusEl.classList.remove('d-none');
+    };
+    try {
+        const apiKey = (document.getElementById('cfgGroqApiKey').value || '').trim();
+        const model  = (document.getElementById('cfgGroqModel').value  || '').trim() || 'llama-3.3-70b-versatile';
+        if(!apiKey){ setStatus('أدخل المفتاح أولاً.', 'warning'); return; }
+        setStatus('جاري الاختبار...', 'info');
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+            body: JSON.stringify({
+                model: model,
+                messages:[{role:'user',content:'ping'}],
+                max_tokens: 2
+            })
+        });
+        if(!r.ok){
+            const t = await r.text();
+            setStatus('❌ فشل الاختبار: HTTP ' + r.status + ' — ' + (t||'').slice(0,200), 'danger');
+            return;
+        }
+        setStatus('✅ المفتاح صالح.', 'success');
+    } catch(e){
+        setStatus('خطأ في الاتصال: ' + e.message, 'danger');
+    }
+}
+
+/* ملء حقول الإعدادات من قاعدة البيانات عند فتح لوحة الإدارة */
+function populateGroqSettingsForm(s){
+    const g = (s && s.groq) || {};
+    const k = document.getElementById('cfgGroqApiKey');
+    const m = document.getElementById('cfgGroqModel');
+    const e = document.getElementById('cfgGroqEnabled');
+    if(k) k.value = g.apiKey || '';
+    if(m) m.value = g.model  || 'llama-3.3-70b-versatile';
+    if(e) e.checked = (g.enabled !== false);
+}
+
+/* استخراج JSON بأمان من نص قد يحوي شرحاً */
+function _extractJSON(txt){
+    if(!txt) return null;
+    try { return JSON.parse(txt); } catch(_){}
+    const m = txt.match(/\{[\s\S]*\}/);
+    if(m){ try { return JSON.parse(m[0]); } catch(_){} }
+    return null;
+}
+
+/* استدعاء Groq للحصول على خريطة {الرأس_المتوقع: الرأس_الأصلي_في_الملف} */
+async function aiMapHeadersWithGroq(rawHeaders, sampleRows, examType, subType){
+    const settings = await loadAppSettings();
+    const g = (settings && settings.groq) || {};
+    if(g.enabled === false) throw new Error('مساعد Groq معطّل من لوحة الإعدادات.');
+    const apiKey = (g.apiKey || '').trim();
+    if(!apiKey) throw new Error('لم يتم إعداد مفتاح Groq API من لوحة المشرف.');
+    const model = (g.model || 'llama-3.3-70b-versatile').trim();
+
+    const expected = WANTED_COLS[examType] || [];
+    const ctx = {
+        examType,
+        subType: subType || null,
+        expectedColumns: expected,
+        fileHeaders: rawHeaders,
+        sampleRows: (sampleRows || []).slice(0, 5)
+    };
+    const sys = 'أنت خبير في تحليل ملفات نتائج الامتحانات (Excel/CSV) بالعربية والفرنسية. مهمتك: مطابقة أعمدة الملف بأعمدة نظام محدد. أعد فقط JSON نقي بدون أي شرح، يحوي المفتاح "mapping" وهو كائن مفاتيحه أسماء الأعمدة المتوقعة وقيمه اسم العمود الأصلي في الملف المطابق له (أو null إن لم يوجد). لا تخترع أعمدة غير موجودة في fileHeaders.';
+    const usr = 'حلّل السياق التالي وأعد mapping دقيقاً:\n' + JSON.stringify(ctx);
+
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({
+            model: model,
+            messages: [
+                { role:'system', content: sys },
+                { role:'user',   content: usr }
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0
+        })
+    });
+    if(!r.ok){
+        const t = await r.text();
+        throw new Error('Groq HTTP ' + r.status + ': ' + (t||'').slice(0,200));
+    }
+    const j = await r.json();
+    const content = j?.choices?.[0]?.message?.content || '{}';
+    const parsed = _extractJSON(content) || {};
+    const mapping = parsed.mapping || parsed;
+    if(!mapping || typeof mapping !== 'object') throw new Error('استجابة Groq غير صالحة.');
+
+    const validHeaders = new Set(rawHeaders.map(h => String(h)));
+    const clean = {};
+    Object.keys(mapping).forEach(k => {
+        const v = mapping[k];
+        if(v && validHeaders.has(v)) clean[k] = v;
+    });
+    return clean;
+}
+
+/* إعادة بناء الصفوف بأسماء الأعمدة المتوقعة اعتماداً على mapping من Groq */
+function rebuildRowsWithMapping(rawRows, mapping){
+    if(!rawRows || !rawRows.length) return [];
+    const out = [];
+    for(let i=0;i<rawRows.length;i++){
+        const src = rawRows[i];
+        const obj = {};
+        Object.keys(mapping).forEach(target => {
+            const srcKey = mapping[target];
+            let v = src[srcKey];
+            if(v === undefined || v === null) v = '';
+            obj[target] = String(v).replace(/\uFEFF/g,'').trim();
+        });
+        out.push(obj);
+    }
+    return out;
+}
+
+/* هل يحتاج الملف لمساعد الذكاء الاصطناعي؟ (لم تتم مطابقة الأعمدة الأساسية) */
+function _needsAI(rawRows, examType){
+    if(!rawRows || !rawRows.length) return false;
+    const wanted = WANTED_COLS[examType] || [];
+    if(!wanted.length) return false;
+    const rawHeaders = Object.keys(rawRows[0]);
+    const idx = buildHeaderIndex(rawHeaders);
+    let matched = 0;
+    wanted.forEach(w => { if(idx[normHeaderKey(w)]) matched++; });
+    // إن كانت النسبة أقل من 60% أو المطابقات أقل من 3 أعمدة → استعن بالذكاء الاصطناعي
+    const ratio = matched / wanted.length;
+    return (matched < 3) || (ratio < 0.6);
+}
+
+/* ترجمة/تطبيع استعلام البحث بمساعدة Groq (عربي ⇄ فرنسي) لأسماء الأشخاص والمدارس/المراكز */
+async function aiTranslateSearchQuery(query, examType, searchCat){
+    try {
+        const settings = await loadAppSettings();
+        const g = (settings && settings.groq) || {};
+        if(g.enabled === false) return [];
+        const apiKey = (g.apiKey || '').trim();
+        if(!apiKey) return [];
+        const model = (g.model || 'llama-3.3-70b-versatile').trim();
+
+        const kind = (searchCat === 'name') ? 'اسم مترشح (شخص)' : 'اسم مدرسة أو مؤسسة أو مركز امتحان';
+        const sys = 'أنت مساعد ترجمة وتطبيع لأسماء موريتانية (عربي/فرنسي). أعد فقط JSON نقي بدون شرح، بالمفتاح "variants" كمصفوفة سلاسل تحوي كل الأشكال المحتملة للكتابة (بالعربية والفرنسية، مع الأخطاء الإملائية الشائعة، أشكال مختصرة، ترجمات حرفية للنطق). لا تزد على 8 عناصر.';
+        const usr = 'السياق: مسابقة=' + examType + '، نوع البحث=' + kind + '.\nالاستعلام: "' + query + '"\nأعد JSON بالشكل: {"variants":["...","..."]}';
+
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+            body: JSON.stringify({
+                model: model,
+                messages: [ {role:'system',content:sys}, {role:'user',content:usr} ],
+                response_format: { type: 'json_object' },
+                temperature: 0
+            })
+        });
+        if(!r.ok) return [];
+        const j = await r.json();
+        const content = j?.choices?.[0]?.message?.content || '{}';
+        const parsed = _extractJSON(content) || {};
+        const arr = Array.isArray(parsed.variants) ? parsed.variants : [];
+        return arr.map(v => String(v||'').trim()).filter(v => v && v.toLowerCase() !== String(query||'').toLowerCase()).slice(0,8);
+    } catch(e){ return []; }
+}
+
+
+
 
 /* تحويل صفوف JSON إلى نص CSV بسرعة عالية (مع BOM وUTF-8 صحيح) */
 function rowsToCSV(headers, rows) {
@@ -1751,7 +1994,31 @@ async function uploadToSupabase(replaceAll) {
 
         // 2) تنظيف (كل نوع امتياز يحفظ في ملف مستقل، لا حاجة للدمج)
         await new Promise(r => setTimeout(r, 10));
-        let cleaned = cleanRows(raw, examType, { subType });
+
+        // 2.a) إن كانت رؤوس الملف مختلفة عن المتوقع → استعن بمساعد الذكاء الاصطناعي (Groq)
+        let workingRaw = raw;
+        try {
+            if (_needsAI(raw, examType)) {
+                const s = await loadAppSettings();
+                const g = (s && s.groq) || {};
+                if (g.apiKey && g.enabled !== false) {
+                    setUploadProgress('🤖 تحليل الأعمدة بالذكاء الاصطناعي...', 35, `صفوف خام: ${raw.length}`);
+                    const rawHeaders = Object.keys(raw[0] || {});
+                    const mapping = await aiMapHeadersWithGroq(rawHeaders, raw, examType, subType);
+                    if (mapping && Object.keys(mapping).length) {
+                        workingRaw = rebuildRowsWithMapping(raw, mapping);
+                        setUploadProgress('تم التحليل الذكي ✅ تنظيف البيانات...', 45, `أعمدة مُطابَقة: ${Object.keys(mapping).length}`);
+                    }
+                } else {
+                    console.warn('رؤوس الملف مختلفة ولم يتم إعداد مفتاح Groq؛ سيتم المتابعة بالتنظيف العادي.');
+                }
+            }
+        } catch(aiErr) {
+            console.warn('فشل التحليل الذكي، سيتم المتابعة بالتنظيف العادي:', aiErr);
+            statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> تعذّر التحليل الذكي: ' + aiErr.message + ' — سيتم المتابعة بالتنظيف العادي.';
+        }
+
+        let cleaned = cleanRows(workingRaw, examType, { subType });
 
         setUploadProgress('تحويل إلى CSV...', 50, `بعد التنظيف: ${cleaned.rows.length}`);
         await new Promise(r => setTimeout(r, 10));
@@ -1947,7 +2214,7 @@ function closeAbout() { document.getElementById('aboutPageOverlay').style.displa
 const examConfig = {
     "bac_n":  { file: "bac_n.csv",  searchKeys: ["NODOSS","Num","N°"], nameKeys: ["NOM_AR","NOM","Nom","Nom complet"], scoreKeys:["Moy Bac","Moyenne","Moyenne_Bac","Moy"], placeKeys:["Etablissement_AR","Etablissement","Centre","Lieu"], decisionKeys:["Decision","Resultat"], stateKeys: ["Wilaya_AR","Wilaya","DREN","Wilaya_FR"], majorKeys: ["SERIE","Serie","Option"] },
     "bac_c":  { file: "bac_c.csv",  searchKeys: ["NODOSS","Num"], nameKeys:["NOM_AR","NOM","Nom"], scoreKeys: ["Moy Bac_Session","Moy Bac","Moyenne"], placeKeys: ["Etablissement_AR","Etablissement"], decisionKeys: ["Decision"], stateKeys: ["Wilaya_AR","Wilaya","DREN"], majorKeys:["SERIE","Serie"] },
-    "brevet": { file: "brevet.csv", searchKeys:["Num_Bepc","Num"], nameKeys: ["NOM","NOM_AR","Nom"], scoreKeys:["Moyenne_Bepc","Moyenne"], placeKeys:["Ecole","Etablissement","Centre","Lieu"], decisionKeys: ["Decision"], stateKeys:["WILAYA","Wilaya","Wilaya_AR"], majorKeys:[] },
+    "brevet": { file: "brevet.csv", searchKeys:["Num_Bepc","Num"], nameKeys: ["NOM","NOM_AR","Nom"], scoreKeys:["Moyenne_Bepc","Moyenne"], placeKeys:["Ecole","Etablissement","Centre Examen_AR","Centre Examen_FR","Centre","Lieu"], decisionKeys: ["Decision"], stateKeys:["WILAYA","Wilaya","Wilaya_AR"], majorKeys:[] },
     "concours":{ file: "concours.csv", searchKeys: ["Noreg","NODOSS"], nameKeys: ["NOM_AR","NOM","Nom"], scoreKeys:["TOTAL","Score"], placeKeys: ["Ecole_AR","Ecole"], decisionKeys: [], stateKeys:["WILAYA_AR","Wilaya"], majorKeys: [] },
     "excellence":{ file: "excellence.csv", searchKeys:["NODOSS","Num_Bepc","Num"], nameKeys:["NOM_AR","NOM","Nom"], scoreKeys:["Moy Bac","Moyenne_Bepc","Moy","Moyenne"], placeKeys:["Etablissement_AR","Ecole"], decisionKeys:["Decision"], stateKeys:["Wilaya_AR","WILAYA"], majorKeys:["SERIE"] }
 };
@@ -2592,10 +2859,30 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
                     results = data.filter(item => String(getVal(item, config.searchKeys)).trim().toLowerCase() === inputVal);
                 }
             } else if (searchCat === 'name') {
-                const q = inputVal;
                 const qn = normalizeName(inputVal); const qTokens = qn.split(' ').filter(Boolean); results = data.filter(item => { const hay = normalizeName(getAllVals(item, config.nameKeys)); if (!hay) return false; if (hay.includes(qn)) return true; return qTokens.length > 0 && qTokens.every(tok => hay.includes(tok)); });
             } else {
-                results = data.filter(item => String(getVal(item, config.placeKeys)).toLowerCase().includes(inputVal));
+                results = data.filter(item => String(getAllVals(item, config.placeKeys)).toLowerCase().includes(inputVal));
+            }
+            // بحث ذكي بمساعد Groq: عند غياب النتائج، جرّب أشكال بديلة (عربي/فرنسي)
+            if (results.length === 0 && (searchCat === 'name' || searchCat === 'school')) {
+                try {
+                    const variants = await aiTranslateSearchQuery(inputVal, examType, searchCat);
+                    if (variants && variants.length) {
+                        const seen = new Set();
+                        for (const v of variants) {
+                            const vLow = v.toLowerCase();
+                            let more = [];
+                            if (searchCat === 'name') {
+                                const vn = normalizeName(vLow); const vT = vn.split(' ').filter(Boolean);
+                                more = data.filter(item => { const hay = normalizeName(getAllVals(item, config.nameKeys)); if(!hay) return false; if(hay.includes(vn)) return true; return vT.length>0 && vT.every(tok => hay.includes(tok)); });
+                            } else {
+                                more = data.filter(item => String(getAllVals(item, config.placeKeys)).toLowerCase().includes(vLow));
+                            }
+                            more.forEach(r => { const k = getVal(r, config.searchKeys) || JSON.stringify(r); if(!seen.has(k)){ seen.add(k); results.push(r); } });
+                            if (results.length > 200) break;
+                        }
+                    }
+                } catch(e) { /* تجاهل أخطاء المساعد */ }
             }
             loading.classList.add('d-none');
             if (results.length === 0) { container.innerHTML = '<div class="alert alert-warning text-center">لم يتم العثور على نتائج مطابقة.</div>'; return; }
