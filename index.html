@@ -3006,7 +3006,20 @@ function renderCard(student, config, targetElement, rank=null, examType='', sear
     const decisionRaw = getVal(student, config.decisionKeys);
     let state = student._stateNorm; if(state === "unknown") state = getVal(student, config.stateKeys);
     let isAdmis=false, decisionHtml='', cardClass='', encouragementMsg='';
-    const displayedScore = formatScore(score);
+    let displayedScore = formatScore(score);
+
+    // === Étudiants avec examen annulé (téléphone) — concours ===
+    const CANCELLED_CONCOURS_NODOSS = new Set(['08517','10099','24520','24585','30997','48783','49048','52254','54728','66323','72446']);
+    const _numRaw = String(number == null ? '' : number).trim();
+    const _numPadded = _numRaw.replace(/^0+/, '').padStart(5, '0');
+    const _isCancelled = examType === 'brevet' && (CANCELLED_CONCOURS_NODOSS.has(_numRaw) || CANCELLED_CONCOURS_NODOSS.has(_numPadded));
+    if (_isCancelled) {
+        displayedScore = '0,00';
+        decisionHtml = `<span class="badge border border-white" style="background:#dc3545;color:#fff;font-weight:700;">Examen annulé - Telephone</span>`;
+        cardClass = 'card-recale';
+        isAdmis = false;
+        encouragementMsg = '';
+    }
 
     if (examType === 'concours') {
         const dec = getConcoursDecision(student, score);
@@ -3016,7 +3029,7 @@ function renderCard(student, config, targetElement, rank=null, examType='', sear
         if (!dec.isAdmis) {
             encouragementMsg = `<div class="mt-2 text-center p-2 rounded" style="background: rgba(255,255,255,0.2); border:1px dashed rgba(255,255,255,0.5);"><span class="small fw-bold text-white"><i class="fas fa-heart me-1"></i> فيه خير لا تيأس واستمر في المحاولة 💪</span></div>`;
         }
-    } else {
+    } else if (!_isCancelled) {
         if (decisionRaw) {
             let d = String(decisionRaw).toLowerCase();
             if (d.includes('admis') || d.includes('ناجح')) { decisionHtml = `<span class="badge bg-white text-success border border-white">${decisionRaw}</span>`; isAdmis=true; cardClass='card-admis'; }
@@ -3056,7 +3069,7 @@ function renderCard(student, config, targetElement, rank=null, examType='', sear
                     <h6 class="fw-bold mb-1">${name}</h6>
                     <div class="small text-muted row">
                         <div class="col-6">رقم: <b class="number-link" onclick="searchByNumber('${number}')">${number}</b></div>
-                        <div class="col-6 text-end">المعدل: <b class="text-success">${displayedScore}</b></div>
+                        <div class="col-6 text-end">المعدل: <b class="${_isCancelled ? 'text-danger' : 'text-success'}">${displayedScore}</b></div>
                     </div>
                     <div class="small text-muted mt-1"><i class="fas fa-school me-1"></i> <span class="school-link" onclick="searchBySchoolName('${safePlace}')">${place}</span></div>
                     ${gridHtml}
