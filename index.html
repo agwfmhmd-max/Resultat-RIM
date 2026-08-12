@@ -2202,7 +2202,7 @@ const installBtn = document.getElementById('installBtn');
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'inline-flex'; });
 installBtn.addEventListener('click', () => { installBtn.style.display = 'none'; if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{ deferredPrompt = null; }); } });
 
-const orientationGroupLink = "https://www.unem2000.com/whatsapp";
+const orientationGroupLink = "https:"https://www.unem-mr.online/";
 const tawjihOfficialLink = "https://etudiants-mesrs.app/";
 
 function openAbout() { document.getElementById('aboutPageOverlay').style.display = 'block'; }
